@@ -29,7 +29,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵAnimationGroupPlayer", function() { return AnimationGroupPlayer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵPRE_STYLE", function() { return ɵPRE_STYLE; });
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -1262,7 +1262,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_animations__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/animations */ "./node_modules/@angular/animations/__ivy_ngcc__/fesm2015/animations.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm2015/core.js");
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -6173,7 +6173,7 @@ class AriaDescriber {
             // already a container on the page, but we don't have a reference to it. Clear the
             // old container so we don't get duplicates. Doing this, instead of emptying the previous
             // container, should be slightly faster.
-            if (preExistingContainer && preExistingContainer.parentNode) {
+            if (preExistingContainer) {
                 preExistingContainer.parentNode.removeChild(preExistingContainer);
             }
             messagesContainer = this._document.createElement('div');
@@ -6365,8 +6365,7 @@ class ListKeyManager {
      * @param debounceInterval Time to wait after the last keystroke before setting the active item.
      */
     withTypeAhead(debounceInterval = 200) {
-        if ((typeof ngDevMode === 'undefined' || ngDevMode) && (this._items.length &&
-            this._items.some(item => typeof item.getLabel !== 'function'))) {
+        if (this._items.length && this._items.some(item => typeof item.getLabel !== 'function')) {
             throw Error('ListKeyManager items in typeahead mode must implement the `getLabel` method.');
         }
         this._typeaheadSubscription.unsubscribe();
@@ -6391,12 +6390,11 @@ class ListKeyManager {
         return this;
     }
     /**
-     * Configures the key manager to activate the first and last items
-     * respectively when the Home or End key is pressed.
-     * @param enabled Whether pressing the Home or End key activates the first/last item.
+     * Configures the key manager to focus the first and last items
+     * respectively when the Home key and End Key are pressed.
      */
-    withHomeAndEnd(enabled = true) {
-        this._homeAndEnd = enabled;
+    withHomeAndEnd() {
+        this._homeAndEnd = true;
         return this;
     }
     setActiveItem(item) {
@@ -7032,8 +7030,7 @@ class FocusTrap {
             }
             // Warn the consumer if the element they've pointed to
             // isn't focusable, when not in production mode.
-            if ((typeof ngDevMode === 'undefined' || ngDevMode) &&
-                !this._checker.isFocusable(redirectToElement)) {
+            if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["isDevMode"])() && !this._checker.isFocusable(redirectToElement)) {
                 console.warn(`Element matching '[cdkFocusInitial]' is not focusable.`, redirectToElement);
             }
             redirectToElement.focus();
@@ -7139,7 +7136,7 @@ class FocusTrap {
             fn();
         }
         else {
-            this._ngZone.onStable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["take"])(1)).subscribe(fn);
+            this._ngZone.onStable.asObservable().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["take"])(1)).subscribe(fn);
         }
     }
 }
@@ -7677,12 +7674,12 @@ class CdkAriaLive {
         this._liveAnnouncer = _liveAnnouncer;
         this._contentObserver = _contentObserver;
         this._ngZone = _ngZone;
-        this._politeness = 'polite';
+        this._politeness = 'off';
     }
     /** The aria-live politeness level to use when announcing messages. */
     get politeness() { return this._politeness; }
     set politeness(value) {
-        this._politeness = value === 'off' || value === 'assertive' ? value : 'polite';
+        this._politeness = value === 'polite' || value === 'assertive' ? value : 'off';
         if (this._politeness === 'off') {
             if (this._subscription) {
                 this._subscription.unsubscribe();
@@ -7857,11 +7854,11 @@ class FocusMonitor {
         this._detectionMode = (options === null || options === void 0 ? void 0 : options.detectionMode) || 0 /* IMMEDIATE */;
     }
     monitor(element, checkChildren = false) {
-        const nativeElement = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_6__["coerceElement"])(element);
-        // Do nothing if we're not on the browser platform or the passed in node isn't an element.
-        if (!this._platform.isBrowser || nativeElement.nodeType !== 1) {
+        // Do nothing if we're not on the browser platform.
+        if (!this._platform.isBrowser) {
             return Object(rxjs__WEBPACK_IMPORTED_MODULE_3__["of"])(null);
         }
+        const nativeElement = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_6__["coerceElement"])(element);
         // If the element is inside the shadow DOM, we need to bind our focus/blur listeners to
         // the shadow root, rather than the `document`, because the browser won't emit focus events
         // to the `document`, if focus is moving within the same shadow root.
@@ -7875,7 +7872,7 @@ class FocusMonitor {
                 // robust solution.
                 cachedInfo.checkChildren = true;
             }
-            return cachedInfo.subject;
+            return cachedInfo.subject.asObservable();
         }
         // Create monitored element info.
         const info = {
@@ -7885,7 +7882,7 @@ class FocusMonitor {
         };
         this._elementInfo.set(nativeElement, info);
         this._registerGlobalListeners(info);
-        return info.subject;
+        return info.subject.asObservable();
     }
     stopMonitoring(element) {
         const nativeElement = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_6__["coerceElement"])(element);
@@ -8140,8 +8137,7 @@ class CdkMonitorFocus {
         this.cdkFocusChange = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
     }
     ngAfterViewInit() {
-        const element = this._elementRef.nativeElement;
-        this._monitorSubscription = this._focusMonitor.monitor(element, element.nodeType === 1 && element.hasAttribute('cdkMonitorSubtreeFocus'))
+        this._monitorSubscription = this._focusMonitor.monitor(this._elementRef, this._elementRef.nativeElement.hasAttribute('cdkMonitorSubtreeFocus'))
             .subscribe(origin => this.cdkFocusChange.emit(origin));
     }
     ngOnDestroy() {
@@ -8510,7 +8506,7 @@ BidiModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjecto
 /*!************************************************************************!*\
   !*** ./node_modules/@angular/cdk/__ivy_ngcc__/fesm2015/collections.js ***!
   \************************************************************************/
-/*! exports provided: ArrayDataSource, DataSource, SelectionModel, UniqueSelectionDispatcher, _DisposeViewRepeaterStrategy, _RecycleViewRepeaterStrategy, _VIEW_REPEATER_STRATEGY, getMultipleValuesInSingleSelectionError, isDataSource */
+/*! exports provided: ArrayDataSource, DataSource, SelectionModel, UniqueSelectionDispatcher, getMultipleValuesInSingleSelectionError, isDataSource */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8519,9 +8515,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DataSource", function() { return DataSource; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SelectionModel", function() { return SelectionModel; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UniqueSelectionDispatcher", function() { return UniqueSelectionDispatcher; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_DisposeViewRepeaterStrategy", function() { return _DisposeViewRepeaterStrategy; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_RecycleViewRepeaterStrategy", function() { return _RecycleViewRepeaterStrategy; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_VIEW_REPEATER_STRATEGY", function() { return _VIEW_REPEATER_STRATEGY; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getMultipleValuesInSingleSelectionError", function() { return getMultipleValuesInSingleSelectionError; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDataSource", function() { return isDataSource; });
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
@@ -8573,182 +8566,6 @@ class ArrayDataSource extends DataSource {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-/**
- * A repeater that destroys views when they are removed from a
- * {@link ViewContainerRef}. When new items are inserted into the container,
- * the repeater will always construct a new embedded view for each item.
- *
- * @template T The type for the embedded view's $implicit property.
- * @template R The type for the item in each IterableDiffer change record.
- * @template C The type for the context passed to each embedded view.
- */
-class _DisposeViewRepeaterStrategy {
-    applyChanges(changes, viewContainerRef, itemContextFactory, itemValueResolver, itemViewChanged) {
-        changes.forEachOperation((record, adjustedPreviousIndex, currentIndex) => {
-            let view;
-            let operation;
-            if (record.previousIndex == null) {
-                const insertContext = itemContextFactory(record, adjustedPreviousIndex, currentIndex);
-                view = viewContainerRef.createEmbeddedView(insertContext.templateRef, insertContext.context, insertContext.index);
-                operation = 1 /* INSERTED */;
-            }
-            else if (currentIndex == null) {
-                viewContainerRef.remove(adjustedPreviousIndex);
-                operation = 3 /* REMOVED */;
-            }
-            else {
-                view = viewContainerRef.get(adjustedPreviousIndex);
-                viewContainerRef.move(view, currentIndex);
-                operation = 2 /* MOVED */;
-            }
-            if (itemViewChanged) {
-                itemViewChanged({
-                    context: view === null || view === void 0 ? void 0 : view.context,
-                    operation,
-                    record,
-                });
-            }
-        });
-    }
-    detach() {
-    }
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-/**
- * A repeater that caches views when they are removed from a
- * {@link ViewContainerRef}. When new items are inserted into the container,
- * the repeater will reuse one of the cached views instead of creating a new
- * embedded view. Recycling cached views reduces the quantity of expensive DOM
- * inserts.
- *
- * @template T The type for the embedded view's $implicit property.
- * @template R The type for the item in each IterableDiffer change record.
- * @template C The type for the context passed to each embedded view.
- */
-class _RecycleViewRepeaterStrategy {
-    constructor() {
-        /**
-         * The size of the cache used to store unused views.
-         * Setting the cache size to `0` will disable caching. Defaults to 20 views.
-         */
-        this.viewCacheSize = 20;
-        /**
-         * View cache that stores embedded view instances that have been previously stamped out,
-         * but don't are not currently rendered. The view repeater will reuse these views rather than
-         * creating brand new ones.
-         *
-         * TODO(michaeljamesparsons) Investigate whether using a linked list would improve performance.
-         */
-        this._viewCache = [];
-    }
-    /** Apply changes to the DOM. */
-    applyChanges(changes, viewContainerRef, itemContextFactory, itemValueResolver, itemViewChanged) {
-        // Rearrange the views to put them in the right location.
-        changes.forEachOperation((record, adjustedPreviousIndex, currentIndex) => {
-            let view;
-            let operation;
-            if (record.previousIndex == null) { // Item added.
-                const viewArgsFactory = () => itemContextFactory(record, adjustedPreviousIndex, currentIndex);
-                view = this._insertView(viewArgsFactory, currentIndex, viewContainerRef, itemValueResolver(record));
-                operation = view ? 1 /* INSERTED */ : 0 /* REPLACED */;
-            }
-            else if (currentIndex == null) { // Item removed.
-                this._detachAndCacheView(adjustedPreviousIndex, viewContainerRef);
-                operation = 3 /* REMOVED */;
-            }
-            else { // Item moved.
-                view = this._moveView(adjustedPreviousIndex, currentIndex, viewContainerRef, itemValueResolver(record));
-                operation = 2 /* MOVED */;
-            }
-            if (itemViewChanged) {
-                itemViewChanged({
-                    context: view === null || view === void 0 ? void 0 : view.context,
-                    operation,
-                    record,
-                });
-            }
-        });
-    }
-    detach() {
-        for (const view of this._viewCache) {
-            view.destroy();
-        }
-    }
-    /**
-     * Inserts a view for a new item, either from the cache or by creating a new
-     * one. Returns `undefined` if the item was inserted into a cached view.
-     */
-    _insertView(viewArgsFactory, currentIndex, viewContainerRef, value) {
-        let cachedView = this._insertViewFromCache(currentIndex, viewContainerRef);
-        if (cachedView) {
-            cachedView.context.$implicit = value;
-            return undefined;
-        }
-        const viewArgs = viewArgsFactory();
-        return viewContainerRef.createEmbeddedView(viewArgs.templateRef, viewArgs.context, viewArgs.index);
-    }
-    /** Detaches the view at the given index and inserts into the view cache. */
-    _detachAndCacheView(index, viewContainerRef) {
-        const detachedView = this._detachView(index, viewContainerRef);
-        this._maybeCacheView(detachedView, viewContainerRef);
-    }
-    /** Moves view at the previous index to the current index. */
-    _moveView(adjustedPreviousIndex, currentIndex, viewContainerRef, value) {
-        const view = viewContainerRef.get(adjustedPreviousIndex);
-        viewContainerRef.move(view, currentIndex);
-        view.context.$implicit = value;
-        return view;
-    }
-    /**
-     * Cache the given detached view. If the cache is full, the view will be
-     * destroyed.
-     */
-    _maybeCacheView(view, viewContainerRef) {
-        if (this._viewCache.length < this.viewCacheSize) {
-            this._viewCache.push(view);
-        }
-        else {
-            const index = viewContainerRef.indexOf(view);
-            // The host component could remove views from the container outside of
-            // the view repeater. It's unlikely this will occur, but just in case,
-            // destroy the view on its own, otherwise destroy it through the
-            // container to ensure that all the references are removed.
-            if (index === -1) {
-                view.destroy();
-            }
-            else {
-                viewContainerRef.remove(index);
-            }
-        }
-    }
-    /** Inserts a recycled view from the cache at the given index. */
-    _insertViewFromCache(index, viewContainerRef) {
-        const cachedView = this._viewCache.pop();
-        if (cachedView) {
-            viewContainerRef.insert(cachedView, index);
-        }
-        return cachedView || null;
-    }
-    /** Detaches the embedded view at the given index. */
-    _detachView(index, viewContainerRef) {
-        return viewContainerRef.detach(index);
-    }
-}
 
 /**
  * @license
@@ -8897,7 +8714,7 @@ class SelectionModel {
      * including multiple values while the selection model is not supporting multiple values.
      */
     _verifyValueAssignment(values) {
-        if (values.length > 1 && !this._multiple && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (values.length > 1 && !this._multiple) {
             throw getMultipleValuesInSingleSelectionError();
         }
     }
@@ -8971,19 +8788,6 @@ UniqueSelectionDispatcher.ɵprov = Object(_angular_core__WEBPACK_IMPORTED_MODULE
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-/**
- * Injection token for {@link _ViewRepeater}. This token is for use by Angular Material only.
- * @docs-private
- */
-const _VIEW_REPEATER_STRATEGY = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["InjectionToken"]('_ViewRepeater');
 
 /**
  * @license
@@ -9307,10 +9111,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LayoutModule", function() { return LayoutModule; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MediaMatcher", function() { return MediaMatcher; });
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm2015/core.js");
-/* harmony import */ var _angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/cdk/coercion */ "./node_modules/@angular/cdk/fesm2015/coercion.js");
+/* harmony import */ var _angular_cdk_platform__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/cdk/platform */ "./node_modules/@angular/cdk/__ivy_ngcc__/fesm2015/platform.js");
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm2015/operators/index.js");
-/* harmony import */ var _angular_cdk_platform__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/cdk/platform */ "./node_modules/@angular/cdk/__ivy_ngcc__/fesm2015/platform.js");
+/* harmony import */ var _angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/cdk/coercion */ "./node_modules/@angular/cdk/fesm2015/coercion.js");
 
 
 
@@ -9369,15 +9173,15 @@ class MediaMatcher {
         return this._matchMedia(query);
     }
 }
-MediaMatcher.ɵfac = function MediaMatcher_Factory(t) { return new (t || MediaMatcher)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_cdk_platform__WEBPACK_IMPORTED_MODULE_4__["Platform"])); };
-MediaMatcher.ɵprov = Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjectable"])({ factory: function MediaMatcher_Factory() { return new MediaMatcher(Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"])(_angular_cdk_platform__WEBPACK_IMPORTED_MODULE_4__["Platform"])); }, token: MediaMatcher, providedIn: "root" });
+MediaMatcher.ɵfac = function MediaMatcher_Factory(t) { return new (t || MediaMatcher)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_cdk_platform__WEBPACK_IMPORTED_MODULE_1__["Platform"])); };
+MediaMatcher.ɵprov = Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjectable"])({ factory: function MediaMatcher_Factory() { return new MediaMatcher(Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"])(_angular_cdk_platform__WEBPACK_IMPORTED_MODULE_1__["Platform"])); }, token: MediaMatcher, providedIn: "root" });
 MediaMatcher.ctorParameters = () => [
-    { type: _angular_cdk_platform__WEBPACK_IMPORTED_MODULE_4__["Platform"] }
+    { type: _angular_cdk_platform__WEBPACK_IMPORTED_MODULE_1__["Platform"] }
 ];
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](MediaMatcher, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Injectable"],
         args: [{ providedIn: 'root' }]
-    }], function () { return [{ type: _angular_cdk_platform__WEBPACK_IMPORTED_MODULE_4__["Platform"] }]; }, null); })();
+    }], function () { return [{ type: _angular_cdk_platform__WEBPACK_IMPORTED_MODULE_1__["Platform"] }]; }, null); })();
 /**
  * For Webkit engines that only trigger the MediaQueryListListener when
  * there is at least one CSS selector for the respective media query.
@@ -9442,7 +9246,7 @@ class BreakpointObserver {
      * @returns Whether any of the media queries match.
      */
     isMatched(value) {
-        const queries = splitQueries(Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_1__["coerceArray"])(value));
+        const queries = splitQueries(Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_4__["coerceArray"])(value));
         return queries.some(mediaQuery => this._registerQuery(mediaQuery).mql.matches);
     }
     /**
@@ -9452,19 +9256,19 @@ class BreakpointObserver {
      * @returns A stream of matches for the given queries.
      */
     observe(value) {
-        const queries = splitQueries(Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_1__["coerceArray"])(value));
+        const queries = splitQueries(Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_4__["coerceArray"])(value));
         const observables = queries.map(query => this._registerQuery(query).observable);
         let stateObservable = Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["combineLatest"])(observables);
         // Emit the first state immediately, and then debounce the subsequent emissions.
         stateObservable = Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["concat"])(stateObservable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["take"])(1)), stateObservable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["skip"])(1), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["debounceTime"])(0)));
-        return stateObservable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(breakpointStates => {
+        return stateObservable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])((breakpointStates) => {
             const response = {
                 matches: false,
                 breakpoints: {},
             };
-            breakpointStates.forEach(({ matches, query }) => {
-                response.matches = response.matches || matches;
-                response.breakpoints[query] = matches;
+            breakpointStates.forEach((state) => {
+                response.matches = response.matches || state.matches;
+                response.breakpoints[state.query] = state.matches;
             });
             return response;
         }));
@@ -9488,7 +9292,7 @@ class BreakpointObserver {
             return () => {
                 mql.removeListener(handler);
             };
-        }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["startWith"])(mql), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(({ matches }) => ({ query, matches })), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["takeUntil"])(this._destroySubject));
+        }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["startWith"])(mql), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])((nextMql) => ({ query, matches: nextMql.matches })), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["takeUntil"])(this._destroySubject));
         // Add the MediaQueryList to the set of queries.
         const output = { observable: queryObservable, mql };
         this._queries.set(query, output);
@@ -9510,7 +9314,7 @@ BreakpointObserver.ctorParameters = () => [
  * separated.
  */
 function splitQueries(queries) {
-    return queries.map(query => query.split(','))
+    return queries.map((query) => query.split(','))
         .reduce((a1, a2) => a1.concat(a2))
         .map(query => query.trim());
 }
@@ -9976,7 +9780,7 @@ class CloseScrollStrategy {
     }
     /** Attaches this scroll strategy to an overlay. */
     attach(overlayRef) {
-        if (this._overlayRef && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (this._overlayRef) {
             throw getMatScrollStrategyAlreadyAttachedError();
         }
         this._overlayRef = overlayRef;
@@ -10095,7 +9899,7 @@ class RepositionScrollStrategy {
     }
     /** Attaches this scroll strategy to an overlay. */
     attach(overlayRef) {
-        if (this._overlayRef && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (this._overlayRef) {
             throw getMatScrollStrategyAlreadyAttachedError();
         }
         this._overlayRef = overlayRef;
@@ -10218,6 +10022,10 @@ class OverlayConfig {
          * the `HashLocationStrategy`).
          */
         this.disposeOnNavigation = false;
+        /**
+         * Array of HTML elements clicking on which should not be considered as outside click
+         */
+        this.excludeFromOutsideClick = [];
         if (config) {
             // Use `Iterable` instead of `Array` because TypeScript, as of 3.6.3,
             // loses the array generic type in the `for of`. But we *also* have to use `Array` because
@@ -10482,22 +10290,22 @@ class OverlayOutsideClickDispatcher extends BaseOverlayDispatcher {
         this._clickListener = (event) => {
             // Get the target through the `composedPath` if possible to account for shadow DOM.
             const target = event.composedPath ? event.composedPath()[0] : event.target;
-            // We copy the array because the original may be modified asynchronously if the
-            // outsidePointerEvents listener decides to detach overlays resulting in index errors inside
-            // the for loop.
-            const overlays = this._attachedOverlays.slice();
+            const overlays = this._attachedOverlays;
             // Dispatch the mouse event to the top overlay which has subscribers to its mouse events.
             // We want to target all overlays for which the click could be considered as outside click.
             // As soon as we reach an overlay for which the click is not outside click we break off
             // the loop.
             for (let i = overlays.length - 1; i > -1; i--) {
                 const overlayRef = overlays[i];
-                if (overlayRef._outsidePointerEvents.observers.length < 1 || !overlayRef.hasAttached()) {
+                if (overlayRef._outsidePointerEvents.observers.length < 1) {
                     continue;
                 }
-                // If it's a click inside the overlay, just break - we should do nothing
-                // If it's an outside click dispatch the mouse event, and proceed with the next overlay
-                if (overlayRef.overlayElement.contains(target)) {
+                const config = overlayRef.getConfig();
+                const excludeElements = [...config.excludeFromOutsideClick, overlayRef.overlayElement];
+                const isInsideClick = excludeElements.some(e => e.contains(target));
+                // If it is inside click just break - we should do nothing
+                // If it is outside click dispatch the mouse event, and proceed with the next overlay
+                if (isInsideClick) {
                     break;
                 }
                 overlayRef._outsidePointerEvents.next(event);
@@ -10517,7 +10325,6 @@ class OverlayOutsideClickDispatcher extends BaseOverlayDispatcher {
         // tslint:enable: max-line-length
         if (!this._isAttached) {
             this._document.body.addEventListener('click', this._clickListener, true);
-            this._document.body.addEventListener('contextmenu', this._clickListener, true);
             // click event is not fired on iOS. To make element "clickable" we are
             // setting the cursor to pointer
             if (this._platform.IOS && !this._cursorStyleIsSet) {
@@ -10532,7 +10339,6 @@ class OverlayOutsideClickDispatcher extends BaseOverlayDispatcher {
     detach() {
         if (this._isAttached) {
             this._document.body.removeEventListener('click', this._clickListener, true);
-            this._document.body.removeEventListener('contextmenu', this._clickListener, true);
             if (this._platform.IOS && this._cursorStyleIsSet) {
                 this._document.body.style.cursor = this._cursorOriginalValue;
                 this._cursorStyleIsSet = false;
@@ -10747,6 +10553,7 @@ class OverlayRef {
         // before attempting to position it, as the position may depend on the size of the rendered
         // content.
         this._ngZone.onStable
+            .asObservable()
             .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_8__["take"])(1))
             .subscribe(() => {
             // The overlay could've been detached before the zone has stabilized.
@@ -10847,23 +10654,23 @@ class OverlayRef {
     }
     /** Gets an observable that emits when the backdrop has been clicked. */
     backdropClick() {
-        return this._backdropClick;
+        return this._backdropClick.asObservable();
     }
     /** Gets an observable that emits when the overlay has been attached. */
     attachments() {
-        return this._attachments;
+        return this._attachments.asObservable();
     }
     /** Gets an observable that emits when the overlay has been detached. */
     detachments() {
-        return this._detachments;
+        return this._detachments.asObservable();
     }
     /** Gets an observable of keydown events targeted to this overlay. */
     keydownEvents() {
-        return this._keydownEvents;
+        return this._keydownEvents.asObservable();
     }
     /** Gets an observable of pointer events targeted outside this overlay. */
     outsidePointerEvents() {
-        return this._outsidePointerEvents;
+        return this._outsidePointerEvents.asObservable();
     }
     /** Gets the current overlay configuration, which is immutable. */
     getConfig() {
@@ -11054,6 +10861,7 @@ class OverlayRef {
             // might still be animating. This stream helps us avoid interrupting the animation
             // by waiting for the pane to become empty.
             const subscription = this._ngZone.onStable
+                .asObservable()
                 .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_8__["takeUntil"])(Object(rxjs__WEBPACK_IMPORTED_MODULE_7__["merge"])(this._attachments, this._detachments)))
                 .subscribe(() => {
                 // Needs a couple of checks for the pane and host, because
@@ -11138,7 +10946,7 @@ class FlexibleConnectedPositionStrategy {
         /** Keeps track of the CSS classes that the position strategy has applied on the overlay panel. */
         this._appliedPanelClasses = [];
         /** Observable sequence of position changes. */
-        this.positionChanges = this._positionChanges;
+        this.positionChanges = this._positionChanges.asObservable();
         this.setOrigin(connectedTo);
     }
     /** Ordered list of preferred positions, from most to least desirable. */
@@ -11147,8 +10955,7 @@ class FlexibleConnectedPositionStrategy {
     }
     /** Attaches this position strategy to an overlay. */
     attach(overlayRef) {
-        if (this._overlayRef && overlayRef !== this._overlayRef &&
-            (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (this._overlayRef && overlayRef !== this._overlayRef) {
             throw Error('This position strategy is already attached to an overlay');
         }
         this._validatePositions();
@@ -11938,19 +11745,17 @@ class FlexibleConnectedPositionStrategy {
     }
     /** Validates that the current position match the expected values. */
     _validatePositions() {
-        if (typeof ngDevMode === 'undefined' || ngDevMode) {
-            if (!this._preferredPositions.length) {
-                throw Error('FlexibleConnectedPositionStrategy: At least one position is required.');
-            }
-            // TODO(crisbeto): remove these once Angular's template type
-            // checking is advanced enough to catch these cases.
-            this._preferredPositions.forEach(pair => {
-                validateHorizontalPosition('originX', pair.originX);
-                validateVerticalPosition('originY', pair.originY);
-                validateHorizontalPosition('overlayX', pair.overlayX);
-                validateVerticalPosition('overlayY', pair.overlayY);
-            });
+        if (!this._preferredPositions.length) {
+            throw Error('FlexibleConnectedPositionStrategy: At least one position is required.');
         }
+        // TODO(crisbeto): remove these once Angular's template type
+        // checking is advanced enough to catch these cases.
+        this._preferredPositions.forEach(pair => {
+            validateHorizontalPosition('originX', pair.originX);
+            validateVerticalPosition('originY', pair.originY);
+            validateHorizontalPosition('overlayX', pair.overlayX);
+            validateVerticalPosition('overlayY', pair.overlayY);
+        });
     }
     /** Adds a single CSS class or an array of classes on the overlay panel. */
     _addPanelClasses(cssClasses) {
@@ -12045,7 +11850,10 @@ class ConnectedPositionStrategy {
             .withPush(false)
             .withViewportMargin(0);
         this.withFallbackPosition(originPos, overlayPos);
-        this.onPositionChange = this._positionStrategy.positionChanges;
+    }
+    /** Emits an event when the connection point changes. */
+    get onPositionChange() {
+        return this._positionStrategy.positionChanges;
     }
     /** Ordered list of preferred positions, from most to least desirable. */
     get positions() {
@@ -12512,7 +12320,7 @@ class Overlay {
         return new _angular_cdk_portal__WEBPACK_IMPORTED_MODULE_6__["DomPortalOutlet"](pane, this._componentFactoryResolver, this._appRef, this._injector, this._document);
     }
 }
-Overlay.ɵfac = function Overlay_Factory(t) { return new (t || Overlay)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](ScrollStrategyOptions), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayContainer), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ComponentFactoryResolver"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayPositionBuilder), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayKeyboardDispatcher), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injector"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_common__WEBPACK_IMPORTED_MODULE_4__["DOCUMENT"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_3__["Directionality"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayOutsideClickDispatcher)); };
+Overlay.ɵfac = function Overlay_Factory(t) { return new (t || Overlay)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](ScrollStrategyOptions), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayContainer), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ComponentFactoryResolver"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayPositionBuilder), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayKeyboardDispatcher), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injector"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_common__WEBPACK_IMPORTED_MODULE_4__["DOCUMENT"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_3__["Directionality"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](OverlayOutsideClickDispatcher, 8)); };
 Overlay.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjectable"]({ token: Overlay, factory: Overlay.ɵfac });
 Overlay.ctorParameters = () => [
     { type: ScrollStrategyOptions },
@@ -12524,15 +12332,19 @@ Overlay.ctorParameters = () => [
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] },
     { type: undefined, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"], args: [_angular_common__WEBPACK_IMPORTED_MODULE_4__["DOCUMENT"],] }] },
     { type: _angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_3__["Directionality"] },
-    { type: _angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"] },
-    { type: OverlayOutsideClickDispatcher }
+    { type: _angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"], decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }] },
+    { type: OverlayOutsideClickDispatcher, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }] }
 ];
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵsetClassMetadata"](Overlay, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"]
     }], function () { return [{ type: ScrollStrategyOptions }, { type: OverlayContainer }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ComponentFactoryResolver"] }, { type: OverlayPositionBuilder }, { type: OverlayKeyboardDispatcher }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Injector"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] }, { type: undefined, decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"],
                 args: [_angular_common__WEBPACK_IMPORTED_MODULE_4__["DOCUMENT"]]
-            }] }, { type: _angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_3__["Directionality"] }, { type: _angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"] }, { type: OverlayOutsideClickDispatcher }]; }, null); })();
+            }] }, { type: _angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_3__["Directionality"] }, { type: _angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"], decorators: [{
+                type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]
+            }] }, { type: OverlayOutsideClickDispatcher, decorators: [{
+                type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]
+            }] }]; }, null); })();
 
 /**
  * @license
@@ -13339,36 +13151,9 @@ function normalizePassiveListenerOptions(options) {
  */
 /** Cached result of the way the browser handles the horizontal scroll axis in RTL mode. */
 let rtlScrollAxisType;
-/** Cached result of the check that indicates whether the browser supports scroll behaviors. */
-let scrollBehaviorSupported;
 /** Check whether the browser supports scroll behaviors. */
 function supportsScrollBehavior() {
-    if (scrollBehaviorSupported == null) {
-        // If we're not in the browser, it can't be supported.
-        if (typeof document !== 'object' || !document) {
-            scrollBehaviorSupported = false;
-        }
-        // If the element can have a `scrollBehavior` style, we can be sure that it's supported.
-        if ('scrollBehavior' in document.documentElement.style) {
-            scrollBehaviorSupported = true;
-        }
-        else {
-            // At this point we have 3 possibilities: `scrollTo` isn't supported at all, it's
-            // supported but it doesn't handle scroll behavior, or it has been polyfilled.
-            const scrollToFunction = Element.prototype.scrollTo;
-            if (scrollToFunction) {
-                // We can detect if the function has been polyfilled by calling `toString` on it. Native
-                // functions are obfuscated using `[native code]`, whereas if it was overwritten we'd get
-                // the actual function source. Via https://davidwalsh.name/detect-native-function. Consider
-                // polyfilled functions as supporting scroll behavior.
-                scrollBehaviorSupported = !/\{\s*\[native code\]\s*\}/.test(scrollToFunction.toString());
-            }
-            else {
-                scrollBehaviorSupported = false;
-            }
-        }
-    }
-    return scrollBehaviorSupported;
+    return !!(typeof document == 'object' && 'scrollBehavior' in document.documentElement.style);
 }
 /**
  * Checks the type of RTL scroll axis used by this browser. As of time of writing, Chrome is NORMAL,
@@ -13554,13 +13339,11 @@ function throwNoPortalAttachedError() {
 class Portal {
     /** Attach this portal to a host. */
     attach(host) {
-        if (typeof ngDevMode === 'undefined' || ngDevMode) {
-            if (host == null) {
-                throwNullPortalOutletError();
-            }
-            if (host.hasAttached()) {
-                throwPortalAlreadyAttachedError();
-            }
+        if (host == null) {
+            throwNullPortalOutletError();
+        }
+        if (host.hasAttached()) {
+            throwPortalAlreadyAttachedError();
         }
         this._attachedHost = host;
         return host.attach(this);
@@ -13568,12 +13351,12 @@ class Portal {
     /** Detach this portal from its host */
     detach() {
         let host = this._attachedHost;
-        if (host != null) {
+        if (host == null) {
+            throwNoPortalAttachedError();
+        }
+        else {
             this._attachedHost = null;
             host.detach();
-        }
-        else if (typeof ngDevMode === 'undefined' || ngDevMode) {
-            throwNoPortalAttachedError();
         }
     }
     /** Whether this portal is attached to a host. */
@@ -13655,16 +13438,14 @@ class BasePortalOutlet {
     }
     /** Attaches a portal. */
     attach(portal) {
-        if (typeof ngDevMode === 'undefined' || ngDevMode) {
-            if (!portal) {
-                throwNullPortalError();
-            }
-            if (this.hasAttached()) {
-                throwPortalAlreadyAttachedError();
-            }
-            if (this._isDisposed) {
-                throwPortalOutletAlreadyDisposedError();
-            }
+        if (!portal) {
+            throwNullPortalError();
+        }
+        if (this.hasAttached()) {
+            throwPortalAlreadyAttachedError();
+        }
+        if (this._isDisposed) {
+            throwPortalOutletAlreadyDisposedError();
         }
         if (portal instanceof ComponentPortal) {
             this._attachedPortal = portal;
@@ -13679,9 +13460,7 @@ class BasePortalOutlet {
             this._attachedPortal = portal;
             return this.attachDomPortal(portal);
         }
-        if (typeof ngDevMode === 'undefined' || ngDevMode) {
-            throwUnknownPortalTypeError();
-        }
+        throwUnknownPortalTypeError();
     }
     /** Detaches a previously attached portal. */
     detach() {
@@ -13751,11 +13530,11 @@ class DomPortalOutlet extends BasePortalOutlet {
         this.attachDomPortal = (portal) => {
             // @breaking-change 10.0.0 Remove check and error once the
             // `_document` constructor parameter is required.
-            if (!this._document && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+            if (!this._document) {
                 throw Error('Cannot attach DOM portal without _document constructor parameter');
             }
             const element = portal.element;
-            if (!element.parentNode && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+            if (!element.parentNode) {
                 throw Error('DOM portal content must be attached to a parent node.');
             }
             // Anchor used to save the element's previous position so
@@ -13889,7 +13668,7 @@ TemplatePortalDirective.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵ
                 provide: CdkPortal,
                 useExisting: TemplatePortalDirective
             }]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵInheritDefinitionFeature"]] });
-const ɵTemplatePortalDirective_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](TemplatePortalDirective);
+const ɵTemplatePortalDirective_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](TemplatePortalDirective);
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](TemplatePortalDirective, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Directive"],
         args: [{
@@ -13931,11 +13710,11 @@ class CdkPortalOutlet extends BasePortalOutlet {
         this.attachDomPortal = (portal) => {
             // @breaking-change 9.0.0 Remove check and error once the
             // `_document` constructor parameter is required.
-            if (!this._document && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+            if (!this._document) {
                 throw Error('Cannot attach DOM portal without _document constructor parameter');
             }
             const element = portal.element;
-            if (!element.parentNode && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+            if (!element.parentNode) {
                 throw Error('DOM portal content must be attached to a parent node.');
             }
             // Anchor used to save the element's previous position so
@@ -14069,7 +13848,7 @@ PortalHostDirective.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefi
                 provide: CdkPortalOutlet,
                 useExisting: PortalHostDirective
             }]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵInheritDefinitionFeature"]] });
-const ɵPortalHostDirective_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](PortalHostDirective);
+const ɵPortalHostDirective_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](PortalHostDirective);
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](PortalHostDirective, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Directive"],
         args: [{
@@ -14106,8 +13885,6 @@ PortalModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjec
  * Custom injector to be used when providing custom
  * injection tokens to components inside a portal.
  * @docs-private
- * @deprecated Use `Injector.create` instead.
- * @breaking-change 11.0.0
  */
 class PortalInjector {
     constructor(_parentInjector, _customTokens) {
@@ -14192,7 +13969,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 const _c0 = ["contentWrapper"];
 const _c1 = ["*"];
 const VIRTUAL_SCROLL_STRATEGY = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["InjectionToken"]('VIRTUAL_SCROLL_STRATEGY');
@@ -14242,7 +14018,7 @@ class FixedSizeVirtualScrollStrategy {
      * @param maxBufferPx The amount of buffer (in pixels) to render when rendering more.
      */
     updateItemAndBufferSize(itemSize, minBufferPx, maxBufferPx) {
-        if (maxBufferPx < minBufferPx && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (maxBufferPx < minBufferPx) {
             throw Error('CDK virtual scroll: maxBufferPx must be greater than or equal to minBufferPx');
         }
         this._itemSize = itemSize;
@@ -14917,7 +14693,7 @@ class CdkVirtualScrollViewport extends CdkScrollable {
         /** Emits when the index of the first element visible in the viewport changes. */
         this.scrolledIndexChange = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"]((observer) => this._scrollStrategy.scrolledIndexChange.subscribe(index => Promise.resolve().then(() => this.ngZone.run(() => observer.next(index)))));
         /** A stream that emits whenever the rendered range changes. */
-        this.renderedRangeStream = this._renderedRangeSubject;
+        this.renderedRangeStream = this._renderedRangeSubject.asObservable();
         /**
          * The total size of all content (in pixels), including content that is not currently rendered.
          */
@@ -14945,7 +14721,7 @@ class CdkVirtualScrollViewport extends CdkScrollable {
         this._runAfterChangeDetection = [];
         /** Subscription to changes in the viewport size. */
         this._viewportChanges = rxjs__WEBPACK_IMPORTED_MODULE_2__["Subscription"].EMPTY;
-        if (!_scrollStrategy && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (!_scrollStrategy) {
             throw Error('Error: cdk-virtual-scroll-viewport requires the "itemSize" property to be set.');
         }
         // @breaking-change 11.0.0 Remove null check for `viewportRuler`.
@@ -14997,7 +14773,7 @@ class CdkVirtualScrollViewport extends CdkScrollable {
     }
     /** Attaches a `CdkVirtualScrollRepeater` to this viewport. */
     attach(forOf) {
-        if (this._forOf && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (this._forOf) {
             throw Error('CdkVirtualScrollViewport is already attached.');
         }
         // Subscribe to the data stream of the CdkVirtualForOf to keep track of when the data length
@@ -15198,7 +14974,7 @@ class CdkVirtualScrollViewport extends CdkScrollable {
             this.orientation === 'horizontal' ? `${this._totalContentSize}px` : '';
     }
 }
-CdkVirtualScrollViewport.ɵfac = function CdkVirtualScrollViewport_Factory(t) { return new (t || CdkVirtualScrollViewport)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](VIRTUAL_SCROLL_STRATEGY, 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_6__["Directionality"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](ScrollDispatcher), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](ViewportRuler)); };
+CdkVirtualScrollViewport.ɵfac = function CdkVirtualScrollViewport_Factory(t) { return new (t || CdkVirtualScrollViewport)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](VIRTUAL_SCROLL_STRATEGY, 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_6__["Directionality"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](ScrollDispatcher), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](ViewportRuler, 8)); };
 CdkVirtualScrollViewport.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineComponent"]({ type: CdkVirtualScrollViewport, selectors: [["cdk-virtual-scroll-viewport"]], viewQuery: function CdkVirtualScrollViewport_Query(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵstaticViewQuery"](_c0, true);
     } if (rf & 2) {
@@ -15226,7 +15002,7 @@ CdkVirtualScrollViewport.ctorParameters = () => [
     { type: undefined, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"], args: [VIRTUAL_SCROLL_STRATEGY,] }] },
     { type: _angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_6__["Directionality"], decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }] },
     { type: ScrollDispatcher },
-    { type: ViewportRuler }
+    { type: ViewportRuler, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }] }
 ];
 CdkVirtualScrollViewport.propDecorators = {
     orientation: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }],
@@ -15258,7 +15034,9 @@ CdkVirtualScrollViewport.propDecorators = {
                 args: [VIRTUAL_SCROLL_STRATEGY]
             }] }, { type: _angular_cdk_bidi__WEBPACK_IMPORTED_MODULE_6__["Directionality"], decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]
-            }] }, { type: ScrollDispatcher }, { type: ViewportRuler }]; }, { scrolledIndexChange: [{
+            }] }, { type: ScrollDispatcher }, { type: ViewportRuler, decorators: [{
+                type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]
+            }] }]; }, { scrolledIndexChange: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"]
         }], orientation: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
@@ -15298,19 +15076,21 @@ class CdkVirtualForOf {
     _template, 
     /** The set of available differs. */
     _differs, 
-    /** The strategy used to render items in the virtual scroll viewport. */
-    _viewRepeater, 
     /** The virtual scrolling viewport that these items are being rendered in. */
     _viewport, ngZone) {
         this._viewContainerRef = _viewContainerRef;
         this._template = _template;
         this._differs = _differs;
-        this._viewRepeater = _viewRepeater;
         this._viewport = _viewport;
         /** Emits when the rendered view of the data changes. */
         this.viewChange = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
         /** Subject that emits when a new DataSource instance is given. */
         this._dataSourceChanges = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
+        /**
+         * The size of the cache used to store templates that are not being used for re-use later.
+         * Setting the cache size to `0` will disable caching. Defaults to 20 templates.
+         */
+        this.cdkVirtualForTemplateCacheSize = 20;
         /** Emits whenever the data in the current DataSource changes. */
         this.dataStream = this._dataSourceChanges
             .pipe(
@@ -15326,6 +15106,12 @@ class CdkVirtualForOf {
         Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["shareReplay"])(1));
         /** The differ used to calculate changes to the data. */
         this._differ = null;
+        /**
+         * The template cache used to hold on ot template instancess that have been stamped out, but don't
+         * currently need to be rendered. These instances will be reused in the future rather than
+         * stamping out brand new ones.
+         */
+        this._templateCache = [];
         /** Whether the rendered data should be updated during the next ngDoCheck cycle. */
         this._needsUpdate = false;
         this._destroyed = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
@@ -15350,8 +15136,8 @@ class CdkVirtualForOf {
             this._dataSourceChanges.next(value);
         }
         else {
-            // If value is an an NgIterable, convert it to an array.
-            this._dataSourceChanges.next(new _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["ArrayDataSource"](Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["isObservable"])(value) ? value : Array.from(value || [])));
+            // Slice the value if its an NgIterable to ensure we're working with an array.
+            this._dataSourceChanges.next(new _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["ArrayDataSource"](Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["isObservable"])(value) ? value : Array.prototype.slice.call(value || [])));
         }
     }
     /**
@@ -15375,16 +15161,6 @@ class CdkVirtualForOf {
         }
     }
     /**
-     * The size of the cache used to store templates that are not being used for re-use later.
-     * Setting the cache size to `0` will disable caching. Defaults to 20 templates.
-     */
-    get cdkVirtualForTemplateCacheSize() {
-        return this._viewRepeater.viewCacheSize;
-    }
-    set cdkVirtualForTemplateCacheSize(size) {
-        this._viewRepeater.viewCacheSize = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_0__["coerceNumberProperty"])(size);
-    }
-    /**
      * Measures the combined size (width for horizontal orientation, height for vertical) of all items
      * in the specified range. Throws an error if the range includes items that are not currently
      * rendered.
@@ -15393,8 +15169,7 @@ class CdkVirtualForOf {
         if (range.start >= range.end) {
             return 0;
         }
-        if ((range.start < this._renderedRange.start || range.end > this._renderedRange.end) &&
-            (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (range.start < this._renderedRange.start || range.end > this._renderedRange.end) {
             throw Error(`Error: attempted to measure an item that isn't rendered.`);
         }
         // The index into the list of rendered views for the first item in the range.
@@ -15446,7 +15221,9 @@ class CdkVirtualForOf {
         this.viewChange.complete();
         this._destroyed.next();
         this._destroyed.complete();
-        this._viewRepeater.detach();
+        for (let view of this._templateCache) {
+            view.destroy();
+        }
     }
     /** React to scroll state changes in the viewport. */
     _onRenderedDataChange() {
@@ -15481,7 +15258,21 @@ class CdkVirtualForOf {
     }
     /** Apply changes to the DOM. */
     _applyChanges(changes) {
-        this._viewRepeater.applyChanges(changes, this._viewContainerRef, (record, adjustedPreviousIndex, currentIndex) => this._getEmbeddedViewArgs(record, currentIndex), (record) => record.item);
+        // Rearrange the views to put them in the right location.
+        changes.forEachOperation((record, adjustedPreviousIndex, currentIndex) => {
+            if (record.previousIndex == null) { // Item added.
+                const view = this._insertViewForNewItem(currentIndex);
+                view.context.$implicit = record.item;
+            }
+            else if (currentIndex == null) { // Item removed.
+                this._cacheView(this._detachView(adjustedPreviousIndex));
+            }
+            else { // Item moved.
+                const view = this._viewContainerRef.get(adjustedPreviousIndex);
+                this._viewContainerRef.move(view, currentIndex);
+                view.context.$implicit = record.item;
+            }
+        });
         // Update $implicit for any items that had an identity change.
         changes.forEachIdentityChange((record) => {
             const view = this._viewContainerRef.get(record.currentIndex);
@@ -15497,6 +15288,28 @@ class CdkVirtualForOf {
             this._updateComputedContextProperties(view.context);
         }
     }
+    /** Cache the given detached view. */
+    _cacheView(view) {
+        if (this._templateCache.length < this.cdkVirtualForTemplateCacheSize) {
+            this._templateCache.push(view);
+        }
+        else {
+            const index = this._viewContainerRef.indexOf(view);
+            // It's very unlikely that the index will ever be -1, but just in case,
+            // destroy the view on its own, otherwise destroy it through the
+            // container to ensure that all the references are removed.
+            if (index === -1) {
+                view.destroy();
+            }
+            else {
+                this._viewContainerRef.remove(index);
+            }
+        }
+    }
+    /** Inserts a view for a new item, either from the cache or by creating a new one. */
+    _insertViewForNewItem(index) {
+        return this._insertViewFromCache(index) || this._createEmbeddedViewAt(index);
+    }
     /** Update the computed properties on the `CdkVirtualForOfContext`. */
     _updateComputedContextProperties(context) {
         context.first = context.index === 0;
@@ -15504,38 +15317,44 @@ class CdkVirtualForOf {
         context.even = context.index % 2 === 0;
         context.odd = !context.even;
     }
-    _getEmbeddedViewArgs(record, index) {
+    /** Creates a new embedded view and moves it to the given index */
+    _createEmbeddedViewAt(index) {
         // Note that it's important that we insert the item directly at the proper index,
         // rather than inserting it and the moving it in place, because if there's a directive
         // on the same node that injects the `ViewContainerRef`, Angular will insert another
         // comment node which can throw off the move when it's being repeated for all items.
-        return {
-            templateRef: this._template,
-            context: {
-                $implicit: record.item,
-                // It's guaranteed that the iterable is not "undefined" or "null" because we only
-                // generate views for elements if the "cdkVirtualForOf" iterable has elements.
-                cdkVirtualForOf: this._cdkVirtualForOf,
-                index: -1,
-                count: -1,
-                first: false,
-                last: false,
-                odd: false,
-                even: false
-            },
-            index,
-        };
+        return this._viewContainerRef.createEmbeddedView(this._template, {
+            $implicit: null,
+            // It's guaranteed that the iterable is not "undefined" or "null" because we only
+            // generate views for elements if the "cdkVirtualForOf" iterable has elements.
+            cdkVirtualForOf: this._cdkVirtualForOf,
+            index: -1,
+            count: -1,
+            first: false,
+            last: false,
+            odd: false,
+            even: false
+        }, index);
+    }
+    /** Inserts a recycled view from the cache at the given index. */
+    _insertViewFromCache(index) {
+        const cachedView = this._templateCache.pop();
+        if (cachedView) {
+            this._viewContainerRef.insert(cachedView, index);
+        }
+        return cachedView || null;
+    }
+    /** Detaches the embedded view at the given index. */
+    _detachView(index) {
+        return this._viewContainerRef.detach(index);
     }
 }
-CdkVirtualForOf.ɵfac = function CdkVirtualForOf_Factory(t) { return new (t || CdkVirtualForOf)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewContainerRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["TemplateRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["IterableDiffers"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_VIEW_REPEATER_STRATEGY"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](CdkVirtualScrollViewport, 4), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"])); };
-CdkVirtualForOf.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineDirective"]({ type: CdkVirtualForOf, selectors: [["", "cdkVirtualFor", "", "cdkVirtualForOf", ""]], inputs: { cdkVirtualForOf: "cdkVirtualForOf", cdkVirtualForTrackBy: "cdkVirtualForTrackBy", cdkVirtualForTemplate: "cdkVirtualForTemplate", cdkVirtualForTemplateCacheSize: "cdkVirtualForTemplateCacheSize" }, features: [_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵProvidersFeature"]([
-            { provide: _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_VIEW_REPEATER_STRATEGY"], useClass: _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_RecycleViewRepeaterStrategy"] },
-        ])] });
+CdkVirtualForOf.ɵfac = function CdkVirtualForOf_Factory(t) { return new (t || CdkVirtualForOf)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewContainerRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["TemplateRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["IterableDiffers"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](CdkVirtualScrollViewport, 4), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"])); };
+CdkVirtualForOf.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineDirective"]({ type: CdkVirtualForOf, selectors: [["", "cdkVirtualFor", "", "cdkVirtualForOf", ""]], inputs: { cdkVirtualForTemplateCacheSize: "cdkVirtualForTemplateCacheSize", cdkVirtualForOf: "cdkVirtualForOf", cdkVirtualForTrackBy: "cdkVirtualForTrackBy", cdkVirtualForTemplate: "cdkVirtualForTemplate" } });
 CdkVirtualForOf.ctorParameters = () => [
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewContainerRef"] },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["TemplateRef"] },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["IterableDiffers"] },
-    { type: _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_RecycleViewRepeaterStrategy"], decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"], args: [_angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_VIEW_REPEATER_STRATEGY"],] }] },
     { type: CdkVirtualScrollViewport, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["SkipSelf"] }] },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] }
 ];
@@ -15548,23 +15367,17 @@ CdkVirtualForOf.propDecorators = {
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵsetClassMetadata"](CdkVirtualForOf, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Directive"],
         args: [{
-                selector: '[cdkVirtualFor][cdkVirtualForOf]',
-                providers: [
-                    { provide: _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_VIEW_REPEATER_STRATEGY"], useClass: _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_RecycleViewRepeaterStrategy"] },
-                ]
+                selector: '[cdkVirtualFor][cdkVirtualForOf]'
             }]
-    }], function () { return [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewContainerRef"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["TemplateRef"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["IterableDiffers"] }, { type: _angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_RecycleViewRepeaterStrategy"], decorators: [{
-                type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"],
-                args: [_angular_cdk_collections__WEBPACK_IMPORTED_MODULE_7__["_VIEW_REPEATER_STRATEGY"]]
-            }] }, { type: CdkVirtualScrollViewport, decorators: [{
+    }], function () { return [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewContainerRef"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["TemplateRef"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["IterableDiffers"] }, { type: CdkVirtualScrollViewport, decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["SkipSelf"]
-            }] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] }]; }, { cdkVirtualForOf: [{
+            }] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] }]; }, { cdkVirtualForTemplateCacheSize: [{
+            type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
+        }], cdkVirtualForOf: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }], cdkVirtualForTrackBy: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }], cdkVirtualForTemplate: [{
-            type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
-        }], cdkVirtualForTemplateCacheSize: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }] }); })();
 
@@ -15704,7 +15517,7 @@ class AutofillMonitor {
         const element = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_2__["coerceElement"])(elementOrRef);
         const info = this._monitoredElements.get(element);
         if (info) {
-            return info.subject;
+            return info.subject.asObservable();
         }
         const result = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
         const cssClass = 'cdk-text-field-autofilled';
@@ -15733,7 +15546,7 @@ class AutofillMonitor {
                 element.removeEventListener('animationstart', listener, listenerOptions);
             }
         });
-        return result;
+        return result.asObservable();
     }
     stopMonitoring(elementOrRef) {
         const element = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_2__["coerceElement"])(elementOrRef);
@@ -16056,12 +15869,7 @@ CdkTextareaAutosize.propDecorators = {
         }], enabled: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"],
             args: ['cdkTextareaAutosize']
-        }], 
-    // In Ivy the `host` metadata will be merged, whereas in ViewEngine it is overridden. In order
-    // to avoid double event listeners, we need to use `HostListener`. Once Ivy is the default, we
-    // can move this back into `host`.
-    // tslint:disable:no-host-decorator-in-concrete
-    _noopInputHandler: [{
+        }], _noopInputHandler: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"],
             args: ['input']
         }] }); })();
@@ -16126,7 +15934,7 @@ __webpack_require__.r(__webpack_exports__);
  * found in the LICENSE file at https://angular.io/license
  */
 /** Current version of the Angular Component Development Kit. */
-const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.2.7');
+const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.1.3');
 
 /**
  * @license
@@ -16367,7 +16175,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵsetRootDomAdapter", function() { return setRootDomAdapter; });
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm2015/core.js");
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -16712,20 +16520,16 @@ const APP_BASE_HREF = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["InjectionT
  * browser's URL.
  *
  * If you're using `PathLocationStrategy`, you must provide a {@link APP_BASE_HREF}
- * or add a `<base href>` element to the document.
+ * or add a base element to the document. This URL prefix that will be preserved
+ * when generating and recognizing URLs.
  *
- * For instance, if you provide an `APP_BASE_HREF` of `'/my/app/'` and call
- * `location.go('/foo')`, the browser's URL will become
- * `example.com/my/app/foo`. To ensure all relative URIs resolve correctly,
- * the `<base href>` and/or `APP_BASE_HREF` should end with a `/`.
- *
- * Similarly, if you add `<base href='/my/app/'/>` to the document and call
+ * For instance, if you provide an `APP_BASE_HREF` of `'/my/app'` and call
  * `location.go('/foo')`, the browser's URL will become
  * `example.com/my/app/foo`.
  *
- * Note that when using `PathLocationStrategy`, neither the query nor
- * the fragment in the `<base href>` will be preserved, as outlined
- * by the [RFC](https://tools.ietf.org/html/rfc3986#section-5.2.2).
+ * Similarly, if you add `<base href='/my/app'/>` to the document and call
+ * `location.go('/foo')`, the browser's URL will become
+ * `example.com/my/app/foo`.
  *
  * @usageNotes
  *
@@ -19516,7 +19320,7 @@ class NgForOf {
      * rather than the identity of the object itself.
      *
      * The function receives two inputs,
-     * the iteration index and the associated node data.
+     * the iteration index and the node object ID.
      */
     set ngForTrackBy(fn) {
         if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["isDevMode"])() && fn != null && typeof fn !== 'function') {
@@ -19533,7 +19337,7 @@ class NgForOf {
     }
     /**
      * A reference to the template that is stamped out for each item in the iterable.
-     * @see [template reference variable](guide/template-reference-variables)
+     * @see [template reference variable](guide/template-syntax#template-reference-variables--var-)
      */
     set ngForTemplate(value) {
         // TODO(TS2.1): make TemplateRef<Partial<NgForRowOf<T>>> once we move to TS v2.1
@@ -19744,7 +19548,7 @@ function getTypeName(type) {
  *
  * The conditional displays the data only if `userStream` returns a value,
  * so you don't need to use the
- * [safe-navigation-operator](guide/template-expression-operators#safe-navigation-operator) (`?.`)
+ * [safe-navigation-operator](guide/template-syntax#safe-navigation-operator) (`?.`)
  * to guard against null values when accessing properties.
  * You can display an alternative template while waiting for the data.
  *
@@ -21650,7 +21454,7 @@ function isPlatformWorkerUi(platformId) {
 /**
  * @publicApi
  */
-const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.0.14');
+const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.0.0');
 
 /**
  * @license
@@ -21703,7 +21507,7 @@ class BrowserViewportScroller {
      * @returns The position in screen coordinates.
      */
     getScrollPosition() {
-        if (this.supportsScrolling()) {
+        if (this.supportScrollRestoration()) {
             return [this.window.scrollX, this.window.scrollY];
         }
         else {
@@ -21715,7 +21519,7 @@ class BrowserViewportScroller {
      * @param position The new position in screen coordinates.
      */
     scrollToPosition(position) {
-        if (this.supportsScrolling()) {
+        if (this.supportScrollRestoration()) {
             this.window.scrollTo(position[0], position[1]);
         }
     }
@@ -21724,10 +21528,29 @@ class BrowserViewportScroller {
      * @param anchor The ID of the anchor element.
      */
     scrollToAnchor(anchor) {
-        if (this.supportsScrolling()) {
-            const elSelected = this.document.getElementById(anchor) || this.document.getElementsByName(anchor)[0];
-            if (elSelected) {
-                this.scrollToElement(elSelected);
+        if (this.supportScrollRestoration()) {
+            // Escape anything passed to `querySelector` as it can throw errors and stop the application
+            // from working if invalid values are passed.
+            if (this.window.CSS && this.window.CSS.escape) {
+                anchor = this.window.CSS.escape(anchor);
+            }
+            else {
+                anchor = anchor.replace(/(\"|\'\ |:|\.|\[|\]|,|=)/g, '\\$1');
+            }
+            try {
+                const elSelectedById = this.document.querySelector(`#${anchor}`);
+                if (elSelectedById) {
+                    this.scrollToElement(elSelectedById);
+                    return;
+                }
+                const elSelectedByName = this.document.querySelector(`[name='${anchor}']`);
+                if (elSelectedByName) {
+                    this.scrollToElement(elSelectedByName);
+                    return;
+                }
+            }
+            catch (e) {
+                this.errorHandler.handleError(e);
             }
         }
     }
@@ -21759,32 +21582,12 @@ class BrowserViewportScroller {
      */
     supportScrollRestoration() {
         try {
-            if (!this.window || !this.window.scrollTo) {
-                return false;
-            }
-            // The `scrollRestoration` property could be on the `history` instance or its prototype.
-            const scrollRestorationDescriptor = getScrollRestorationProperty(this.window.history) ||
-                getScrollRestorationProperty(Object.getPrototypeOf(this.window.history));
-            // We can write to the `scrollRestoration` property if it is a writable data field or it has a
-            // setter function.
-            return !!scrollRestorationDescriptor &&
-                !!(scrollRestorationDescriptor.writable || scrollRestorationDescriptor.set);
+            return !!this.window && !!this.window.scrollTo;
         }
         catch (_a) {
             return false;
         }
     }
-    supportsScrolling() {
-        try {
-            return !!this.window.scrollTo;
-        }
-        catch (_a) {
-            return false;
-        }
-    }
-}
-function getScrollRestorationProperty(obj) {
-    return Object.getOwnPropertyDescriptor(obj, 'scrollRestoration');
 }
 /**
  * Provides an empty implementation of the viewport scroller. This will
@@ -21894,7 +21697,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm2015/operators/index.js");
 /* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm2015/common.js");
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -23683,9 +23486,7 @@ class HttpXhrBackend {
                     }
                 }
                 // Finally, abort the in-flight request.
-                if (xhr.readyState !== xhr.DONE) {
-                    xhr.abort();
-                }
+                xhr.abort();
             };
         });
     }
@@ -24042,7 +23843,7 @@ HttpClientJsonpModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵde
 /*!******************************************************************!*\
   !*** ./node_modules/@angular/core/__ivy_ngcc__/fesm2015/core.js ***!
   \******************************************************************/
-/*! exports provided: ANALYZE_FOR_ENTRY_COMPONENTS, APP_BOOTSTRAP_LISTENER, APP_ID, APP_INITIALIZER, ApplicationInitStatus, ApplicationModule, ApplicationRef, Attribute, COMPILER_OPTIONS, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, ChangeDetectorRef, Compiler, CompilerFactory, Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, ContentChild, ContentChildren, DEFAULT_CURRENCY_CODE, DebugElement, DebugEventListener, DebugNode, DefaultIterableDiffer, Directive, ElementRef, EmbeddedViewRef, ErrorHandler, EventEmitter, Host, HostBinding, HostListener, INJECTOR, Inject, InjectFlags, Injectable, InjectionToken, Injector, Input, IterableDiffers, KeyValueDiffers, LOCALE_ID, MissingTranslationStrategy, ModuleWithComponentFactories, NO_ERRORS_SCHEMA, NgModule, NgModuleFactory, NgModuleFactoryLoader, NgModuleRef, NgProbeToken, NgZone, Optional, Output, PACKAGE_ROOT_URL, PLATFORM_ID, PLATFORM_INITIALIZER, Pipe, PlatformRef, Query, QueryList, ReflectiveInjector, ReflectiveKey, Renderer2, RendererFactory2, RendererStyleFlags2, ResolvedReflectiveFactory, Sanitizer, SecurityContext, Self, SimpleChange, SkipSelf, SystemJsNgModuleLoader, SystemJsNgModuleLoaderConfig, TRANSLATIONS, TRANSLATIONS_FORMAT, TemplateRef, Testability, TestabilityRegistry, Type, VERSION, Version, ViewChild, ViewChildren, ViewContainerRef, ViewEncapsulation, ViewRef, WrappedValue, asNativeElements, assertPlatform, createPlatform, createPlatformFactory, defineInjectable, destroyPlatform, enableProdMode, forwardRef, getDebugNode, getModuleFactory, getPlatform, inject, isDevMode, platformCore, resolveForwardRef, setTestabilityGetter, ɵ0, ɵ1, ɵALLOW_MULTIPLE_PLATFORMS, ɵAPP_ID_RANDOM_PROVIDER, ɵChangeDetectorStatus, ɵCodegenComponentFactoryResolver, ɵCompiler_compileModuleAndAllComponentsAsync__POST_R3__, ɵCompiler_compileModuleAndAllComponentsSync__POST_R3__, ɵCompiler_compileModuleAsync__POST_R3__, ɵCompiler_compileModuleSync__POST_R3__, ɵComponentFactory, ɵConsole, ɵDEFAULT_LOCALE_ID, ɵEMPTY_ARRAY, ɵEMPTY_MAP, ɵINJECTOR_IMPL__POST_R3__, ɵINJECTOR_SCOPE, ɵLifecycleHooksFeature, ɵLocaleDataIndex, ɵNG_COMP_DEF, ɵNG_DIR_DEF, ɵNG_ELEMENT_ID, ɵNG_INJ_DEF, ɵNG_MOD_DEF, ɵNG_PIPE_DEF, ɵNG_PROV_DEF, ɵNOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR, ɵNO_CHANGE, ɵNgModuleFactory, ɵNoopNgZone, ɵReflectionCapabilities, ɵRender3ComponentFactory, ɵRender3ComponentRef, ɵRender3NgModuleRef, ɵSWITCH_CHANGE_DETECTOR_REF_FACTORY__POST_R3__, ɵSWITCH_COMPILE_COMPONENT__POST_R3__, ɵSWITCH_COMPILE_DIRECTIVE__POST_R3__, ɵSWITCH_COMPILE_INJECTABLE__POST_R3__, ɵSWITCH_COMPILE_NGMODULE__POST_R3__, ɵSWITCH_COMPILE_PIPE__POST_R3__, ɵSWITCH_ELEMENT_REF_FACTORY__POST_R3__, ɵSWITCH_IVY_ENABLED__POST_R3__, ɵSWITCH_RENDERER2_FACTORY__POST_R3__, ɵSWITCH_TEMPLATE_REF_FACTORY__POST_R3__, ɵSWITCH_VIEW_CONTAINER_REF_FACTORY__POST_R3__, ɵ_sanitizeHtml, ɵ_sanitizeUrl, ɵallowSanitizationBypassAndThrow, ɵand, ɵangular_packages_core_core_a, ɵangular_packages_core_core_b, ɵangular_packages_core_core_ba, ɵangular_packages_core_core_bb, ɵangular_packages_core_core_bc, ɵangular_packages_core_core_bd, ɵangular_packages_core_core_be, ɵangular_packages_core_core_bg, ɵangular_packages_core_core_bh, ɵangular_packages_core_core_bi, ɵangular_packages_core_core_bj, ɵangular_packages_core_core_bk, ɵangular_packages_core_core_bl, ɵangular_packages_core_core_bm, ɵangular_packages_core_core_bn, ɵangular_packages_core_core_bo, ɵangular_packages_core_core_bq, ɵangular_packages_core_core_br, ɵangular_packages_core_core_c, ɵangular_packages_core_core_d, ɵangular_packages_core_core_e, ɵangular_packages_core_core_f, ɵangular_packages_core_core_g, ɵangular_packages_core_core_h, ɵangular_packages_core_core_i, ɵangular_packages_core_core_j, ɵangular_packages_core_core_k, ɵangular_packages_core_core_l, ɵangular_packages_core_core_m, ɵangular_packages_core_core_n, ɵangular_packages_core_core_o, ɵangular_packages_core_core_p, ɵangular_packages_core_core_q, ɵangular_packages_core_core_r, ɵangular_packages_core_core_s, ɵangular_packages_core_core_t, ɵangular_packages_core_core_u, ɵangular_packages_core_core_v, ɵangular_packages_core_core_w, ɵangular_packages_core_core_x, ɵangular_packages_core_core_y, ɵangular_packages_core_core_z, ɵbypassSanitizationTrustHtml, ɵbypassSanitizationTrustResourceUrl, ɵbypassSanitizationTrustScript, ɵbypassSanitizationTrustStyle, ɵbypassSanitizationTrustUrl, ɵccf, ɵclearOverrides, ɵclearResolutionOfComponentResourcesQueue, ɵcmf, ɵcompileComponent, ɵcompileDirective, ɵcompileNgModule, ɵcompileNgModuleDefs, ɵcompileNgModuleFactory__POST_R3__, ɵcompilePipe, ɵcreateInjector, ɵcrt, ɵdefaultIterableDiffers, ɵdefaultKeyValueDiffers, ɵdetectChanges, ɵdevModeEqual, ɵdid, ɵeld, ɵfindLocaleData, ɵflushModuleScopingQueueAsMuchAsPossible, ɵgetComponentViewDefinitionFactory, ɵgetDebugNodeR2, ɵgetDebugNode__POST_R3__, ɵgetDirectives, ɵgetHostElement, ɵgetInjectableDef, ɵgetLContext, ɵgetLocaleCurrencyCode, ɵgetLocalePluralCase, ɵgetModuleFactory__POST_R3__, ɵgetSanitizationBypassType, ɵglobal, ɵinitServicesIfNeeded, ɵinlineInterpolate, ɵinterpolate, ɵisBoundToModule__POST_R3__, ɵisDefaultChangeDetectionStrategy, ɵisListLikeIterable, ɵisObservable, ɵisPromise, ɵivyEnabled, ɵmakeDecorator, ɵmarkDirty, ɵmod, ɵmpd, ɵncd, ɵnoSideEffects, ɵnov, ɵoverrideComponentView, ɵoverrideProvider, ɵpad, ɵpatchComponentDefWithScope, ɵpid, ɵpod, ɵppd, ɵprd, ɵpublishDefaultGlobalUtils, ɵpublishGlobalUtil, ɵqud, ɵregisterLocaleData, ɵregisterModuleFactory, ɵregisterNgModuleType, ɵrenderComponent, ɵresetCompiledComponents, ɵresetJitOptions, ɵresolveComponentResources, ɵsetClassMetadata, ɵsetCurrentInjector, ɵsetDocument, ɵsetLocaleId, ɵstore, ɵstringify, ɵted, ɵtransitiveScopesFor, ɵunregisterLocaleData, ɵunv, ɵunwrapSafeValue, ɵvid, ɵwhenRendered, ɵɵCopyDefinitionFeature, ɵɵInheritDefinitionFeature, ɵɵNgOnChangesFeature, ɵɵProvidersFeature, ɵɵadvance, ɵɵattribute, ɵɵattributeInterpolate1, ɵɵattributeInterpolate2, ɵɵattributeInterpolate3, ɵɵattributeInterpolate4, ɵɵattributeInterpolate5, ɵɵattributeInterpolate6, ɵɵattributeInterpolate7, ɵɵattributeInterpolate8, ɵɵattributeInterpolateV, ɵɵclassMap, ɵɵclassMapInterpolate1, ɵɵclassMapInterpolate2, ɵɵclassMapInterpolate3, ɵɵclassMapInterpolate4, ɵɵclassMapInterpolate5, ɵɵclassMapInterpolate6, ɵɵclassMapInterpolate7, ɵɵclassMapInterpolate8, ɵɵclassMapInterpolateV, ɵɵclassProp, ɵɵcontentQuery, ɵɵdefineComponent, ɵɵdefineDirective, ɵɵdefineInjectable, ɵɵdefineInjector, ɵɵdefineNgModule, ɵɵdefinePipe, ɵɵdirectiveInject, ɵɵdisableBindings, ɵɵelement, ɵɵelementContainer, ɵɵelementContainerEnd, ɵɵelementContainerStart, ɵɵelementEnd, ɵɵelementStart, ɵɵenableBindings, ɵɵgetCurrentView, ɵɵgetFactoryOf, ɵɵgetInheritedFactory, ɵɵhostProperty, ɵɵi18n, ɵɵi18nApply, ɵɵi18nAttributes, ɵɵi18nEnd, ɵɵi18nExp, ɵɵi18nPostprocess, ɵɵi18nStart, ɵɵinject, ɵɵinjectAttribute, ɵɵinjectPipeChangeDetectorRef, ɵɵinvalidFactory, ɵɵinvalidFactoryDep, ɵɵlistener, ɵɵloadQuery, ɵɵnamespaceHTML, ɵɵnamespaceMathML, ɵɵnamespaceSVG, ɵɵnextContext, ɵɵpipe, ɵɵpipeBind1, ɵɵpipeBind2, ɵɵpipeBind3, ɵɵpipeBind4, ɵɵpipeBindV, ɵɵprojection, ɵɵprojectionDef, ɵɵproperty, ɵɵpropertyInterpolate, ɵɵpropertyInterpolate1, ɵɵpropertyInterpolate2, ɵɵpropertyInterpolate3, ɵɵpropertyInterpolate4, ɵɵpropertyInterpolate5, ɵɵpropertyInterpolate6, ɵɵpropertyInterpolate7, ɵɵpropertyInterpolate8, ɵɵpropertyInterpolateV, ɵɵpureFunction0, ɵɵpureFunction1, ɵɵpureFunction2, ɵɵpureFunction3, ɵɵpureFunction4, ɵɵpureFunction5, ɵɵpureFunction6, ɵɵpureFunction7, ɵɵpureFunction8, ɵɵpureFunctionV, ɵɵqueryRefresh, ɵɵreference, ɵɵresolveBody, ɵɵresolveDocument, ɵɵresolveWindow, ɵɵrestoreView, ɵɵsanitizeHtml, ɵɵsanitizeResourceUrl, ɵɵsanitizeScript, ɵɵsanitizeStyle, ɵɵsanitizeUrl, ɵɵsanitizeUrlOrResourceUrl, ɵɵselect, ɵɵsetComponentScope, ɵɵsetNgModuleScope, ɵɵstaticContentQuery, ɵɵstaticViewQuery, ɵɵstyleMap, ɵɵstyleMapInterpolate1, ɵɵstyleMapInterpolate2, ɵɵstyleMapInterpolate3, ɵɵstyleMapInterpolate4, ɵɵstyleMapInterpolate5, ɵɵstyleMapInterpolate6, ɵɵstyleMapInterpolate7, ɵɵstyleMapInterpolate8, ɵɵstyleMapInterpolateV, ɵɵstyleProp, ɵɵstylePropInterpolate1, ɵɵstylePropInterpolate2, ɵɵstylePropInterpolate3, ɵɵstylePropInterpolate4, ɵɵstylePropInterpolate5, ɵɵstylePropInterpolate6, ɵɵstylePropInterpolate7, ɵɵstylePropInterpolate8, ɵɵstylePropInterpolateV, ɵɵsyntheticHostListener, ɵɵsyntheticHostProperty, ɵɵtemplate, ɵɵtemplateRefExtractor, ɵɵtext, ɵɵtextInterpolate, ɵɵtextInterpolate1, ɵɵtextInterpolate2, ɵɵtextInterpolate3, ɵɵtextInterpolate4, ɵɵtextInterpolate5, ɵɵtextInterpolate6, ɵɵtextInterpolate7, ɵɵtextInterpolate8, ɵɵtextInterpolateV, ɵɵviewQuery */
+/*! exports provided: ANALYZE_FOR_ENTRY_COMPONENTS, APP_BOOTSTRAP_LISTENER, APP_ID, APP_INITIALIZER, ApplicationInitStatus, ApplicationModule, ApplicationRef, Attribute, COMPILER_OPTIONS, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, ChangeDetectorRef, Compiler, CompilerFactory, Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, ContentChild, ContentChildren, DEFAULT_CURRENCY_CODE, DebugElement, DebugEventListener, DebugNode, DefaultIterableDiffer, Directive, ElementRef, EmbeddedViewRef, ErrorHandler, EventEmitter, Host, HostBinding, HostListener, INJECTOR, Inject, InjectFlags, Injectable, InjectionToken, Injector, Input, IterableDiffers, KeyValueDiffers, LOCALE_ID, MissingTranslationStrategy, ModuleWithComponentFactories, NO_ERRORS_SCHEMA, NgModule, NgModuleFactory, NgModuleFactoryLoader, NgModuleRef, NgProbeToken, NgZone, Optional, Output, PACKAGE_ROOT_URL, PLATFORM_ID, PLATFORM_INITIALIZER, Pipe, PlatformRef, Query, QueryList, ReflectiveInjector, ReflectiveKey, Renderer2, RendererFactory2, RendererStyleFlags2, ResolvedReflectiveFactory, Sanitizer, SecurityContext, Self, SimpleChange, SkipSelf, SystemJsNgModuleLoader, SystemJsNgModuleLoaderConfig, TRANSLATIONS, TRANSLATIONS_FORMAT, TemplateRef, Testability, TestabilityRegistry, Type, VERSION, Version, ViewChild, ViewChildren, ViewContainerRef, ViewEncapsulation, ViewRef, WrappedValue, asNativeElements, assertPlatform, createPlatform, createPlatformFactory, defineInjectable, destroyPlatform, enableProdMode, forwardRef, getDebugNode, getModuleFactory, getPlatform, inject, isDevMode, platformCore, resolveForwardRef, setTestabilityGetter, ɵ0, ɵ1, ɵALLOW_MULTIPLE_PLATFORMS, ɵAPP_ID_RANDOM_PROVIDER, ɵChangeDetectorStatus, ɵCodegenComponentFactoryResolver, ɵCompiler_compileModuleAndAllComponentsAsync__POST_R3__, ɵCompiler_compileModuleAndAllComponentsSync__POST_R3__, ɵCompiler_compileModuleAsync__POST_R3__, ɵCompiler_compileModuleSync__POST_R3__, ɵComponentFactory, ɵConsole, ɵDEFAULT_LOCALE_ID, ɵEMPTY_ARRAY, ɵEMPTY_MAP, ɵINJECTOR_IMPL__POST_R3__, ɵINJECTOR_SCOPE, ɵLifecycleHooksFeature, ɵLocaleDataIndex, ɵNG_COMP_DEF, ɵNG_DIR_DEF, ɵNG_ELEMENT_ID, ɵNG_INJ_DEF, ɵNG_MOD_DEF, ɵNG_PIPE_DEF, ɵNG_PROV_DEF, ɵNOT_FOUND_CHECK_ONLY_ELEMENT_INJECTOR, ɵNO_CHANGE, ɵNgModuleFactory, ɵNoopNgZone, ɵReflectionCapabilities, ɵRender3ComponentFactory, ɵRender3ComponentRef, ɵRender3NgModuleRef, ɵSWITCH_CHANGE_DETECTOR_REF_FACTORY__POST_R3__, ɵSWITCH_COMPILE_COMPONENT__POST_R3__, ɵSWITCH_COMPILE_DIRECTIVE__POST_R3__, ɵSWITCH_COMPILE_INJECTABLE__POST_R3__, ɵSWITCH_COMPILE_NGMODULE__POST_R3__, ɵSWITCH_COMPILE_PIPE__POST_R3__, ɵSWITCH_ELEMENT_REF_FACTORY__POST_R3__, ɵSWITCH_IVY_ENABLED__POST_R3__, ɵSWITCH_RENDERER2_FACTORY__POST_R3__, ɵSWITCH_TEMPLATE_REF_FACTORY__POST_R3__, ɵSWITCH_VIEW_CONTAINER_REF_FACTORY__POST_R3__, ɵ_sanitizeHtml, ɵ_sanitizeUrl, ɵallowSanitizationBypassAndThrow, ɵand, ɵangular_packages_core_core_a, ɵangular_packages_core_core_b, ɵangular_packages_core_core_ba, ɵangular_packages_core_core_bb, ɵangular_packages_core_core_bc, ɵangular_packages_core_core_bd, ɵangular_packages_core_core_bf, ɵangular_packages_core_core_bg, ɵangular_packages_core_core_bh, ɵangular_packages_core_core_bi, ɵangular_packages_core_core_bj, ɵangular_packages_core_core_bk, ɵangular_packages_core_core_bl, ɵangular_packages_core_core_bm, ɵangular_packages_core_core_bn, ɵangular_packages_core_core_bp, ɵangular_packages_core_core_bq, ɵangular_packages_core_core_c, ɵangular_packages_core_core_d, ɵangular_packages_core_core_e, ɵangular_packages_core_core_f, ɵangular_packages_core_core_g, ɵangular_packages_core_core_h, ɵangular_packages_core_core_i, ɵangular_packages_core_core_j, ɵangular_packages_core_core_k, ɵangular_packages_core_core_l, ɵangular_packages_core_core_m, ɵangular_packages_core_core_n, ɵangular_packages_core_core_o, ɵangular_packages_core_core_p, ɵangular_packages_core_core_q, ɵangular_packages_core_core_r, ɵangular_packages_core_core_s, ɵangular_packages_core_core_t, ɵangular_packages_core_core_u, ɵangular_packages_core_core_v, ɵangular_packages_core_core_w, ɵangular_packages_core_core_x, ɵangular_packages_core_core_y, ɵangular_packages_core_core_z, ɵbypassSanitizationTrustHtml, ɵbypassSanitizationTrustResourceUrl, ɵbypassSanitizationTrustScript, ɵbypassSanitizationTrustStyle, ɵbypassSanitizationTrustUrl, ɵccf, ɵclearOverrides, ɵclearResolutionOfComponentResourcesQueue, ɵcmf, ɵcompileComponent, ɵcompileDirective, ɵcompileNgModule, ɵcompileNgModuleDefs, ɵcompileNgModuleFactory__POST_R3__, ɵcompilePipe, ɵcreateInjector, ɵcrt, ɵdefaultIterableDiffers, ɵdefaultKeyValueDiffers, ɵdetectChanges, ɵdevModeEqual, ɵdid, ɵeld, ɵfindLocaleData, ɵflushModuleScopingQueueAsMuchAsPossible, ɵgetComponentViewDefinitionFactory, ɵgetDebugNodeR2, ɵgetDebugNode__POST_R3__, ɵgetDirectives, ɵgetHostElement, ɵgetInjectableDef, ɵgetLContext, ɵgetLocaleCurrencyCode, ɵgetLocalePluralCase, ɵgetModuleFactory__POST_R3__, ɵgetSanitizationBypassType, ɵglobal, ɵinitServicesIfNeeded, ɵinlineInterpolate, ɵinterpolate, ɵisBoundToModule__POST_R3__, ɵisDefaultChangeDetectionStrategy, ɵisListLikeIterable, ɵisObservable, ɵisPromise, ɵivyEnabled, ɵmakeDecorator, ɵmarkDirty, ɵmod, ɵmpd, ɵncd, ɵnov, ɵoverrideComponentView, ɵoverrideProvider, ɵpad, ɵpatchComponentDefWithScope, ɵpid, ɵpod, ɵppd, ɵprd, ɵpublishDefaultGlobalUtils, ɵpublishGlobalUtil, ɵqud, ɵregisterLocaleData, ɵregisterModuleFactory, ɵregisterNgModuleType, ɵrenderComponent, ɵresetCompiledComponents, ɵresetJitOptions, ɵresolveComponentResources, ɵsetClassMetadata, ɵsetCurrentInjector, ɵsetDocument, ɵsetLocaleId, ɵstore, ɵstringify, ɵted, ɵtransitiveScopesFor, ɵunregisterLocaleData, ɵunv, ɵunwrapSafeValue, ɵvid, ɵwhenRendered, ɵɵCopyDefinitionFeature, ɵɵInheritDefinitionFeature, ɵɵNgOnChangesFeature, ɵɵProvidersFeature, ɵɵadvance, ɵɵattribute, ɵɵattributeInterpolate1, ɵɵattributeInterpolate2, ɵɵattributeInterpolate3, ɵɵattributeInterpolate4, ɵɵattributeInterpolate5, ɵɵattributeInterpolate6, ɵɵattributeInterpolate7, ɵɵattributeInterpolate8, ɵɵattributeInterpolateV, ɵɵclassMap, ɵɵclassMapInterpolate1, ɵɵclassMapInterpolate2, ɵɵclassMapInterpolate3, ɵɵclassMapInterpolate4, ɵɵclassMapInterpolate5, ɵɵclassMapInterpolate6, ɵɵclassMapInterpolate7, ɵɵclassMapInterpolate8, ɵɵclassMapInterpolateV, ɵɵclassProp, ɵɵcomponentHostSyntheticListener, ɵɵcontentQuery, ɵɵdefineComponent, ɵɵdefineDirective, ɵɵdefineInjectable, ɵɵdefineInjector, ɵɵdefineNgModule, ɵɵdefinePipe, ɵɵdirectiveInject, ɵɵdisableBindings, ɵɵelement, ɵɵelementContainer, ɵɵelementContainerEnd, ɵɵelementContainerStart, ɵɵelementEnd, ɵɵelementStart, ɵɵenableBindings, ɵɵgetCurrentView, ɵɵgetFactoryOf, ɵɵgetInheritedFactory, ɵɵhostProperty, ɵɵi18n, ɵɵi18nApply, ɵɵi18nAttributes, ɵɵi18nEnd, ɵɵi18nExp, ɵɵi18nPostprocess, ɵɵi18nStart, ɵɵinject, ɵɵinjectAttribute, ɵɵinjectPipeChangeDetectorRef, ɵɵinvalidFactory, ɵɵinvalidFactoryDep, ɵɵlistener, ɵɵloadQuery, ɵɵnamespaceHTML, ɵɵnamespaceMathML, ɵɵnamespaceSVG, ɵɵnextContext, ɵɵpipe, ɵɵpipeBind1, ɵɵpipeBind2, ɵɵpipeBind3, ɵɵpipeBind4, ɵɵpipeBindV, ɵɵprojection, ɵɵprojectionDef, ɵɵproperty, ɵɵpropertyInterpolate, ɵɵpropertyInterpolate1, ɵɵpropertyInterpolate2, ɵɵpropertyInterpolate3, ɵɵpropertyInterpolate4, ɵɵpropertyInterpolate5, ɵɵpropertyInterpolate6, ɵɵpropertyInterpolate7, ɵɵpropertyInterpolate8, ɵɵpropertyInterpolateV, ɵɵpureFunction0, ɵɵpureFunction1, ɵɵpureFunction2, ɵɵpureFunction3, ɵɵpureFunction4, ɵɵpureFunction5, ɵɵpureFunction6, ɵɵpureFunction7, ɵɵpureFunction8, ɵɵpureFunctionV, ɵɵqueryRefresh, ɵɵreference, ɵɵresolveBody, ɵɵresolveDocument, ɵɵresolveWindow, ɵɵrestoreView, ɵɵsanitizeHtml, ɵɵsanitizeResourceUrl, ɵɵsanitizeScript, ɵɵsanitizeStyle, ɵɵsanitizeUrl, ɵɵsanitizeUrlOrResourceUrl, ɵɵselect, ɵɵsetComponentScope, ɵɵsetNgModuleScope, ɵɵstaticContentQuery, ɵɵstaticViewQuery, ɵɵstyleMap, ɵɵstyleMapInterpolate1, ɵɵstyleMapInterpolate2, ɵɵstyleMapInterpolate3, ɵɵstyleMapInterpolate4, ɵɵstyleMapInterpolate5, ɵɵstyleMapInterpolate6, ɵɵstyleMapInterpolate7, ɵɵstyleMapInterpolate8, ɵɵstyleMapInterpolateV, ɵɵstyleProp, ɵɵstylePropInterpolate1, ɵɵstylePropInterpolate2, ɵɵstylePropInterpolate3, ɵɵstylePropInterpolate4, ɵɵstylePropInterpolate5, ɵɵstylePropInterpolate6, ɵɵstylePropInterpolate7, ɵɵstylePropInterpolate8, ɵɵstylePropInterpolateV, ɵɵtemplate, ɵɵtemplateRefExtractor, ɵɵtext, ɵɵtextInterpolate, ɵɵtextInterpolate1, ɵɵtextInterpolate2, ɵɵtextInterpolate3, ɵɵtextInterpolate4, ɵɵtextInterpolate5, ɵɵtextInterpolate6, ɵɵtextInterpolate7, ɵɵtextInterpolate8, ɵɵtextInterpolateV, ɵɵupdateSyntheticHostBinding, ɵɵviewQuery */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -24202,22 +24003,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵand", function() { return anchorDef; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_a", function() { return isForwardRef; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_b", function() { return injectInjectorOnly; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_ba", function() { return instructionState; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bb", function() { return getLView; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bc", function() { return getPreviousOrParentTNode; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bd", function() { return getBindingRoot; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_be", function() { return nextContextImpl; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bg", function() { return pureFunction1Internal; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bh", function() { return pureFunction2Internal; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bi", function() { return pureFunction3Internal; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bj", function() { return pureFunction4Internal; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bk", function() { return pureFunctionVInternal; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bl", function() { return getUrlSanitizer; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bm", function() { return makeParamDecorator; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bn", function() { return makePropDecorator; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bo", function() { return getClosureSafeProperty; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_ba", function() { return getLView; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bb", function() { return getPreviousOrParentTNode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bc", function() { return getBindingRoot; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bd", function() { return nextContextImpl; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bf", function() { return pureFunction1Internal; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bg", function() { return pureFunction2Internal; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bh", function() { return pureFunction3Internal; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bi", function() { return pureFunction4Internal; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bj", function() { return pureFunctionVInternal; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bk", function() { return getUrlSanitizer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bl", function() { return makeParamDecorator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bm", function() { return makePropDecorator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bn", function() { return getClosureSafeProperty; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bp", function() { return noSideEffects; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_bq", function() { return getRootContext; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_br", function() { return i18nPostprocess; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_c", function() { return NullInjector; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_d", function() { return ReflectiveInjector_; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_e", function() { return ReflectiveDependency; });
@@ -24239,9 +24039,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_u", function() { return USD_CURRENCY_CODE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_v", function() { return _def; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_w", function() { return DebugContext; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_x", function() { return NgOnChangesFeatureImpl; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_y", function() { return SCHEDULER; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_z", function() { return injectAttributeImpl; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_x", function() { return SCHEDULER; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_y", function() { return injectAttributeImpl; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_core_core_z", function() { return instructionState; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵbypassSanitizationTrustHtml", function() { return bypassSanitizationTrustHtml; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵbypassSanitizationTrustResourceUrl", function() { return bypassSanitizationTrustResourceUrl; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵbypassSanitizationTrustScript", function() { return bypassSanitizationTrustScript; });
@@ -24293,7 +24093,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵmod", function() { return moduleDef; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵmpd", function() { return moduleProvideDef; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵncd", function() { return ngContentDef; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵnoSideEffects", function() { return noSideEffects; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵnov", function() { return nodeValue; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵoverrideComponentView", function() { return overrideComponentView; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵoverrideProvider", function() { return overrideProvider; });
@@ -24352,6 +24151,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵclassMapInterpolate8", function() { return ɵɵclassMapInterpolate8; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵclassMapInterpolateV", function() { return ɵɵclassMapInterpolateV; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵclassProp", function() { return ɵɵclassProp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵcomponentHostSyntheticListener", function() { return ɵɵcomponentHostSyntheticListener; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵcontentQuery", function() { return ɵɵcontentQuery; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵdefineComponent", function() { return ɵɵdefineComponent; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵdefineDirective", function() { return ɵɵdefineDirective; });
@@ -24456,8 +24256,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵstylePropInterpolate7", function() { return ɵɵstylePropInterpolate7; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵstylePropInterpolate8", function() { return ɵɵstylePropInterpolate8; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵstylePropInterpolateV", function() { return ɵɵstylePropInterpolateV; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵsyntheticHostListener", function() { return ɵɵsyntheticHostListener; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵsyntheticHostProperty", function() { return ɵɵsyntheticHostProperty; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵtemplate", function() { return ɵɵtemplate; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵtemplateRefExtractor", function() { return ɵɵtemplateRefExtractor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵtext", function() { return ɵɵtext; });
@@ -24471,11 +24269,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵtextInterpolate7", function() { return ɵɵtextInterpolate7; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵtextInterpolate8", function() { return ɵɵtextInterpolate8; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵtextInterpolateV", function() { return ɵɵtextInterpolateV; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵupdateSyntheticHostBinding", function() { return ɵɵupdateSyntheticHostBinding; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵɵviewQuery", function() { return ɵɵviewQuery; });
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm2015/operators/index.js");
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -24653,7 +24452,7 @@ const Optional = makeParamDecorator('Optional');
  */
 const Self = makeParamDecorator('Self');
 /**
- * `SkipSelf` decorator and metadata.
+ * SkipSelf decorator and metadata.
  *
  * @Annotation
  * @publicApi
@@ -24756,7 +24555,6 @@ function fillProperties(target, source) {
  *   The factory can call `inject` to access the `Injector` and request injection of dependencies.
  *
  * @codeGenApi
- * @publicApi This instruction has been emitted by ViewEngine for some time and is deployed to npm.
  */
 function ɵɵdefineInjectable(opts) {
     return {
@@ -24790,7 +24588,7 @@ const defineInjectable = ɵɵdefineInjectable;
  *   whose providers will also be added to the injector. Locally provided types will override
  *   providers from imports.
  *
- * @codeGenApi
+ * @publicApi
  */
 function ɵɵdefineInjector(options) {
     return {
@@ -25115,7 +24913,7 @@ function ngDevModeResetPerfCounters() {
  * (and thus Ivy instructions), so a single initialization there is sufficient to ensure ngDevMode
  * is defined for the entire instruction set.
  *
- * When checking `ngDevMode` on toplevel, always init it before referencing it
+ * When using checking `ngDevMode` on toplevel, always init it before referencing it
  * (e.g. `((typeof ngDevMode === 'undefined' || ngDevMode) && initNgDevMode())`), otherwise you can
  *  get a `ReferenceError` like in https://github.com/angular/angular/issues/31595.
  *
@@ -25466,8 +25264,10 @@ function getFactoryOf(type) {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * Represents an instance of an `NgModule` created by an `NgModuleFactory`.
- * Provides access to the `NgModule` instance and related objects.
+ * Represents an instance of an NgModule created via a {@link NgModuleFactory}.
+ *
+ * `NgModuleRef` provides access to the NgModule Instance as well other objects related to this
+ * NgModule Instance.
  *
  * @publicApi
  */
@@ -25561,7 +25361,7 @@ function assertDomNode(node) {
         (typeof node === 'object' && node != null &&
             node.constructor.name === 'WebWorkerRenderNode'), true, `The provided value must be an instance of a DOM Node but got ${stringify(node)}`);
 }
-function assertIndexInRange(arr, index) {
+function assertDataInRange(arr, index) {
     const maxLen = arr ? arr.length : 0;
     assertLessThan(index, maxLen, `Index expected to be less than ${maxLen} but got ${index}`);
 }
@@ -25885,8 +25685,6 @@ function _arrayIndexOfSorted(array, value, shift) {
  * The strategy that the default change detector uses to detect changes.
  * When set, takes effect the next time change detection is triggered.
  *
- * @see {@link ChangeDetectorRef#usage-notes Change detection usage}
- *
  * @publicApi
  */
 var ChangeDetectionStrategy;
@@ -26080,6 +25878,14 @@ function ɵɵdefineComponent(componentDefinition) {
             inputs: null,
             outputs: null,
             exportAs: componentDefinition.exportAs || null,
+            onChanges: null,
+            onInit: typePrototype.ngOnInit || null,
+            doCheck: typePrototype.ngDoCheck || null,
+            afterContentInit: typePrototype.ngAfterContentInit || null,
+            afterContentChecked: typePrototype.ngAfterContentChecked || null,
+            afterViewInit: typePrototype.ngAfterViewInit || null,
+            afterViewChecked: typePrototype.ngAfterViewChecked || null,
+            onDestroy: typePrototype.ngOnDestroy || null,
             onPush: componentDefinition.changeDetection === ChangeDetectionStrategy.OnPush,
             directiveDefs: null,
             pipeDefs: null,
@@ -26087,8 +25893,8 @@ function ɵɵdefineComponent(componentDefinition) {
             viewQuery: componentDefinition.viewQuery || null,
             features: componentDefinition.features || null,
             data: componentDefinition.data || {},
-            // TODO(misko): convert ViewEncapsulation into const enum so that it can be used
-            // directly in the next line. Also `None` should be 0 not 2.
+            // TODO(misko): convert ViewEncapsulation into const enum so that it can be used directly in
+            // the next line. Also `None` should be 0 not 2.
             encapsulation: componentDefinition.encapsulation || ViewEncapsulation$1.Emulated,
             id: 'c',
             styles: componentDefinition.styles || EMPTY_ARRAY,
@@ -26512,126 +26318,6 @@ function assertDirectiveDef(obj) {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/**
- * Represents a basic change from a previous to a new value for a single
- * property on a directive instance. Passed as a value in a
- * {@link SimpleChanges} object to the `ngOnChanges` hook.
- *
- * @see `OnChanges`
- *
- * @publicApi
- */
-class SimpleChange {
-    constructor(previousValue, currentValue, firstChange) {
-        this.previousValue = previousValue;
-        this.currentValue = currentValue;
-        this.firstChange = firstChange;
-    }
-    /**
-     * Check whether the new value is the first value assigned.
-     */
-    isFirstChange() {
-        return this.firstChange;
-    }
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-/**
- * The NgOnChangesFeature decorates a component with support for the ngOnChanges
- * lifecycle hook, so it should be included in any component that implements
- * that hook.
- *
- * If the component or directive uses inheritance, the NgOnChangesFeature MUST
- * be included as a feature AFTER {@link InheritDefinitionFeature}, otherwise
- * inherited properties will not be propagated to the ngOnChanges lifecycle
- * hook.
- *
- * Example usage:
- *
- * ```
- * static ɵcmp = defineComponent({
- *   ...
- *   inputs: {name: 'publicName'},
- *   features: [NgOnChangesFeature]
- * });
- * ```
- *
- * @codeGenApi
- */
-function ɵɵNgOnChangesFeature() {
-    return NgOnChangesFeatureImpl;
-}
-function NgOnChangesFeatureImpl(definition) {
-    if (definition.type.prototype.ngOnChanges) {
-        definition.setInput = ngOnChangesSetInput;
-    }
-    return rememberChangeHistoryAndInvokeOnChangesHook;
-}
-// This option ensures that the ngOnChanges lifecycle hook will be inherited
-// from superclasses (in InheritDefinitionFeature).
-/** @nocollapse */
-// tslint:disable-next-line:no-toplevel-property-access
-ɵɵNgOnChangesFeature.ngInherit = true;
-/**
- * This is a synthetic lifecycle hook which gets inserted into `TView.preOrderHooks` to simulate
- * `ngOnChanges`.
- *
- * The hook reads the `NgSimpleChangesStore` data from the component instance and if changes are
- * found it invokes `ngOnChanges` on the component instance.
- *
- * @param this Component instance. Because this function gets inserted into `TView.preOrderHooks`,
- *     it is guaranteed to be called with component instance.
- */
-function rememberChangeHistoryAndInvokeOnChangesHook() {
-    const simpleChangesStore = getSimpleChangesStore(this);
-    const current = simpleChangesStore === null || simpleChangesStore === void 0 ? void 0 : simpleChangesStore.current;
-    if (current) {
-        const previous = simpleChangesStore.previous;
-        if (previous === EMPTY_OBJ) {
-            simpleChangesStore.previous = current;
-        }
-        else {
-            // New changes are copied to the previous store, so that we don't lose history for inputs
-            // which were not changed this time
-            for (let key in current) {
-                previous[key] = current[key];
-            }
-        }
-        simpleChangesStore.current = null;
-        this.ngOnChanges(current);
-    }
-}
-function ngOnChangesSetInput(instance, value, publicName, privateName) {
-    const simpleChangesStore = getSimpleChangesStore(instance) ||
-        setSimpleChangesStore(instance, { previous: EMPTY_OBJ, current: null });
-    const current = simpleChangesStore.current || (simpleChangesStore.current = {});
-    const previous = simpleChangesStore.previous;
-    const declaredName = this.declaredInputs[publicName];
-    const previousChange = previous[declaredName];
-    current[declaredName] = new SimpleChange(previousChange && previousChange.currentValue, value, previous === EMPTY_OBJ);
-    instance[privateName] = value;
-}
-const SIMPLE_CHANGES_STORE = '__ngSimpleChanges__';
-function getSimpleChangesStore(instance) {
-    return instance[SIMPLE_CHANGES_STORE] || null;
-}
-function setSimpleChangesStore(instance, store) {
-    return instance[SIMPLE_CHANGES_STORE] = store;
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const MATH_ML_NAMESPACE = 'http://www.w3.org/1998/MathML/';
 
@@ -26807,7 +26493,7 @@ function getNativeByIndex(index, lView) {
  */
 function getNativeByTNode(tNode, lView) {
     ngDevMode && assertTNodeForLView(tNode, lView);
-    ngDevMode && assertIndexInRange(lView, tNode.index);
+    ngDevMode && assertDataInRange(lView, tNode.index);
     const node = unwrapRNode(lView[tNode.index]);
     ngDevMode && !isProceduralRenderer(lView[RENDERER]) && assertDomNode(node);
     return node;
@@ -26837,12 +26523,12 @@ function getTNode(tView, index) {
 }
 /** Retrieves a value from any `LView` or `TData`. */
 function load(view, index) {
-    ngDevMode && assertIndexInRange(view, index + HEADER_OFFSET);
+    ngDevMode && assertDataInRange(view, index + HEADER_OFFSET);
     return view[index + HEADER_OFFSET];
 }
 function getComponentLViewByIndex(nodeIndex, hostView) {
     // Could be an LView or an LContainer. If LContainer, unwrap to find LView.
-    ngDevMode && assertIndexInRange(hostView, nodeIndex);
+    ngDevMode && assertDataInRange(hostView, nodeIndex);
     const slotValue = hostView[nodeIndex];
     const lView = isLView(slotValue) ? slotValue : slotValue[HOST];
     return lView;
@@ -27320,19 +27006,17 @@ function getNamespace() {
  */
 function registerPreOrderHooks(directiveIndex, directiveDef, tView) {
     ngDevMode && assertFirstCreatePass(tView);
-    const { ngOnChanges, ngOnInit, ngDoCheck } = directiveDef.type.prototype;
-    if (ngOnChanges) {
-        const wrappedOnChanges = NgOnChangesFeatureImpl(directiveDef);
-        (tView.preOrderHooks || (tView.preOrderHooks = [])).push(directiveIndex, wrappedOnChanges);
-        (tView.preOrderCheckHooks || (tView.preOrderCheckHooks = []))
-            .push(directiveIndex, wrappedOnChanges);
+    const { onChanges, onInit, doCheck } = directiveDef;
+    if (onChanges) {
+        (tView.preOrderHooks || (tView.preOrderHooks = [])).push(directiveIndex, onChanges);
+        (tView.preOrderCheckHooks || (tView.preOrderCheckHooks = [])).push(directiveIndex, onChanges);
     }
-    if (ngOnInit) {
-        (tView.preOrderHooks || (tView.preOrderHooks = [])).push(0 - directiveIndex, ngOnInit);
+    if (onInit) {
+        (tView.preOrderHooks || (tView.preOrderHooks = [])).push(-directiveIndex, onInit);
     }
-    if (ngDoCheck) {
-        (tView.preOrderHooks || (tView.preOrderHooks = [])).push(directiveIndex, ngDoCheck);
-        (tView.preOrderCheckHooks || (tView.preOrderCheckHooks = [])).push(directiveIndex, ngDoCheck);
+    if (doCheck) {
+        (tView.preOrderHooks || (tView.preOrderHooks = [])).push(directiveIndex, doCheck);
+        (tView.preOrderCheckHooks || (tView.preOrderCheckHooks = [])).push(directiveIndex, doCheck);
     }
 }
 /**
@@ -27360,24 +27044,23 @@ function registerPostOrderHooks(tView, tNode) {
     // hooks for projected components and directives must be called *before* their hosts.
     for (let i = tNode.directiveStart, end = tNode.directiveEnd; i < end; i++) {
         const directiveDef = tView.data[i];
-        const lifecycleHooks = directiveDef.type.prototype;
-        const { ngAfterContentInit, ngAfterContentChecked, ngAfterViewInit, ngAfterViewChecked, ngOnDestroy } = lifecycleHooks;
-        if (ngAfterContentInit) {
-            (tView.contentHooks || (tView.contentHooks = [])).push(-i, ngAfterContentInit);
+        if (directiveDef.afterContentInit) {
+            (tView.contentHooks || (tView.contentHooks = [])).push(-i, directiveDef.afterContentInit);
         }
-        if (ngAfterContentChecked) {
-            (tView.contentHooks || (tView.contentHooks = [])).push(i, ngAfterContentChecked);
-            (tView.contentCheckHooks || (tView.contentCheckHooks = [])).push(i, ngAfterContentChecked);
+        if (directiveDef.afterContentChecked) {
+            (tView.contentHooks || (tView.contentHooks = [])).push(i, directiveDef.afterContentChecked);
+            (tView.contentCheckHooks || (tView.contentCheckHooks = []))
+                .push(i, directiveDef.afterContentChecked);
         }
-        if (ngAfterViewInit) {
-            (tView.viewHooks || (tView.viewHooks = [])).push(-i, ngAfterViewInit);
+        if (directiveDef.afterViewInit) {
+            (tView.viewHooks || (tView.viewHooks = [])).push(-i, directiveDef.afterViewInit);
         }
-        if (ngAfterViewChecked) {
-            (tView.viewHooks || (tView.viewHooks = [])).push(i, ngAfterViewChecked);
-            (tView.viewCheckHooks || (tView.viewCheckHooks = [])).push(i, ngAfterViewChecked);
+        if (directiveDef.afterViewChecked) {
+            (tView.viewHooks || (tView.viewHooks = [])).push(i, directiveDef.afterViewChecked);
+            (tView.viewCheckHooks || (tView.viewCheckHooks = [])).push(i, directiveDef.afterViewChecked);
         }
-        if (ngOnDestroy != null) {
-            (tView.destroyHooks || (tView.destroyHooks = [])).push(i, ngOnDestroy);
+        if (directiveDef.onDestroy != null) {
+            (tView.destroyHooks || (tView.destroyHooks = [])).push(i, directiveDef.onDestroy);
         }
     }
 }
@@ -27662,10 +27345,10 @@ function assertNodeType(tNode, type) {
     assertDefined(tNode, 'should be called with a TNode');
     assertEqual(tNode.type, type, `should be a ${typeName(type)}`);
 }
-function assertNodeOfPossibleTypes(tNode, types, message) {
+function assertNodeOfPossibleTypes(tNode, ...types) {
     assertDefined(tNode, 'should be called with a TNode');
     const found = types.some(type => tNode.type === type);
-    assertEqual(found, true, message !== null && message !== void 0 ? message : `Should be one of ${types.map(typeName).join(', ')} but got ${typeName(tNode.type)}`);
+    assertEqual(found, true, `Should be one of ${types.map(typeName).join(', ')} but got ${typeName(tNode.type)}`);
 }
 function assertNodeNotOfTypes(tNode, types, message) {
     assertDefined(tNode, 'should be called with a TNode');
@@ -28089,13 +27772,7 @@ let nextNgElementId = 0;
  */
 function bloomAdd(injectorIndex, tView, type) {
     ngDevMode && assertEqual(tView.firstCreatePass, true, 'expected firstCreatePass to be true');
-    let id;
-    if (typeof type === 'string') {
-        id = type.charCodeAt(0) || 0;
-    }
-    else if (type.hasOwnProperty(NG_ELEMENT_ID)) {
-        id = type[NG_ELEMENT_ID];
-    }
+    let id = typeof type !== 'string' ? type[NG_ELEMENT_ID] : type.charCodeAt(0) || 0;
     // Set a unique ID on the directive type, so if something tries to inject the directive,
     // we can easily retrieve the ID and hash it into the bloom bit that should be checked.
     if (id == null) {
@@ -28243,7 +27920,7 @@ function diPublicInInjector(injectorIndex, tView, token) {
  */
 function injectAttributeImpl(tNode, attrNameToInject) {
     ngDevMode &&
-        assertNodeOfPossibleTypes(tNode, [0 /* Container */, 3 /* Element */, 4 /* ElementContainer */]);
+        assertNodeOfPossibleTypes(tNode, 0 /* Container */, 3 /* Element */, 4 /* ElementContainer */);
     ngDevMode && assertDefined(tNode, 'expecting tNode');
     if (attrNameToInject === 'class') {
         return tNode.classes;
@@ -28457,10 +28134,10 @@ function searchTokensOnInjector(injectorIndex, lView, token, previousTView, flag
 function locateDirectiveOrProvider(tNode, tView, token, canAccessViewProviders, isHostSpecialCase) {
     const nodeProviderIndexes = tNode.providerIndexes;
     const tInjectables = tView.data;
-    const injectablesStart = nodeProviderIndexes & 1048575 /* ProvidersStartIndexMask */;
+    const injectablesStart = nodeProviderIndexes & 65535 /* ProvidersStartIndexMask */;
     const directivesStart = tNode.directiveStart;
     const directiveEnd = tNode.directiveEnd;
-    const cptViewProvidersCount = nodeProviderIndexes >> 20 /* CptViewProvidersCountShift */;
+    const cptViewProvidersCount = nodeProviderIndexes >> 16 /* CptViewProvidersCountShift */;
     const startingIndex = canAccessViewProviders ? injectablesStart : injectablesStart + cptViewProvidersCount;
     // When the host special case applies, only the viewProviders and the component are visible
     const endIndex = isHostSpecialCase ? injectablesStart + cptViewProvidersCount : directiveEnd;
@@ -28541,9 +28218,7 @@ function bloomHashBitOrFactory(token) {
     if (typeof token === 'string') {
         return token.charCodeAt(0) || 0;
     }
-    const tokenId = 
-    // First check with `hasOwnProperty` so we don't get an inherited ID.
-    token.hasOwnProperty(NG_ELEMENT_ID) ? token[NG_ELEMENT_ID] : undefined;
+    const tokenId = token[NG_ELEMENT_ID];
     // Negative token IDs are used for special objects such as `Injector`
     return (typeof tokenId === 'number' && tokenId > 0) ? tokenId & BLOOM_MASK : tokenId;
 }
@@ -28942,26 +28617,81 @@ function enableProdMode() {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * This helper is used to get hold of an inert tree of DOM elements containing dirty HTML
+ * This helper class is used to get hold of an inert tree of DOM elements containing dirty HTML
  * that needs sanitizing.
- * Depending upon browser support we use one of two strategies for doing this.
- * Default: DOMParser strategy
- * Fallback: InertDocument strategy
+ * Depending upon browser support we must use one of three strategies for doing this.
+ * Support: Safari 10.x -> XHR strategy
+ * Support: Firefox -> DomParser strategy
+ * Default: InertDocument strategy
  */
-function getInertBodyHelper(defaultDoc) {
-    return isDOMParserAvailable() ? new DOMParserHelper() : new InertDocumentHelper(defaultDoc);
-}
-/**
- * Uses DOMParser to create and fill an inert body element.
- * This is the default strategy used in browsers that support it.
- */
-class DOMParserHelper {
-    getInertBodyElement(html) {
+class InertBodyHelper {
+    constructor(defaultDoc) {
+        this.defaultDoc = defaultDoc;
+        this.inertDocument = this.defaultDoc.implementation.createHTMLDocument('sanitization-inert');
+        let inertBodyElement = this.inertDocument.body;
+        if (inertBodyElement == null) {
+            // usually there should be only one body element in the document, but IE doesn't have any, so
+            // we need to create one.
+            const inertHtml = this.inertDocument.createElement('html');
+            this.inertDocument.appendChild(inertHtml);
+            inertBodyElement = this.inertDocument.createElement('body');
+            inertHtml.appendChild(inertBodyElement);
+        }
+        inertBodyElement.innerHTML = '<svg><g onload="this.parentNode.remove()"></g></svg>';
+        if (inertBodyElement.querySelector && !inertBodyElement.querySelector('svg')) {
+            // We just hit the Safari 10.1 bug - which allows JS to run inside the SVG G element
+            // so use the XHR strategy.
+            this.getInertBodyElement = this.getInertBodyElement_XHR;
+            return;
+        }
+        inertBodyElement.innerHTML = '<svg><p><style><img src="</style><img src=x onerror=alert(1)//">';
+        if (inertBodyElement.querySelector && inertBodyElement.querySelector('svg img')) {
+            // We just hit the Firefox bug - which prevents the inner img JS from being sanitized
+            // so use the DOMParser strategy, if it is available.
+            // If the DOMParser is not available then we are not in Firefox (Server/WebWorker?) so we
+            // fall through to the default strategy below.
+            if (isDOMParserAvailable()) {
+                this.getInertBodyElement = this.getInertBodyElement_DOMParser;
+                return;
+            }
+        }
+        // None of the bugs were hit so it is safe for us to use the default InertDocument strategy
+        this.getInertBodyElement = this.getInertBodyElement_InertDocument;
+    }
+    /**
+     * Use XHR to create and fill an inert body element (on Safari 10.1)
+     * See
+     * https://github.com/cure53/DOMPurify/blob/a992d3a75031cb8bb032e5ea8399ba972bdf9a65/src/purify.js#L439-L449
+     */
+    getInertBodyElement_XHR(html) {
         // We add these extra elements to ensure that the rest of the content is parsed as expected
         // e.g. leading whitespace is maintained and tags like `<meta>` do not get hoisted to the
-        // `<head>` tag. Note that the `<body>` tag is closed implicitly to prevent unclosed tags
-        // in `html` from consuming the otherwise explicit `</body>` tag.
-        html = '<body><remove></remove>' + html;
+        // `<head>` tag.
+        html = '<body><remove></remove>' + html + '</body>';
+        try {
+            html = encodeURI(html);
+        }
+        catch (_a) {
+            return null;
+        }
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'document';
+        xhr.open('GET', 'data:text/html;charset=utf-8,' + html, false);
+        xhr.send(undefined);
+        const body = xhr.response.body;
+        body.removeChild(body.firstChild);
+        return body;
+    }
+    /**
+     * Use DOMParser to create and fill an inert body element (on Firefox)
+     * See https://github.com/cure53/DOMPurify/releases/tag/0.6.7
+     *
+     */
+    getInertBodyElement_DOMParser(html) {
+        // We add these extra elements to ensure that the rest of the content is parsed as expected
+        // e.g. leading whitespace is maintained and tags like `<meta>` do not get hoisted to the
+        // `<head>` tag.
+        html = '<body><remove></remove>' + html + '</body>';
         try {
             const body = new window.DOMParser().parseFromString(html, 'text/html').body;
             body.removeChild(body.firstChild);
@@ -28971,26 +28701,13 @@ class DOMParserHelper {
             return null;
         }
     }
-}
-/**
- * Use an HTML5 `template` element, if supported, or an inert body element created via
- * `createHtmlDocument` to create and fill an inert DOM element.
- * This is the fallback strategy if the browser does not support DOMParser.
- */
-class InertDocumentHelper {
-    constructor(defaultDoc) {
-        this.defaultDoc = defaultDoc;
-        this.inertDocument = this.defaultDoc.implementation.createHTMLDocument('sanitization-inert');
-        if (this.inertDocument.body == null) {
-            // usually there should be only one body element in the document, but IE doesn't have any, so
-            // we need to create one.
-            const inertHtml = this.inertDocument.createElement('html');
-            this.inertDocument.appendChild(inertHtml);
-            const inertBodyElement = this.inertDocument.createElement('body');
-            inertHtml.appendChild(inertBodyElement);
-        }
-    }
-    getInertBodyElement(html) {
+    /**
+     * Use an HTML5 `template` element, if supported, or an inert body element created via
+     * `createHtmlDocument` to create and fill an inert DOM element.
+     * This is the default sane strategy to use if the browser does not require one of the specialised
+     * strategies above.
+     */
+    getInertBodyElement_InertDocument(html) {
         // Prefer using <template> element if supported.
         const templateEl = this.inertDocument.createElement('template');
         if ('content' in templateEl) {
@@ -29040,15 +28757,15 @@ class InertDocumentHelper {
     }
 }
 /**
- * We need to determine whether the DOMParser exists in the global context and
- * supports parsing HTML; HTML parsing support is not as wide as other formats, see
- * https://developer.mozilla.org/en-US/docs/Web/API/DOMParser#Browser_compatibility.
+ * We need to determine whether the DOMParser exists in the global context.
+ * The try-catch is because, on some browsers, trying to access this property
+ * on window can actually throw an error.
  *
  * @suppress {uselessCode}
  */
 function isDOMParserAvailable() {
     try {
-        return !!new window.DOMParser().parseFromString('', 'text/html');
+        return !!window.DOMParser;
     }
     catch (_a) {
         return false;
@@ -29314,7 +29031,7 @@ let inertBodyHelper;
 function _sanitizeHtml(defaultDoc, unsafeHtmlInput) {
     let inertBodyElement = null;
     try {
-        inertBodyHelper = inertBodyHelper || getInertBodyHelper(defaultDoc);
+        inertBodyHelper = inertBodyHelper || new InertBodyHelper(defaultDoc);
         // Make sure unsafeHtml is actually a string (TypeScript types are not enforced at runtime).
         let unsafeHtml = unsafeHtmlInput ? String(unsafeHtmlInput) : '';
         inertBodyElement = inertBodyHelper.getInertBodyElement(unsafeHtml);
@@ -29403,7 +29120,7 @@ var SecurityContext;
  * @returns `html` string which is safe to display to user, because all of the dangerous javascript
  * and urls have been removed.
  *
- * @codeGenApi
+ * @publicApi
  */
 function ɵɵsanitizeHtml(unsafeHtml) {
     const sanitizer = getSanitizer();
@@ -29424,7 +29141,7 @@ function ɵɵsanitizeHtml(unsafeHtml) {
  * @param unsafeStyle untrusted `style`, typically from the user.
  * @returns `style` string which is safe to bind to the `style` properties.
  *
- * @codeGenApi
+ * @publicApi
  */
 function ɵɵsanitizeStyle(unsafeStyle) {
     const sanitizer = getSanitizer();
@@ -29450,7 +29167,7 @@ function ɵɵsanitizeStyle(unsafeStyle) {
  * @returns `url` string which is safe to bind to the `src` properties such as `<img src>`, because
  * all of the dangerous javascript has been removed.
  *
- * @codeGenApi
+ * @publicApi
  */
 function ɵɵsanitizeUrl(unsafeUrl) {
     const sanitizer = getSanitizer();
@@ -29471,7 +29188,7 @@ function ɵɵsanitizeUrl(unsafeUrl) {
  * @returns `url` string which is safe to bind to the `src` properties such as `<img src>`, because
  * only trusted `url`s have been allowed to pass.
  *
- * @codeGenApi
+ * @publicApi
  */
 function ɵɵsanitizeResourceUrl(unsafeResourceUrl) {
     const sanitizer = getSanitizer();
@@ -29493,7 +29210,7 @@ function ɵɵsanitizeResourceUrl(unsafeResourceUrl) {
  * @returns `url` string which is safe to bind to the `<script>` element such as `<img src>`,
  * because only trusted `scripts` have been allowed to pass.
  *
- * @codeGenApi
+ * @publicApi
  */
 function ɵɵsanitizeScript(unsafeScript) {
     const sanitizer = getSanitizer();
@@ -29534,7 +29251,7 @@ function getUrlSanitizer(tag, prop) {
  * @param prop name of the property that contains the value.
  * @returns `url` string which is safe to bind.
  *
- * @codeGenApi
+ * @publicApi
  */
 function ɵɵsanitizeUrlOrResourceUrl(unsafeUrl, tag, prop) {
     return getUrlSanitizer(tag, prop)(unsafeUrl);
@@ -29994,18 +29711,6 @@ function getExpressionChangedErrorDetails(lView, bindingIndex, oldValue, newValu
     return { propName: undefined, oldValue, newValue };
 }
 
-/**
- * Converts `TNodeType` into human readable text.
- * Make sure this matches with `TNodeType`
- */
-const TNodeTypeAsString = [
-    'Container',
-    'Projection',
-    'View',
-    'Element',
-    'ElementContainer',
-    'IcuContainer' // 5
-];
 // Note: This hack is necessary so we don't erroneously get a circular dependency
 // failure based on types.
 const unusedValueExportToPlacateAjd$4 = 1;
@@ -30639,7 +30344,7 @@ function ɵɵselect(index) {
 }
 function selectIndexInternal(tView, lView, index, checkNoChangesMode) {
     ngDevMode && assertGreaterThan(index, -1, 'Invalid index');
-    ngDevMode && assertIndexInRange(lView, index + HEADER_OFFSET);
+    ngDevMode && assertDataInRange(lView, index + HEADER_OFFSET);
     // Flush the initial hooks for elements in the view that have been added up to this point.
     // PERF WARNING: do NOT extract this to a separate function without running benchmarks
     if (!checkNoChangesMode) {
@@ -30663,6 +30368,33 @@ function selectIndexInternal(tView, lView, index, checkNoChangesMode) {
     // will be altered by the time we leave the `ɵɵadvance` instruction.
     setSelectedIndex(index);
 }
+
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Marks that the next string is for element.
+ *
+ * See `I18nMutateOpCodes` documentation.
+ */
+const ELEMENT_MARKER = {
+    marker: 'element'
+};
+/**
+ * Marks that the next string is for comment.
+ *
+ * See `I18nMutateOpCodes` documentation.
+ */
+const COMMENT_MARKER = {
+    marker: 'comment'
+};
+// Note: This hack is necessary so we don't erroneously get a circular dependency
+// failure based on types.
+const unusedValueExportToPlacateAjd$6 = 1;
 
 /**
  * @license
@@ -30727,37 +30459,8 @@ function getTStylingRangeTail(tStylingRange) {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/**
- * Patch a `debug` property on top of the existing object.
- *
- * NOTE: always call this method with `ngDevMode && attachDebugObject(...)`
- *
- * @param obj Object to patch
- * @param debug Value to patch
- */
 function attachDebugObject(obj, debug) {
-    if (ngDevMode) {
-        Object.defineProperty(obj, 'debug', { value: debug, enumerable: false });
-    }
-    else {
-        throw new Error('This method should be guarded with `ngDevMode` so that it can be tree shaken in production!');
-    }
-}
-/**
- * Patch a `debug` property getter on top of the existing object.
- *
- * NOTE: always call this method with `ngDevMode && attachDebugObject(...)`
- *
- * @param obj Object to patch
- * @param debugGetter Getter returning a value to patch
- */
-function attachDebugGetter(obj, debugGetter) {
-    if (ngDevMode) {
-        Object.defineProperty(obj, 'debug', { get: debugGetter, enumerable: false });
-    }
-    else {
-        throw new Error('This method should be guarded with `ngDevMode` so that it can be tree shaken in production!');
-    }
+    Object.defineProperty(obj, 'debug', { value: debug, enumerable: false });
 }
 
 /**
@@ -30878,9 +30581,8 @@ const TViewConstructor = class TView {
     firstChild, //
     schemas, //
     consts, //
-    incompleteFirstPass, //
-    _decls, //
-    _vars) {
+    incompleteFirstPass //
+    ) {
         this.type = type;
         this.id = id;
         this.blueprint = blueprint;
@@ -30912,8 +30614,6 @@ const TViewConstructor = class TView {
         this.schemas = schemas;
         this.consts = consts;
         this.incompleteFirstPass = incompleteFirstPass;
-        this._decls = _decls;
-        this._vars = _vars;
     }
     get template_() {
         const buf = [];
@@ -31133,23 +30833,19 @@ function toDebug(obj) {
 function toHtml(value, includeChildren = false) {
     const node = unwrapRNode(value);
     if (node) {
-        switch (node.nodeType) {
-            case Node.TEXT_NODE:
-                return node.textContent;
-            case Node.COMMENT_NODE:
-                return `<!--${node.textContent}-->`;
-            case Node.ELEMENT_NODE:
-                const outerHTML = node.outerHTML;
-                if (includeChildren) {
-                    return outerHTML;
-                }
-                else {
-                    const innerHTML = '>' + node.innerHTML + '<';
-                    return (outerHTML.split(innerHTML)[0]) + '>';
-                }
+        const isTextNode = node.nodeType === Node.TEXT_NODE;
+        const outerHTML = (isTextNode ? node.textContent : node.outerHTML) || '';
+        if (includeChildren || isTextNode) {
+            return outerHTML;
+        }
+        else {
+            const innerHTML = '>' + node.innerHTML + '<';
+            return (outerHTML.split(innerHTML)[0]) + '>';
         }
     }
-    return null;
+    else {
+        return null;
+    }
 }
 class LViewDebug {
     constructor(_raw_lView) {
@@ -31176,7 +30872,7 @@ class LViewDebug {
     get parent() {
         return toDebug(this._raw_lView[PARENT]);
     }
-    get hostHTML() {
+    get host() {
         return toHtml(this._raw_lView[HOST], true);
     }
     get html() {
@@ -31187,7 +30883,8 @@ class LViewDebug {
     }
     /**
      * The tree of nodes associated with the current `LView`. The nodes have been normalized into
-     * a tree structure with relevant details pulled out for readability.
+     * a
+     * tree structure with relevant details pulled out for readability.
      */
     get nodes() {
         const lView = this._raw_lView;
@@ -31230,25 +30927,6 @@ class LViewDebug {
     get tHost() {
         return this._raw_lView[T_HOST];
     }
-    get decls() {
-        const tView = this.tView;
-        const start = HEADER_OFFSET;
-        return toLViewRange(this.tView, this._raw_lView, start, start + tView._decls);
-    }
-    get vars() {
-        const tView = this.tView;
-        const start = HEADER_OFFSET + tView._decls;
-        return toLViewRange(this.tView, this._raw_lView, start, start + tView._vars);
-    }
-    get i18n() {
-        const tView = this.tView;
-        const start = HEADER_OFFSET + tView._decls + tView._vars;
-        return toLViewRange(this.tView, this._raw_lView, start, this.tView.expandoStartIndex);
-    }
-    get expando() {
-        const tView = this.tView;
-        return toLViewRange(this.tView, this._raw_lView, this.tView.expandoStartIndex, this._raw_lView.length);
-    }
     /**
      * Normalized view of child views (and containers) attached at this location.
      */
@@ -31261,13 +30939,6 @@ class LViewDebug {
         }
         return childViews;
     }
-}
-function toLViewRange(tView, lView, start, end) {
-    let content = [];
-    for (let index = start; index < end; index++) {
-        content.push({ index: index, t: tView.data[index], l: lView[index] });
-    }
-    return { start: start, end: end, length: end - start, content: content };
 }
 /**
  * Turns a flat list of nodes into a tree by walking the associated `TNode` tree.
@@ -31286,17 +30957,18 @@ function toDebugNodes(tNode, lView) {
         return debugNodes;
     }
     else {
-        return [];
+        return null;
     }
 }
 function buildDebugNode(tNode, lView, nodeIndex) {
     const rawValue = lView[nodeIndex];
     const native = unwrapRNode(rawValue);
+    const componentLViewDebug = toDebug(readLViewValue(rawValue));
     return {
         html: toHtml(native),
-        type: TNodeTypeAsString[tNode.type],
         native: native,
-        children: toDebugNodes(tNode.child, lView),
+        nodes: toDebugNodes(tNode.child, lView),
+        component: componentLViewDebug,
     };
 }
 class LContainerDebug {
@@ -31340,6 +31012,196 @@ function readLViewValue(value) {
         value = value[HOST];
     }
     return null;
+}
+class I18NDebugItem {
+    constructor(__raw_opCode, _lView, nodeIndex, type) {
+        this.__raw_opCode = __raw_opCode;
+        this._lView = _lView;
+        this.nodeIndex = nodeIndex;
+        this.type = type;
+    }
+    get tNode() {
+        return getTNode(this._lView[TVIEW], this.nodeIndex);
+    }
+}
+/**
+ * Turns a list of "Create" & "Update" OpCodes into a human-readable list of operations for
+ * debugging purposes.
+ * @param mutateOpCodes mutation opCodes to read
+ * @param updateOpCodes update opCodes to read
+ * @param icus list of ICU expressions
+ * @param lView The view the opCodes are acting on
+ */
+function attachI18nOpCodesDebug(mutateOpCodes, updateOpCodes, icus, lView) {
+    attachDebugObject(mutateOpCodes, new I18nMutateOpCodesDebug(mutateOpCodes, lView));
+    attachDebugObject(updateOpCodes, new I18nUpdateOpCodesDebug(updateOpCodes, icus, lView));
+    if (icus) {
+        icus.forEach(icu => {
+            icu.create.forEach(icuCase => {
+                attachDebugObject(icuCase, new I18nMutateOpCodesDebug(icuCase, lView));
+            });
+            icu.update.forEach(icuCase => {
+                attachDebugObject(icuCase, new I18nUpdateOpCodesDebug(icuCase, icus, lView));
+            });
+        });
+    }
+}
+class I18nMutateOpCodesDebug {
+    constructor(__raw_opCodes, __lView) {
+        this.__raw_opCodes = __raw_opCodes;
+        this.__lView = __lView;
+    }
+    /**
+     * A list of operation information about how the OpCodes will act on the view.
+     */
+    get operations() {
+        const { __lView, __raw_opCodes } = this;
+        const results = [];
+        for (let i = 0; i < __raw_opCodes.length; i++) {
+            const opCode = __raw_opCodes[i];
+            let result;
+            if (typeof opCode === 'string') {
+                result = {
+                    __raw_opCode: opCode,
+                    type: 'Create Text Node',
+                    nodeIndex: __raw_opCodes[++i],
+                    text: opCode,
+                };
+            }
+            if (typeof opCode === 'number') {
+                switch (opCode & 7 /* MASK_OPCODE */) {
+                    case 1 /* AppendChild */:
+                        const destinationNodeIndex = opCode >>> 17 /* SHIFT_PARENT */;
+                        result = new I18NDebugItem(opCode, __lView, destinationNodeIndex, 'AppendChild');
+                        break;
+                    case 0 /* Select */:
+                        const nodeIndex = opCode >>> 3 /* SHIFT_REF */;
+                        result = new I18NDebugItem(opCode, __lView, nodeIndex, 'Select');
+                        break;
+                    case 5 /* ElementEnd */:
+                        let elementIndex = opCode >>> 3 /* SHIFT_REF */;
+                        result = new I18NDebugItem(opCode, __lView, elementIndex, 'ElementEnd');
+                        break;
+                    case 4 /* Attr */:
+                        elementIndex = opCode >>> 3 /* SHIFT_REF */;
+                        result = new I18NDebugItem(opCode, __lView, elementIndex, 'Attr');
+                        result['attrName'] = __raw_opCodes[++i];
+                        result['attrValue'] = __raw_opCodes[++i];
+                        break;
+                }
+            }
+            if (!result) {
+                switch (opCode) {
+                    case COMMENT_MARKER:
+                        result = {
+                            __raw_opCode: opCode,
+                            type: 'COMMENT_MARKER',
+                            commentValue: __raw_opCodes[++i],
+                            nodeIndex: __raw_opCodes[++i],
+                        };
+                        break;
+                    case ELEMENT_MARKER:
+                        result = {
+                            __raw_opCode: opCode,
+                            type: 'ELEMENT_MARKER',
+                        };
+                        break;
+                }
+            }
+            if (!result) {
+                result = {
+                    __raw_opCode: opCode,
+                    type: 'Unknown Op Code',
+                    code: opCode,
+                };
+            }
+            results.push(result);
+        }
+        return results;
+    }
+}
+class I18nUpdateOpCodesDebug {
+    constructor(__raw_opCodes, icus, __lView) {
+        this.__raw_opCodes = __raw_opCodes;
+        this.icus = icus;
+        this.__lView = __lView;
+    }
+    /**
+     * A list of operation information about how the OpCodes will act on the view.
+     */
+    get operations() {
+        const { __lView, __raw_opCodes, icus } = this;
+        const results = [];
+        for (let i = 0; i < __raw_opCodes.length; i++) {
+            // bit code to check if we should apply the next update
+            const checkBit = __raw_opCodes[i];
+            // Number of opCodes to skip until next set of update codes
+            const skipCodes = __raw_opCodes[++i];
+            let value = '';
+            for (let j = i + 1; j <= (i + skipCodes); j++) {
+                const opCode = __raw_opCodes[j];
+                if (typeof opCode === 'string') {
+                    value += opCode;
+                }
+                else if (typeof opCode == 'number') {
+                    if (opCode < 0) {
+                        // It's a binding index whose value is negative
+                        // We cannot know the value of the binding so we only show the index
+                        value += `�${-opCode - 1}�`;
+                    }
+                    else {
+                        const nodeIndex = opCode >>> 2 /* SHIFT_REF */;
+                        let tIcuIndex;
+                        let tIcu;
+                        switch (opCode & 3 /* MASK_OPCODE */) {
+                            case 1 /* Attr */:
+                                const attrName = __raw_opCodes[++j];
+                                const sanitizeFn = __raw_opCodes[++j];
+                                results.push({
+                                    __raw_opCode: opCode,
+                                    checkBit,
+                                    type: 'Attr',
+                                    attrValue: value,
+                                    attrName,
+                                    sanitizeFn,
+                                });
+                                break;
+                            case 0 /* Text */:
+                                results.push({
+                                    __raw_opCode: opCode,
+                                    checkBit,
+                                    type: 'Text',
+                                    nodeIndex,
+                                    text: value,
+                                });
+                                break;
+                            case 2 /* IcuSwitch */:
+                                tIcuIndex = __raw_opCodes[++j];
+                                tIcu = icus[tIcuIndex];
+                                let result = new I18NDebugItem(opCode, __lView, nodeIndex, 'IcuSwitch');
+                                result['tIcuIndex'] = tIcuIndex;
+                                result['checkBit'] = checkBit;
+                                result['mainBinding'] = value;
+                                result['tIcu'] = tIcu;
+                                results.push(result);
+                                break;
+                            case 3 /* IcuUpdate */:
+                                tIcuIndex = __raw_opCodes[++j];
+                                tIcu = icus[tIcuIndex];
+                                result = new I18NDebugItem(opCode, __lView, nodeIndex, 'IcuUpdate');
+                                result['tIcuIndex'] = tIcuIndex;
+                                result['checkBit'] = checkBit;
+                                result['tIcu'] = tIcu;
+                                results.push(result);
+                                break;
+                        }
+                    }
+                }
+            }
+            i += skipCodes;
+        }
+        return results;
+    }
 }
 
 const ɵ0$4 = () => Promise.resolve(null);
@@ -31397,8 +31259,6 @@ function setHostBindingsByExecutingExpandoInstructions(tView, lView) {
                 else {
                     // If it's not a number, it's a host binding function that needs to be executed.
                     if (instruction !== null) {
-                        ngDevMode &&
-                            assertLessThan(currentDirectiveIndex, 1048576 /* CptViewProvidersCountShifter */, 'Reached the max number of host bindings');
                         setBindingRootForHostBindings(bindingRootIndex, currentDirectiveIndex);
                         const hostCtx = lView[currentDirectiveIndex];
                         instruction(2 /* Update */, hostCtx);
@@ -31525,7 +31385,7 @@ function assignTViewNodeToLView(tView, tParentNode, index, lView) {
     let tNode = tView.node;
     if (tNode == null) {
         ngDevMode && tParentNode &&
-            assertNodeOfPossibleTypes(tParentNode, [3 /* Element */, 0 /* Container */]);
+            assertNodeOfPossibleTypes(tParentNode, 3 /* Element */, 0 /* Container */);
         tView.node = tNode = createTNode(tView, tParentNode, //
         2 /* View */, index, null, null);
     }
@@ -31861,7 +31721,7 @@ function createTView(type, viewIndex, templateFn, decls, vars, directives, pipes
     // that has a host binding, we will update the blueprint with that def's hostVars count.
     const initialViewLength = bindingStartIndex + vars;
     const blueprint = createViewBlueprint(bindingStartIndex, initialViewLength);
-    const tView = blueprint[TVIEW] = ngDevMode ?
+    return blueprint[TVIEW] = ngDevMode ?
         new TViewConstructor(type, viewIndex, // id: number,
         blueprint, // blueprint: LView,
         templateFn, // template: ComponentTemplate<{}>|null,
@@ -31893,9 +31753,8 @@ function createTView(type, viewIndex, templateFn, decls, vars, directives, pipes
         null, // firstChild: TNode|null,
         schemas, // schemas: SchemaMetadata[]|null,
         consts, // consts: TConstants|null
-        false, // incompleteFirstPass: boolean
-        decls, // ngDevMode only: decls
-        vars) :
+        false // incompleteFirstPass: boolean
+        ) :
         {
             type: type,
             id: viewIndex,
@@ -31929,13 +31788,6 @@ function createTView(type, viewIndex, templateFn, decls, vars, directives, pipes
             consts: consts,
             incompleteFirstPass: false
         };
-    if (ngDevMode) {
-        // For performance reasons it is important that the tView retains the same shape during runtime.
-        // (To make sure that all of the code is monomorphic.) For this reason we seal the object to
-        // prevent class transitions.
-        Object.seal(tView);
-    }
-    return tView;
 }
 function createViewBlueprint(bindingStartIndex, initialViewLength) {
     const blueprint = ngDevMode ? new LViewBlueprint() : [];
@@ -31996,6 +31848,20 @@ function storeCleanupWithContext(tView, lView, context, cleanupFn) {
     }
 }
 /**
+ * Saves the cleanup function itself in LView.cleanupInstances.
+ *
+ * This is necessary for functions that are wrapped with their contexts, like in renderer2
+ * listeners.
+ *
+ * On the first template pass, the index of the cleanup function is saved in TView.
+ */
+function storeCleanupFn(tView, lView, cleanupFn) {
+    getLCleanup(lView).push(cleanupFn);
+    if (tView.firstCreatePass) {
+        getTViewCleanup(tView).push(lView[CLEANUP].length - 1, null);
+    }
+}
+/**
  * Constructs a TNode object from the arguments.
  *
  * @param tView `TView` to which this `TNode` belongs (used only in `ngDevMode`)
@@ -32009,38 +31875,37 @@ function storeCleanupWithContext(tView, lView, context, cleanupFn) {
 function createTNode(tView, tParent, type, adjustedIndex, tagName, attrs) {
     ngDevMode && ngDevMode.tNode++;
     let injectorIndex = tParent ? tParent.injectorIndex : -1;
-    const tNode = ngDevMode ?
-        new TNodeDebug(tView, // tView_: TView
-        type, // type: TNodeType
-        adjustedIndex, // index: number
-        injectorIndex, // injectorIndex: number
-        -1, // directiveStart: number
-        -1, // directiveEnd: number
-        -1, // directiveStylingLast: number
-        null, // propertyBindings: number[]|null
-        0, // flags: TNodeFlags
-        0, // providerIndexes: TNodeProviderIndexes
-        tagName, // tagName: string|null
-        attrs, // attrs: (string|AttributeMarker|(string|SelectorFlags)[])[]|null
-        null, // mergedAttrs
-        null, // localNames: (string|number)[]|null
-        undefined, // initialInputs: (string[]|null)[]|null|undefined
-        null, // inputs: PropertyAliases|null
-        null, // outputs: PropertyAliases|null
-        null, // tViews: ITView|ITView[]|null
-        null, // next: ITNode|null
-        null, // projectionNext: ITNode|null
-        null, // child: ITNode|null
-        tParent, // parent: TElementNode|TContainerNode|null
-        null, // projection: number|(ITNode|RNode[])[]|null
-        null, // styles: string|null
-        null, // stylesWithoutHost: string|null
-        undefined, // residualStyles: string|null
-        null, // classes: string|null
-        null, // classesWithoutHost: string|null
-        undefined, // residualClasses: string|null
-        0, // classBindings: TStylingRange;
-        0) :
+    return ngDevMode ? new TNodeDebug(tView, // tView_: TView
+    type, // type: TNodeType
+    adjustedIndex, // index: number
+    injectorIndex, // injectorIndex: number
+    -1, // directiveStart: number
+    -1, // directiveEnd: number
+    -1, // directiveStylingLast: number
+    null, // propertyBindings: number[]|null
+    0, // flags: TNodeFlags
+    0, // providerIndexes: TNodeProviderIndexes
+    tagName, // tagName: string|null
+    attrs, // attrs: (string|AttributeMarker|(string|SelectorFlags)[])[]|null
+    null, // mergedAttrs
+    null, // localNames: (string|number)[]|null
+    undefined, // initialInputs: (string[]|null)[]|null|undefined
+    null, // inputs: PropertyAliases|null
+    null, // outputs: PropertyAliases|null
+    null, // tViews: ITView|ITView[]|null
+    null, // next: ITNode|null
+    null, // projectionNext: ITNode|null
+    null, // child: ITNode|null
+    tParent, // parent: TElementNode|TContainerNode|null
+    null, // projection: number|(ITNode|RNode[])[]|null
+    null, // styles: string|null
+    null, // stylesWithoutHost: string|null
+    undefined, // residualStyles: string|null
+    null, // classes: string|null
+    null, // classesWithoutHost: string|null
+    undefined, // residualClasses: string|null
+    0, // classBindings: TStylingRange;
+    0) :
         {
             type: type,
             index: adjustedIndex,
@@ -32073,13 +31938,6 @@ function createTNode(tView, tParent, type, adjustedIndex, tagName, attrs) {
             classBindings: 0,
             styleBindings: 0,
         };
-    if (ngDevMode) {
-        // For performance reasons it is important that the tNode retains the same shape during runtime.
-        // (To make sure that all of the code is monomorphic.) For this reason we seal the object to
-        // prevent class transitions.
-        Object.seal(tNode);
-    }
-    return tNode;
 }
 function generatePropertyAliases(inputAliasMap, directiveDefIdx, propStore) {
     for (let publicName in inputAliasMap) {
@@ -32177,7 +32035,7 @@ function elementPropertyInternal(tView, tNode, lView, propName, value, renderer,
         propName = mapPropName(propName);
         if (ngDevMode) {
             validateAgainstEventProperties(propName);
-            if (!validateProperty(tView, element, propName, tNode)) {
+            if (!validateProperty(tView, lView, element, propName, tNode)) {
                 // Return here since we only log warnings for unknown properties.
                 logUnknownPropertyError(propName, tNode);
                 return;
@@ -32195,10 +32053,10 @@ function elementPropertyInternal(tView, tNode, lView, propName, value, renderer,
                 element[propName] = value;
         }
     }
-    else if (tNode.type === 0 /* Container */ || tNode.type === 4 /* ElementContainer */) {
+    else if (tNode.type === 0 /* Container */) {
         // If the node is a container and the property didn't
         // match any of the inputs or schemas we should throw.
-        if (ngDevMode && !matchingSchemas(tView, tNode.tagName)) {
+        if (ngDevMode && !matchingSchemas(tView, lView, tNode.tagName)) {
             logUnknownPropertyError(propName, tNode);
         }
     }
@@ -32251,7 +32109,7 @@ function setNgReflectProperties(lView, element, type, dataValue, value) {
         }
     }
 }
-function validateProperty(tView, element, propName, tNode) {
+function validateProperty(tView, lView, element, propName, tNode) {
     // If `schemas` is set to `null`, that's an indication that this Component was compiled in AOT
     // mode where this check happens at compile time. In JIT mode, `schemas` is always present and
     // defined as an array (as an empty array in case `schemas` field is not defined) and we should
@@ -32260,14 +32118,15 @@ function validateProperty(tView, element, propName, tNode) {
         return true;
     // The property is considered valid if the element matches the schema, it exists on the element
     // or it is synthetic, and we are in a browser context (web worker nodes should be skipped).
-    if (matchingSchemas(tView, tNode.tagName) || propName in element || isAnimationProp(propName)) {
+    if (matchingSchemas(tView, lView, tNode.tagName) || propName in element ||
+        isAnimationProp(propName)) {
         return true;
     }
     // Note: `typeof Node` returns 'function' in most browsers, but on IE it is 'object' so we
     // need to account for both here, while being careful for `typeof null` also returning 'object'.
     return typeof Node === 'undefined' || Node === null || !(element instanceof Node);
 }
-function matchingSchemas(tView, tagName) {
+function matchingSchemas(tView, lView, tagName) {
     const schemas = tView.schemas;
     if (schemas !== null) {
         for (let i = 0; i < schemas.length; i++) {
@@ -32347,18 +32206,16 @@ function resolveDirectives(tView, lView, tNode, localRefs) {
                     tNode.flags |= 8 /* hasContentQuery */;
                 if (def.hostBindings !== null || def.hostAttrs !== null || def.hostVars !== 0)
                     tNode.flags |= 128 /* hasHostBindings */;
-                const lifeCycleHooks = def.type.prototype;
                 // Only push a node index into the preOrderHooks array if this is the first
                 // pre-order hook found on this node.
-                if (!preOrderHooksFound &&
-                    (lifeCycleHooks.ngOnChanges || lifeCycleHooks.ngOnInit || lifeCycleHooks.ngDoCheck)) {
+                if (!preOrderHooksFound && (def.onChanges || def.onInit || def.doCheck)) {
                     // We will push the actual hook function into this array later during dir instantiation.
                     // We cannot do it now because we must ensure hooks are registered in the same
                     // order that directives are created (i.e. injection order).
                     (tView.preOrderHooks || (tView.preOrderHooks = [])).push(tNode.index - HEADER_OFFSET);
                     preOrderHooksFound = true;
                 }
-                if (!preOrderCheckHooksFound && (lifeCycleHooks.ngOnChanges || lifeCycleHooks.ngDoCheck)) {
+                if (!preOrderCheckHooksFound && (def.onChanges || def.doCheck)) {
                     (tView.preOrderCheckHooks || (tView.preOrderCheckHooks = []))
                         .push(tNode.index - HEADER_OFFSET);
                     preOrderCheckHooksFound = true;
@@ -32434,7 +32291,7 @@ function instantiateAllDirectives(tView, lView, tNode, native) {
         const def = tView.data[i];
         const isComponent = isComponentDef(def);
         if (isComponent) {
-            ngDevMode && assertNodeOfPossibleTypes(tNode, [3 /* Element */]);
+            ngDevMode && assertNodeOfPossibleTypes(tNode, 3 /* Element */);
             addComponentLogic(lView, tNode, def);
         }
         const directive = getNodeInjectable(lView, tView, i, tNode);
@@ -32498,7 +32355,7 @@ function generateExpandoInstructionBlock(tView, tNode, directiveCount) {
     // requires non standard math arithmetic and it can prevent VM optimizations.
     // `0-0` will always produce `0` and will not cause a potential deoptimization in VM.
     const elementIndex = HEADER_OFFSET - tNode.index;
-    const providerStartIndex = tNode.providerIndexes & 1048575 /* ProvidersStartIndexMask */;
+    const providerStartIndex = tNode.providerIndexes & 65535 /* ProvidersStartIndexMask */;
     const providerCount = tView.data.length - providerStartIndex;
     (tView.expandoInstructions || (tView.expandoInstructions = []))
         .push(elementIndex, providerCount, directiveCount);
@@ -32510,7 +32367,7 @@ function generateExpandoInstructionBlock(tView, tNode, directiveCount) {
 function findDirectiveDefMatches(tView, viewData, tNode) {
     ngDevMode && assertFirstCreatePass(tView);
     ngDevMode &&
-        assertNodeOfPossibleTypes(tNode, [3 /* Element */, 4 /* ElementContainer */, 0 /* Container */]);
+        assertNodeOfPossibleTypes(tNode, 3 /* Element */, 4 /* ElementContainer */, 0 /* Container */);
     const registry = tView.directiveRegistry;
     let matches = null;
     if (registry) {
@@ -32520,9 +32377,6 @@ function findDirectiveDefMatches(tView, viewData, tNode) {
                 matches || (matches = ngDevMode ? new MatchesArray() : []);
                 diPublicInInjector(getOrCreateNodeInjectorForNode(tNode, viewData), tView, def.type);
                 if (isComponentDef(def)) {
-                    ngDevMode &&
-                        assertNodeOfPossibleTypes(tNode, [3 /* Element */], `"${tNode.tagName}" tags cannot be used as component hosts. ` +
-                            `Please use a different tag to activate the ${stringify(def.type)} component.`);
                     if (tNode.flags & 2 /* isComponentHost */)
                         throwMultipleComponentError(tNode);
                     markAsComponentHost(tView, tNode);
@@ -33115,7 +32969,7 @@ function setInputsForProperty(tView, lView, inputs, publicName, value) {
         const index = inputs[i++];
         const privateName = inputs[i++];
         const instance = lView[index];
-        ngDevMode && assertIndexInRange(lView, index);
+        ngDevMode && assertDataInRange(lView, index);
         const def = tView.data[index];
         if (def.setInput !== null) {
             def.setInput(instance, value, publicName, privateName);
@@ -33130,7 +32984,7 @@ function setInputsForProperty(tView, lView, inputs, publicName, value) {
  */
 function textBindingInternal(lView, index, value) {
     ngDevMode && assertNotSame(value, NO_CHANGE, 'value should not be NO_CHANGE');
-    ngDevMode && assertIndexInRange(lView, index + HEADER_OFFSET);
+    ngDevMode && assertDataInRange(lView, index + HEADER_OFFSET);
     const element = getNativeByIndex(index, lView);
     ngDevMode && assertDefined(element, 'native element should exist');
     ngDevMode && ngDevMode.rendererSetText++;
@@ -33412,6 +33266,16 @@ function detachView(lContainer, removeIndex) {
     return viewToDetach;
 }
 /**
+ * Removes a view from a container, i.e. detaches it and then destroys the underlying LView.
+ *
+ * @param lContainer The container from which to remove a view
+ * @param removeIndex The index of the view to remove
+ */
+function removeView(lContainer, removeIndex) {
+    const detachedView = detachView(lContainer, removeIndex);
+    detachedView && destroyLView(detachedView[TVIEW], detachedView);
+}
+/**
  * A standalone function which destroys an LView,
  * conducting clean up (e.g. removing listeners, calling onDestroys).
  *
@@ -33594,7 +33458,7 @@ function getRenderParent(tView, tNode, currentView) {
         else {
             // We are inserting a root element of the component view into the component host element and
             // it should always be eager.
-            ngDevMode && assertNodeOfPossibleTypes(hostTNode, [3 /* Element */]);
+            ngDevMode && assertNodeOfPossibleTypes(hostTNode, 3 /* Element */);
             return currentView[HOST];
         }
     }
@@ -33731,10 +33595,8 @@ function appendChild(tView, lView, childEl, childTNode) {
  */
 function getFirstNativeNode(lView, tNode) {
     if (tNode !== null) {
-        ngDevMode && assertNodeOfPossibleTypes(tNode, [
-            3 /* Element */, 0 /* Container */, 4 /* ElementContainer */, 5 /* IcuContainer */,
-            1 /* Projection */
-        ]);
+        ngDevMode &&
+            assertNodeOfPossibleTypes(tNode, 3 /* Element */, 0 /* Container */, 4 /* ElementContainer */, 5 /* IcuContainer */, 1 /* Projection */);
         const tNodeType = tNode.type;
         if (tNodeType === 3 /* Element */) {
             return getNativeByTNode(tNode, lView);
@@ -33805,10 +33667,8 @@ function nativeRemoveNode(renderer, rNode, isHostElement) {
 function applyNodes(renderer, action, tNode, lView, renderParent, beforeNode, isProjection) {
     while (tNode != null) {
         ngDevMode && assertTNodeForLView(tNode, lView);
-        ngDevMode && assertNodeOfPossibleTypes(tNode, [
-            0 /* Container */, 3 /* Element */, 4 /* ElementContainer */, 1 /* Projection */,
-            5 /* IcuContainer */
-        ]);
+        ngDevMode &&
+            assertNodeOfPossibleTypes(tNode, 0 /* Container */, 3 /* Element */, 4 /* ElementContainer */, 1 /* Projection */, 1 /* Projection */, 5 /* IcuContainer */);
         const rawSlotValue = lView[tNode.index];
         const tNodeType = tNode.type;
         if (isProjection) {
@@ -33826,7 +33686,7 @@ function applyNodes(renderer, action, tNode, lView, renderParent, beforeNode, is
                 applyProjectionRecursive(renderer, action, lView, tNode, renderParent, beforeNode);
             }
             else {
-                ngDevMode && assertNodeOfPossibleTypes(tNode, [3 /* Element */, 0 /* Container */]);
+                ngDevMode && assertNodeOfPossibleTypes(tNode, 3 /* Element */, 0 /* Container */);
                 applyToElementOrContainer(action, renderer, renderParent, rawSlotValue, beforeNode);
             }
         }
@@ -34161,7 +34021,7 @@ class ViewRef {
         destroyLView(this._lView[TVIEW], this._lView);
     }
     onDestroy(callback) {
-        storeCleanupWithContext(this._lView[TVIEW], this._lView, null, callback);
+        storeCleanupFn(this._lView[TVIEW], this._lView, callback);
     }
     /**
      * Marks a view and all of its ancestors dirty.
@@ -34383,10 +34243,8 @@ class RootViewRef extends ViewRef {
 }
 function collectNativeNodes(tView, lView, tNode, result, isProjection = false) {
     while (tNode !== null) {
-        ngDevMode && assertNodeOfPossibleTypes(tNode, [
-            3 /* Element */, 0 /* Container */, 1 /* Projection */, 4 /* ElementContainer */,
-            5 /* IcuContainer */
-        ]);
+        ngDevMode &&
+            assertNodeOfPossibleTypes(tNode, 3 /* Element */, 0 /* Container */, 1 /* Projection */, 4 /* ElementContainer */, 5 /* IcuContainer */);
         const lNode = lView[tNode.index];
         if (lNode !== null) {
             result.push(unwrapRNode(lNode));
@@ -34633,17 +34491,8 @@ function createContainerRef(ViewContainerRefToken, ElementRefToken, hostTNode, h
             remove(index) {
                 this.allocateContainerIfNeeded();
                 const adjustedIdx = this._adjustIndex(index, -1);
-                const detachedView = detachView(this._lContainer, adjustedIdx);
-                if (detachedView) {
-                    // Before destroying the view, remove it from the container's array of `ViewRef`s.
-                    // This ensures the view container length is updated before calling
-                    // `destroyLView`, which could recursively call view container methods that
-                    // rely on an accurate container length.
-                    // (e.g. a method on this view container being called by a child directive's OnDestroy
-                    // lifecycle hook)
-                    removeFromArray(this._lContainer[VIEW_REFS], adjustedIdx);
-                    destroyLView(detachedView[TVIEW], detachedView);
-                }
+                removeView(this._lContainer, adjustedIdx);
+                removeFromArray(this._lContainer[VIEW_REFS], adjustedIdx);
             }
             detach(index) {
                 this.allocateContainerIfNeeded();
@@ -34671,7 +34520,7 @@ function createContainerRef(ViewContainerRefToken, ElementRefToken, hostTNode, h
         };
     }
     ngDevMode &&
-        assertNodeOfPossibleTypes(hostTNode, [0 /* Container */, 3 /* Element */, 4 /* ElementContainer */]);
+        assertNodeOfPossibleTypes(hostTNode, 0 /* Container */, 3 /* Element */, 4 /* ElementContainer */);
     let lContainer;
     const slotValue = hostView[hostTNode.index];
     if (isLContainer(slotValue)) {
@@ -34770,13 +34619,10 @@ function injectRenderer2() {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * Base class that provides change detection functionality.
+ * Base class for Angular Views, provides change detection functionality.
  * A change-detection tree collects all views that are to be checked for changes.
  * Use the methods to add and remove views from the tree, initiate change-detection,
- * and explicitly mark views as _dirty_, meaning that they have changed and need to be re-rendered.
- *
- * @see [Using change detection hooks](guide/lifecycle-hooks#using-change-detection-hooks)
- * @see [Defining custom change detection](guide/lifecycle-hooks#defining-custom-change-detection)
+ * and explicitly mark views as _dirty_, meaning that they have changed and need to be rerendered.
  *
  * @usageNotes
  *
@@ -34838,7 +34684,7 @@ const SWITCH_CHANGE_DETECTOR_REF_FACTORY = SWITCH_CHANGE_DETECTOR_REF_FACTORY__P
  *
  * Represents a type that a Component or other object is instances of.
  *
- * An example of a `Type` is `MyCustomComponent` class, which in JavaScript is represented by
+ * An example of a `Type` is `MyCustomComponent` class, which in JavaScript is be represented by
  * the `MyCustomComponent` constructor function.
  *
  * @publicApi
@@ -34855,42 +34701,13 @@ function isType(v) {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/*
- * #########################
- * Attention: These Regular expressions have to hold even if the code is minified!
- * ##########################
- */
 /**
- * Regular expression that detects pass-through constructors for ES5 output. This Regex
- * intends to capture the common delegation pattern emitted by TypeScript and Babel. Also
- * it intends to capture the pattern where existing constructors have been downleveled from
- * ES2015 to ES5 using TypeScript w/ downlevel iteration. e.g.
- *
- * ```
- *   function MyClass() {
- *     var _this = _super.apply(this, arguments) || this;
- * ```
- *
- * ```
- *   function MyClass() {
- *     var _this = _super.apply(this, __spread(arguments)) || this;
- * ```
- *
- * More details can be found in: https://github.com/angular/angular/issues/38453.
+ * Attention: These regex has to hold even if the code is minified!
  */
-const ES5_DELEGATE_CTOR = /^function\s+\S+\(\)\s*{[\s\S]+\.apply\(this,\s*(arguments|[^()]+\(arguments\))\)/;
-/** Regular expression that detects ES2015 classes which extend from other classes. */
-const ES2015_INHERITED_CLASS = /^class\s+[A-Za-z\d$_]*\s*extends\s+[^{]+{/;
-/**
- * Regular expression that detects ES2015 classes which extend from other classes and
- * have an explicit constructor defined.
- */
-const ES2015_INHERITED_CLASS_WITH_CTOR = /^class\s+[A-Za-z\d$_]*\s*extends\s+[^{]+{[\s\S]*constructor\s*\(/;
-/**
- * Regular expression that detects ES2015 classes which extend from other classes
- * and inherit a constructor.
- */
-const ES2015_INHERITED_CLASS_WITH_DELEGATE_CTOR = /^class\s+[A-Za-z\d$_]*\s*extends\s+[^{]+{[\s\S]*constructor\s*\(\)\s*{\s*super\(\.\.\.arguments\)/;
+const DELEGATE_CTOR = /^function\s+\S+\(\)\s*{[\s\S]+\.apply\(this,\s*arguments\)/;
+const INHERITED_CLASS = /^class\s+[A-Za-z\d$_]*\s*extends\s+[^{]+{/;
+const INHERITED_CLASS_WITH_CTOR = /^class\s+[A-Za-z\d$_]*\s*extends\s+[^{]+{[\s\S]*constructor\s*\(/;
+const INHERITED_CLASS_WITH_DELEGATE_CTOR = /^class\s+[A-Za-z\d$_]*\s*extends\s+[^{]+{[\s\S]*constructor\s*\(\)\s*{\s*super\(\.\.\.arguments\)/;
 /**
  * Determine whether a stringified type is a class which delegates its constructor
  * to its parent.
@@ -34900,9 +34717,8 @@ const ES2015_INHERITED_CLASS_WITH_DELEGATE_CTOR = /^class\s+[A-Za-z\d$_]*\s*exte
  * an initialized instance property.
  */
 function isDelegateCtor(typeStr) {
-    return ES5_DELEGATE_CTOR.test(typeStr) ||
-        ES2015_INHERITED_CLASS_WITH_DELEGATE_CTOR.test(typeStr) ||
-        (ES2015_INHERITED_CLASS.test(typeStr) && !ES2015_INHERITED_CLASS_WITH_CTOR.test(typeStr));
+    return DELEGATE_CTOR.test(typeStr) || INHERITED_CLASS_WITH_DELEGATE_CTOR.test(typeStr) ||
+        (INHERITED_CLASS.test(typeStr) && !INHERITED_CLASS_WITH_CTOR.test(typeStr));
 }
 class ReflectionCapabilities {
     constructor(reflect) {
@@ -37453,7 +37269,7 @@ function updateBinding(lView, bindingIndex, value) {
 }
 /** Gets the current binding value. */
 function getBinding(lView, bindingIndex) {
-    ngDevMode && assertIndexInRange(lView, bindingIndex);
+    ngDevMode && assertDataInRange(lView, bindingIndex);
     ngDevMode &&
         assertNotSame(lView[bindingIndex], NO_CHANGE, 'Stored value should never be NO_CHANGE.');
     return lView[bindingIndex];
@@ -38314,7 +38130,7 @@ function elementStartFirstCreatePass(index, tView, lView, native, name, attrsInd
     const attrs = getConstant(tViewConsts, attrsIndex);
     const tNode = getOrCreateTNode(tView, lView[T_HOST], index, 3 /* Element */, name, attrs);
     const hasDirectives = resolveDirectives(tView, lView, tNode, getConstant(tViewConsts, localRefsIndex));
-    ngDevMode && logUnknownElementError(tView, native, tNode, hasDirectives);
+    ngDevMode && logUnknownElementError(tView, lView, native, tNode, hasDirectives);
     if (tNode.attrs !== null) {
         computeStaticStyling(tNode, tNode.attrs, false);
     }
@@ -38347,7 +38163,7 @@ function ɵɵelementStart(index, name, attrsIndex, localRefsIndex) {
     ngDevMode &&
         assertEqual(getBindingIndex(), tView.bindingStartIndex, 'elements should be created before any bindings');
     ngDevMode && ngDevMode.rendererCreateElement++;
-    ngDevMode && assertIndexInRange(lView, adjustedIndex);
+    ngDevMode && assertDataInRange(lView, adjustedIndex);
     const renderer = lView[RENDERER];
     const native = lView[adjustedIndex] = elementCreate(name, renderer, getNamespace());
     const tNode = tView.firstCreatePass ?
@@ -38429,7 +38245,7 @@ function ɵɵelement(index, name, attrsIndex, localRefsIndex) {
     ɵɵelementStart(index, name, attrsIndex, localRefsIndex);
     ɵɵelementEnd();
 }
-function logUnknownElementError(tView, element, tNode, hasDirectives) {
+function logUnknownElementError(tView, lView, element, tNode, hasDirectives) {
     const schemas = tView.schemas;
     // If `schemas` is set to `null`, that's an indication that this Component was compiled in AOT
     // mode where this check happens at compile time. In JIT mode, `schemas` is always present and
@@ -38450,7 +38266,7 @@ function logUnknownElementError(tView, element, tNode, hasDirectives) {
             element instanceof HTMLUnknownElement) ||
             (typeof customElements !== 'undefined' && tagName.indexOf('-') > -1 &&
                 !customElements.get(tagName));
-        if (isUnknown && !matchingSchemas(tView, tagName)) {
+        if (isUnknown && !matchingSchemas(tView, lView, tagName)) {
             let message = `'${tagName}' is not a known element:\n`;
             message += `1. If '${tagName}' is an Angular component, then verify that it is part of this module.\n`;
             if (tagName && tagName.indexOf('-') > -1) {
@@ -38507,7 +38323,7 @@ function ɵɵelementContainerStart(index, attrsIndex, localRefsIndex) {
     const lView = getLView();
     const tView = getTView();
     const adjustedIndex = index + HEADER_OFFSET;
-    ngDevMode && assertIndexInRange(lView, adjustedIndex);
+    ngDevMode && assertDataInRange(lView, adjustedIndex);
     ngDevMode &&
         assertEqual(getBindingIndex(), tView.bindingStartIndex, 'element containers should be created before any bindings');
     const tNode = tView.firstCreatePass ?
@@ -38652,14 +38468,14 @@ function ɵɵlistener(eventName, listenerFn, useCapture = false, eventTargetReso
  *
  * @codeGenApi
  */
-function ɵɵsyntheticHostListener(eventName, listenerFn, useCapture = false, eventTargetResolver) {
+function ɵɵcomponentHostSyntheticListener(eventName, listenerFn, useCapture = false, eventTargetResolver) {
     const tNode = getPreviousOrParentTNode();
     const lView = getLView();
     const tView = getTView();
     const currentDef = getCurrentDirectiveDef(tView.data);
     const renderer = loadComponentRenderer(currentDef, tNode, lView);
     listenerInternal(tView, lView, renderer, tNode, eventName, listenerFn, useCapture, eventTargetResolver);
-    return ɵɵsyntheticHostListener;
+    return ɵɵcomponentHostSyntheticListener;
 }
 /**
  * A utility function that checks if a given element has already an event handler registered for an
@@ -38700,7 +38516,7 @@ function listenerInternal(tView, lView, renderer, tNode, eventName, listenerFn, 
     // register a listener and store its cleanup function on LView.
     const lCleanup = getLCleanup(lView);
     ngDevMode &&
-        assertNodeOfPossibleTypes(tNode, [3 /* Element */, 0 /* Container */, 4 /* ElementContainer */]);
+        assertNodeOfPossibleTypes(tNode, 3 /* Element */, 0 /* Container */, 4 /* ElementContainer */);
     let processOutputs = true;
     // add native event listener - applicable to elements only
     if (tNode.type === 3 /* Element */) {
@@ -38771,7 +38587,7 @@ function listenerInternal(tView, lView, renderer, tNode, eventName, listenerFn, 
         if (propsLength) {
             for (let i = 0; i < propsLength; i += 2) {
                 const index = props[i];
-                ngDevMode && assertIndexInRange(lView, index);
+                ngDevMode && assertDataInRange(lView, index);
                 const minifiedName = props[i + 1];
                 const directiveInstance = lView[index];
                 const output = directiveInstance[minifiedName];
@@ -39829,7 +39645,7 @@ function markDuplicates(tData, tStylingKey, index, isPrevDir, isClassBinding) {
     // - we are a map in which case we have to continue searching even after we find what we were
     //   looking for since we are a wild card and everything needs to be flipped to duplicate.
     while (cursor !== 0 && (foundDuplicate === false || isMap)) {
-        ngDevMode && assertIndexInRange(tData, cursor);
+        ngDevMode && assertDataInRange(tData, cursor);
         const tStylingValueAtCursor = tData[cursor];
         const tStyleRangeAtCursor = tData[cursor + 1];
         if (isStylingMatch(tStylingValueAtCursor, tStylingKey)) {
@@ -40052,8 +39868,7 @@ function consumeStyleKey(text, startIndex, endIndex) {
     let ch;
     while (startIndex < endIndex &&
         ((ch = text.charCodeAt(startIndex)) === 45 /* DASH */ || ch === 95 /* UNDERSCORE */ ||
-            ((ch & -33 /* UPPER_CASE */) >= 65 /* A */ && (ch & -33 /* UPPER_CASE */) <= 90 /* Z */) ||
-            (ch >= 48 /* ZERO */ && ch <= 57 /* NINE */))) {
+            ((ch & -33 /* UPPER_CASE */) >= 65 /* A */ && (ch & -33 /* UPPER_CASE */) <= 90 /* Z */))) {
         startIndex++;
     }
     return startIndex;
@@ -40946,7 +40761,7 @@ function ɵɵtext(index, value = '') {
     const adjustedIndex = index + HEADER_OFFSET;
     ngDevMode &&
         assertEqual(getBindingIndex(), tView.bindingStartIndex, 'text nodes should be created before any bindings');
-    ngDevMode && assertIndexInRange(lView, adjustedIndex);
+    ngDevMode && assertDataInRange(lView, adjustedIndex);
     const tNode = tView.firstCreatePass ?
         getOrCreateTNode(tView, lView[T_HOST], index, 3 /* Element */, null, null) :
         tView.data[adjustedIndex];
@@ -42274,7 +42089,7 @@ function ɵɵhostProperty(propName, value, sanitizer) {
  *
  * @codeGenApi
  */
-function ɵɵsyntheticHostProperty(propName, value, sanitizer) {
+function ɵɵupdateSyntheticHostBinding(propName, value, sanitizer) {
     const lView = getLView();
     const bindingIndex = nextBindingIndex();
     if (bindingUpdated(lView, bindingIndex, value)) {
@@ -42285,7 +42100,7 @@ function ɵɵsyntheticHostProperty(propName, value, sanitizer) {
         elementPropertyInternal(tView, tNode, lView, propName, value, renderer, sanitizer, true);
         ngDevMode && storePropertyBindingMetadata(tView.data, tNode, propName, bindingIndex);
     }
-    return ɵɵsyntheticHostProperty;
+    return ɵɵupdateSyntheticHostBinding;
 }
 
 /**
@@ -42427,7 +42242,7 @@ function getInjectionTokens(element) {
     const tView = lView[TVIEW];
     const tNode = tView.data[context.nodeIndex];
     const providerTokens = [];
-    const startIndex = tNode.providerIndexes & 1048575 /* ProvidersStartIndexMask */;
+    const startIndex = tNode.providerIndexes & 65535 /* ProvidersStartIndexMask */;
     const endIndex = tNode.directiveEnd;
     for (let i = startIndex; i < endIndex; i++) {
         let value = tView.data[i];
@@ -42814,7 +42629,7 @@ function renderComponent$1(componentType /* Type as workaround for: Microsoft/Ty
  */
 function createRootComponentView(rNode, def, rootView, rendererFactory, hostRenderer, sanitizer) {
     const tView = rootView[TVIEW];
-    ngDevMode && assertIndexInRange(rootView, 0 + HEADER_OFFSET);
+    ngDevMode && assertDataInRange(rootView, 0 + HEADER_OFFSET);
     rootView[0 + HEADER_OFFSET] = rNode;
     const tNode = getOrCreateTNode(tView, null, 0, 3 /* Element */, null, null);
     const mergedAttrs = tNode.mergedAttrs = def.hostAttrs;
@@ -42980,6 +42795,16 @@ function ɵɵInheritDefinitionFeature(definition) {
                     const defData = definition.data;
                     defData.animation = (defData.animation || []).concat(superDef.data.animation);
                 }
+                // Inherit hooks
+                // Assume super class inheritance feature has already run.
+                writeableDef.afterContentChecked =
+                    writeableDef.afterContentChecked || superDef.afterContentChecked;
+                writeableDef.afterContentInit = definition.afterContentInit || superDef.afterContentInit;
+                writeableDef.afterViewChecked = definition.afterViewChecked || superDef.afterViewChecked;
+                writeableDef.afterViewInit = definition.afterViewInit || superDef.afterViewInit;
+                writeableDef.doCheck = definition.doCheck || superDef.doCheck;
+                writeableDef.onDestroy = definition.onDestroy || superDef.onDestroy;
+                writeableDef.onInit = definition.onInit || superDef.onInit;
             }
             // Run parent features
             const features = superDef.features;
@@ -43160,6 +42985,116 @@ function ɵɵCopyDefinitionFeature(definition) {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
+ * Represents a basic change from a previous to a new value for a single
+ * property on a directive instance. Passed as a value in a
+ * {@link SimpleChanges} object to the `ngOnChanges` hook.
+ *
+ * @see `OnChanges`
+ *
+ * @publicApi
+ */
+class SimpleChange {
+    constructor(previousValue, currentValue, firstChange) {
+        this.previousValue = previousValue;
+        this.currentValue = currentValue;
+        this.firstChange = firstChange;
+    }
+    /**
+     * Check whether the new value is the first value assigned.
+     */
+    isFirstChange() {
+        return this.firstChange;
+    }
+}
+
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+const PRIVATE_PREFIX = '__ngOnChanges_';
+/**
+ * The NgOnChangesFeature decorates a component with support for the ngOnChanges
+ * lifecycle hook, so it should be included in any component that implements
+ * that hook.
+ *
+ * If the component or directive uses inheritance, the NgOnChangesFeature MUST
+ * be included as a feature AFTER {@link InheritDefinitionFeature}, otherwise
+ * inherited properties will not be propagated to the ngOnChanges lifecycle
+ * hook.
+ *
+ * Example usage:
+ *
+ * ```
+ * static ɵcmp = defineComponent({
+ *   ...
+ *   inputs: {name: 'publicName'},
+ *   features: [NgOnChangesFeature]
+ * });
+ * ```
+ *
+ * @codeGenApi
+ */
+function ɵɵNgOnChangesFeature(definition) {
+    if (definition.type.prototype.ngOnChanges) {
+        definition.setInput = ngOnChangesSetInput;
+        definition.onChanges = wrapOnChanges();
+    }
+}
+// This option ensures that the ngOnChanges lifecycle hook will be inherited
+// from superclasses (in InheritDefinitionFeature).
+/** @nocollapse */
+// tslint:disable-next-line:no-toplevel-property-access
+ɵɵNgOnChangesFeature.ngInherit = true;
+function wrapOnChanges() {
+    return function wrapOnChangesHook_inPreviousChangesStorage() {
+        const simpleChangesStore = getSimpleChangesStore(this);
+        const current = simpleChangesStore && simpleChangesStore.current;
+        if (current) {
+            const previous = simpleChangesStore.previous;
+            if (previous === EMPTY_OBJ) {
+                simpleChangesStore.previous = current;
+            }
+            else {
+                // New changes are copied to the previous store, so that we don't lose history for inputs
+                // which were not changed this time
+                for (let key in current) {
+                    previous[key] = current[key];
+                }
+            }
+            simpleChangesStore.current = null;
+            this.ngOnChanges(current);
+        }
+    };
+}
+function ngOnChangesSetInput(instance, value, publicName, privateName) {
+    const simpleChangesStore = getSimpleChangesStore(instance) ||
+        setSimpleChangesStore(instance, { previous: EMPTY_OBJ, current: null });
+    const current = simpleChangesStore.current || (simpleChangesStore.current = {});
+    const previous = simpleChangesStore.previous;
+    const declaredName = this.declaredInputs[publicName];
+    const previousChange = previous[declaredName];
+    current[declaredName] = new SimpleChange(previousChange && previousChange.currentValue, value, previous === EMPTY_OBJ);
+    instance[privateName] = value;
+}
+const SIMPLE_CHANGES_STORE = '__ngSimpleChanges__';
+function getSimpleChangesStore(instance) {
+    return instance[SIMPLE_CHANGES_STORE] || null;
+}
+function setSimpleChangesStore(instance, store) {
+    return instance[SIMPLE_CHANGES_STORE] = store;
+}
+
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
  * Resolves the providers which are defined in the DirectiveDef.
  *
  * When inserting the tokens and the factories in their respective arrays, we can assume that
@@ -43206,9 +43141,9 @@ function resolveProvider$1(provider, tInjectables, lInjectablesBlueprint, isComp
         let token = isTypeProvider(provider) ? provider : resolveForwardRef(provider.provide);
         let providerFactory = providerToFactory(provider);
         const tNode = getPreviousOrParentTNode();
-        const beginIndex = tNode.providerIndexes & 1048575 /* ProvidersStartIndexMask */;
+        const beginIndex = tNode.providerIndexes & 65535 /* ProvidersStartIndexMask */;
         const endIndex = tNode.directiveStart;
-        const cptViewProvidersCount = tNode.providerIndexes >> 20 /* CptViewProvidersCountShift */;
+        const cptViewProvidersCount = tNode.providerIndexes >> 16 /* CptViewProvidersCountShift */;
         if (isTypeProvider(provider) || !provider.multi) {
             // Single provider case: the factory is created and pushed immediately
             const factory = new NodeInjectorFactory(providerFactory, isViewProvider, ɵɵdirectiveInject);
@@ -43220,7 +43155,7 @@ function resolveProvider$1(provider, tInjectables, lInjectablesBlueprint, isComp
                 tNode.directiveStart++;
                 tNode.directiveEnd++;
                 if (isViewProvider) {
-                    tNode.providerIndexes += 1048576 /* CptViewProvidersCountShifter */;
+                    tNode.providerIndexes += 65536 /* CptViewProvidersCountShifter */;
                 }
                 lInjectablesBlueprint.push(factory);
                 lView.push(factory);
@@ -43270,7 +43205,7 @@ function resolveProvider$1(provider, tInjectables, lInjectablesBlueprint, isComp
                 tNode.directiveStart++;
                 tNode.directiveEnd++;
                 if (isViewProvider) {
-                    tNode.providerIndexes += 1048576 /* CptViewProvidersCountShifter */;
+                    tNode.providerIndexes += 65536 /* CptViewProvidersCountShifter */;
                 }
                 lInjectablesBlueprint.push(factory);
                 lView.push(factory);
@@ -43686,7 +43621,7 @@ class Version {
 /**
  * @publicApi
  */
-const VERSION = new Version('10.0.14');
+const VERSION = new Version('10.0.0');
 
 /**
  * @license
@@ -46617,6 +46552,12 @@ class ComponentFactory$1 extends ComponentFactory {
             elementCreate(elementName, rendererFactory.createRenderer(null, this.componentDef), getNamespace$1(elementName));
         const rootFlags = this.componentDef.onPush ? 64 /* Dirty */ | 512 /* IsRoot */ :
             16 /* CheckAlways */ | 512 /* IsRoot */;
+        // Check whether this Component needs to be isolated from other components, i.e. whether it
+        // should be placed into its own (empty) root context or existing root context should be used.
+        // Note: this is internal-only convention and might change in the future, so it should not be
+        // relied upon externally.
+        const isIsolated = typeof rootSelectorOrNode === 'string' &&
+            /^#root-ng-internal-isolated-\d+/.test(rootSelectorOrNode);
         const rootContext = createRootContext();
         // Create the root view. Uses empty TView and ContentTemplate.
         const rootTView = createTView(0 /* Root */, -1, null, 1, 0, null, null, null, null, null);
@@ -46671,9 +46612,12 @@ class ComponentFactory$1 extends ComponentFactory {
             leaveView();
         }
         const componentRef = new ComponentRef$1(this.componentType, component, createElementRef(ElementRef, tElementNode, rootLView), rootLView, tElementNode);
-        // The host element of the internal root view is attached to the component's host view node.
-        ngDevMode && assertNodeOfPossibleTypes(rootTView.node, [2 /* View */]);
-        rootTView.node.child = tElementNode;
+        if (!rootSelectorOrNode || isIsolated) {
+            // The host element of the internal or isolated root view is attached to the component's host
+            // view node.
+            ngDevMode && assertNodeOfPossibleTypes(rootTView.node, 2 /* View */);
+            rootTView.node.child = tElementNode;
+        }
         return componentRef;
     }
 }
@@ -46723,6 +46667,30 @@ class ComponentRef$1 extends ComponentRef {
             this.destroyCbs.push(callback);
         }
     }
+}
+
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * NOTE: changes to the `ngI18nClosureMode` name must be synced with `compiler-cli/src/tooling.ts`.
+ */
+if (typeof ngI18nClosureMode === 'undefined') {
+    // These property accesses can be ignored because ngI18nClosureMode will be set to false
+    // when optimizing code and the whole if statement will be dropped.
+    // Make sure to refer to ngI18nClosureMode as ['ngI18nClosureMode'] for closure.
+    // NOTE: we need to have it in IIFE so that the tree-shaker is happy.
+    (function () {
+        // tslint:disable-next-line:no-toplevel-property-access
+        _global['ngI18nClosureMode'] =
+            // TODO(FW-1250): validate that this actually, you know, works.
+            // tslint:disable-next-line:no-toplevel-property-access
+            typeof goog !== 'undefined' && typeof goog.getMsg === 'function';
+    })();
 }
 
 /**
@@ -46938,723 +46906,277 @@ const USD_CURRENCY_CODE = 'USD';
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/**
- * The locale id that the application is currently using (for translations and ICU expressions).
- * This is the ivy version of `LOCALE_ID` that was defined as an injection token for the view engine
- * but is now defined as a global value.
- */
-let LOCALE_ID = DEFAULT_LOCALE_ID;
-/**
- * Sets the locale id that will be used for translations and ICU expressions.
- * This is the ivy version of `LOCALE_ID` that was defined as an injection token for the view engine
- * but is now defined as a global value.
- *
- * @param localeId
- */
-function setLocaleId(localeId) {
-    assertDefined(localeId, `Expected localeId to be defined`);
-    if (typeof localeId === 'string') {
-        LOCALE_ID = localeId.toLowerCase().replace(/_/g, '-');
-    }
-}
-/**
- * Gets the locale id that will be used for translations and ICU expressions.
- * This is the ivy version of `LOCALE_ID` that was defined as an injection token for the view engine
- * but is now defined as a global value.
- */
-function getLocaleId() {
-    return LOCALE_ID;
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-/**
- * NOTE: changes to the `ngI18nClosureMode` name must be synced with `compiler-cli/src/tooling.ts`.
- */
-if (typeof ngI18nClosureMode === 'undefined') {
-    // These property accesses can be ignored because ngI18nClosureMode will be set to false
-    // when optimizing code and the whole if statement will be dropped.
-    // Make sure to refer to ngI18nClosureMode as ['ngI18nClosureMode'] for closure.
-    // NOTE: we need to have it in IIFE so that the tree-shaker is happy.
-    (function () {
-        // tslint:disable-next-line:no-toplevel-property-access
-        _global['ngI18nClosureMode'] =
-            // TODO(FW-1250): validate that this actually, you know, works.
-            // tslint:disable-next-line:no-toplevel-property-access
-            typeof goog !== 'undefined' && typeof goog.getMsg === 'function';
-    })();
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-function getParentFromI18nMutateOpCode(mergedCode) {
-    return mergedCode >>> 17 /* SHIFT_PARENT */;
-}
-function getRefFromI18nMutateOpCode(mergedCode) {
-    return (mergedCode & 131064 /* MASK_REF */) >>> 3 /* SHIFT_REF */;
-}
-function getInstructionFromI18nMutateOpCode(mergedCode) {
-    return mergedCode & 7 /* MASK_INSTRUCTION */;
-}
-/**
- * Marks that the next string is an element name.
- *
- * See `I18nMutateOpCodes` documentation.
- */
-const ELEMENT_MARKER = {
-    marker: 'element'
-};
-/**
- * Marks that the next string is comment text.
- *
- * See `I18nMutateOpCodes` documentation.
- */
-const COMMENT_MARKER = {
-    marker: 'comment'
-};
-// Note: This hack is necessary so we don't erroneously get a circular dependency
-// failure based on types.
-const unusedValueExportToPlacateAjd$6 = 1;
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-const i18nIndexStack = [];
-let i18nIndexStackPointer = -1;
-function popI18nIndex() {
-    return i18nIndexStack[i18nIndexStackPointer--];
-}
-function pushI18nIndex(index) {
-    i18nIndexStack[++i18nIndexStackPointer] = index;
-}
-let changeMask = 0b0;
-let shiftsCounter = 0;
-function setMaskBit(bit) {
-    if (bit) {
-        changeMask = changeMask | (1 << shiftsCounter);
-    }
-    shiftsCounter++;
-}
-function applyI18n(tView, lView, index) {
-    if (shiftsCounter > 0) {
-        ngDevMode && assertDefined(tView, `tView should be defined`);
-        const tI18n = tView.data[index + HEADER_OFFSET];
-        let updateOpCodes;
-        let tIcus = null;
-        if (Array.isArray(tI18n)) {
-            updateOpCodes = tI18n;
-        }
-        else {
-            updateOpCodes = tI18n.update;
-            tIcus = tI18n.icus;
-        }
-        const bindingsStartIndex = getBindingIndex() - shiftsCounter - 1;
-        applyUpdateOpCodes(tView, tIcus, lView, updateOpCodes, bindingsStartIndex, changeMask);
-        // Reset changeMask & maskBit to default for the next update cycle
-        changeMask = 0b0;
-        shiftsCounter = 0;
-    }
-}
-/**
- * Apply `I18nMutateOpCodes` OpCodes.
- *
- * @param tView Current `TView`
- * @param rootIndex Pointer to the root (parent) tNode for the i18n.
- * @param createOpCodes OpCodes to process
- * @param lView Current `LView`
- */
-function applyCreateOpCodes(tView, rootindex, createOpCodes, lView) {
-    const renderer = lView[RENDERER];
-    let currentTNode = null;
-    let previousTNode = null;
-    const visitedNodes = [];
-    for (let i = 0; i < createOpCodes.length; i++) {
-        const opCode = createOpCodes[i];
-        if (typeof opCode == 'string') {
-            const textRNode = createTextNode(opCode, renderer);
-            const textNodeIndex = createOpCodes[++i];
-            ngDevMode && ngDevMode.rendererCreateTextNode++;
-            previousTNode = currentTNode;
-            currentTNode =
-                createDynamicNodeAtIndex(tView, lView, textNodeIndex, 3 /* Element */, textRNode, null);
-            visitedNodes.push(textNodeIndex);
-            setIsNotParent();
-        }
-        else if (typeof opCode == 'number') {
-            switch (opCode & 7 /* MASK_INSTRUCTION */) {
-                case 1 /* AppendChild */:
-                    const destinationNodeIndex = opCode >>> 17 /* SHIFT_PARENT */;
-                    let destinationTNode;
-                    if (destinationNodeIndex === rootindex) {
-                        // If the destination node is `i18nStart`, we don't have a
-                        // top-level node and we should use the host node instead
-                        destinationTNode = lView[T_HOST];
-                    }
-                    else {
-                        destinationTNode = getTNode(tView, destinationNodeIndex);
-                    }
-                    ngDevMode &&
-                        assertDefined(currentTNode, `You need to create or select a node before you can insert it into the DOM`);
-                    previousTNode =
-                        appendI18nNode(tView, currentTNode, destinationTNode, previousTNode, lView);
-                    break;
-                case 0 /* Select */:
-                    // Negative indices indicate that a given TNode is a sibling node, not a parent node
-                    // (see `i18nStartFirstPass` for additional information).
-                    const isParent = opCode >= 0;
-                    // FIXME(misko): This SHIFT_REF looks suspect as it does not have mask.
-                    const nodeIndex = (isParent ? opCode : ~opCode) >>> 3 /* SHIFT_REF */;
-                    visitedNodes.push(nodeIndex);
-                    previousTNode = currentTNode;
-                    currentTNode = getTNode(tView, nodeIndex);
-                    if (currentTNode) {
-                        setPreviousOrParentTNode(currentTNode, isParent);
-                    }
-                    break;
-                case 5 /* ElementEnd */:
-                    const elementIndex = opCode >>> 3 /* SHIFT_REF */;
-                    previousTNode = currentTNode = getTNode(tView, elementIndex);
-                    setPreviousOrParentTNode(currentTNode, false);
-                    break;
-                case 4 /* Attr */:
-                    const elementNodeIndex = opCode >>> 3 /* SHIFT_REF */;
-                    const attrName = createOpCodes[++i];
-                    const attrValue = createOpCodes[++i];
-                    // This code is used for ICU expressions only, since we don't support
-                    // directives/components in ICUs, we don't need to worry about inputs here
-                    elementAttributeInternal(getTNode(tView, elementNodeIndex), lView, attrName, attrValue, null, null);
-                    break;
-                default:
-                    throw new Error(`Unable to determine the type of mutate operation for "${opCode}"`);
-            }
-        }
-        else {
-            switch (opCode) {
-                case COMMENT_MARKER:
-                    const commentValue = createOpCodes[++i];
-                    const commentNodeIndex = createOpCodes[++i];
-                    ngDevMode &&
-                        assertEqual(typeof commentValue, 'string', `Expected "${commentValue}" to be a comment node value`);
-                    const commentRNode = renderer.createComment(commentValue);
-                    ngDevMode && ngDevMode.rendererCreateComment++;
-                    previousTNode = currentTNode;
-                    currentTNode = createDynamicNodeAtIndex(tView, lView, commentNodeIndex, 5 /* IcuContainer */, commentRNode, null);
-                    visitedNodes.push(commentNodeIndex);
-                    attachPatchData(commentRNode, lView);
-                    // We will add the case nodes later, during the update phase
-                    setIsNotParent();
-                    break;
-                case ELEMENT_MARKER:
-                    const tagNameValue = createOpCodes[++i];
-                    const elementNodeIndex = createOpCodes[++i];
-                    ngDevMode &&
-                        assertEqual(typeof tagNameValue, 'string', `Expected "${tagNameValue}" to be an element node tag name`);
-                    const elementRNode = renderer.createElement(tagNameValue);
-                    ngDevMode && ngDevMode.rendererCreateElement++;
-                    previousTNode = currentTNode;
-                    currentTNode = createDynamicNodeAtIndex(tView, lView, elementNodeIndex, 3 /* Element */, elementRNode, tagNameValue);
-                    visitedNodes.push(elementNodeIndex);
-                    break;
-                default:
-                    throw new Error(`Unable to determine the type of mutate operation for "${opCode}"`);
-            }
-        }
-    }
-    setIsNotParent();
-    return visitedNodes;
-}
-/**
- * Apply `I18nUpdateOpCodes` OpCodes
- *
- * @param tView Current `TView`
- * @param tIcus If ICUs present than this contains them.
- * @param lView Current `LView`
- * @param updateOpCodes OpCodes to process
- * @param bindingsStartIndex Location of the first `ɵɵi18nApply`
- * @param changeMask Each bit corresponds to a `ɵɵi18nExp` (Counting backwards from
- *     `bindingsStartIndex`)
- */
-function applyUpdateOpCodes(tView, tIcus, lView, updateOpCodes, bindingsStartIndex, changeMask) {
-    let caseCreated = false;
-    for (let i = 0; i < updateOpCodes.length; i++) {
-        // bit code to check if we should apply the next update
-        const checkBit = updateOpCodes[i];
-        // Number of opCodes to skip until next set of update codes
-        const skipCodes = updateOpCodes[++i];
-        if (checkBit & changeMask) {
-            // The value has been updated since last checked
-            let value = '';
-            for (let j = i + 1; j <= (i + skipCodes); j++) {
-                const opCode = updateOpCodes[j];
-                if (typeof opCode == 'string') {
-                    value += opCode;
-                }
-                else if (typeof opCode == 'number') {
-                    if (opCode < 0) {
-                        // Negative opCode represent `i18nExp` values offset.
-                        value += renderStringify(lView[bindingsStartIndex - opCode]);
-                    }
-                    else {
-                        const nodeIndex = opCode >>> 2 /* SHIFT_REF */;
-                        switch (opCode & 3 /* MASK_OPCODE */) {
-                            case 1 /* Attr */:
-                                const propName = updateOpCodes[++j];
-                                const sanitizeFn = updateOpCodes[++j];
-                                elementPropertyInternal(tView, getTNode(tView, nodeIndex), lView, propName, value, lView[RENDERER], sanitizeFn, false);
-                                break;
-                            case 0 /* Text */:
-                                textBindingInternal(lView, nodeIndex, value);
-                                break;
-                            case 2 /* IcuSwitch */:
-                                caseCreated =
-                                    applyIcuSwitchCase(tView, tIcus, updateOpCodes[++j], lView, value);
-                                break;
-                            case 3 /* IcuUpdate */:
-                                applyIcuUpdateCase(tView, tIcus, updateOpCodes[++j], bindingsStartIndex, lView, caseCreated);
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-        i += skipCodes;
-    }
-}
-/**
- * Apply OpCodes associated with updating an existing ICU.
- *
- * @param tView Current `TView`
- * @param tIcus ICUs active at this location.
- * @param tIcuIndex Index into `tIcus` to process.
- * @param bindingsStartIndex Location of the first `ɵɵi18nApply`
- * @param lView Current `LView`
- * @param changeMask Each bit corresponds to a `ɵɵi18nExp` (Counting backwards from
- *     `bindingsStartIndex`)
- */
-function applyIcuUpdateCase(tView, tIcus, tIcuIndex, bindingsStartIndex, lView, caseCreated) {
-    ngDevMode && assertIndexInRange(tIcus, tIcuIndex);
-    const tIcu = tIcus[tIcuIndex];
-    ngDevMode && assertIndexInRange(lView, tIcu.currentCaseLViewIndex);
-    const activeCaseIndex = lView[tIcu.currentCaseLViewIndex];
-    if (activeCaseIndex !== null) {
-        const mask = caseCreated ?
-            -1 : // -1 is same as all bits on, which simulates creation since it marks all bits dirty
-            changeMask;
-        applyUpdateOpCodes(tView, tIcus, lView, tIcu.update[activeCaseIndex], bindingsStartIndex, mask);
-    }
-}
-/**
- * Apply OpCodes associated with switching a case on ICU.
- *
- * This involves tearing down existing case and than building up a new case.
- *
- * @param tView Current `TView`
- * @param tIcus ICUs active at this location.
- * @param tICuIndex Index into `tIcus` to process.
- * @param lView Current `LView`
- * @param value Value of the case to update to.
- * @returns true if a new case was created (needed so that the update executes regardless of the
- *     bitmask)
- */
-function applyIcuSwitchCase(tView, tIcus, tICuIndex, lView, value) {
-    applyIcuSwitchCaseRemove(tView, tIcus, tICuIndex, lView);
-    // Rebuild a new case for this ICU
-    let caseCreated = false;
-    const tIcu = tIcus[tICuIndex];
-    const caseIndex = getCaseIndex(tIcu, value);
-    lView[tIcu.currentCaseLViewIndex] = caseIndex !== -1 ? caseIndex : null;
-    if (caseIndex > -1) {
-        // Add the nodes for the new case
-        applyCreateOpCodes(tView, -1, // -1 means we don't have parent node
-        tIcu.create[caseIndex], lView);
-        caseCreated = true;
-    }
-    return caseCreated;
-}
-/**
- * Apply OpCodes associated with tearing down of DOM.
- *
- * This involves tearing down existing case and than building up a new case.
- *
- * @param tView Current `TView`
- * @param tIcus ICUs active at this location.
- * @param tIcuIndex Index into `tIcus` to process.
- * @param lView Current `LView`
- * @returns true if a new case was created (needed so that the update executes regardless of the
- *     bitmask)
- */
-function applyIcuSwitchCaseRemove(tView, tIcus, tIcuIndex, lView) {
-    ngDevMode && assertIndexInRange(tIcus, tIcuIndex);
-    const tIcu = tIcus[tIcuIndex];
-    const activeCaseIndex = lView[tIcu.currentCaseLViewIndex];
-    if (activeCaseIndex !== null) {
-        const removeCodes = tIcu.remove[activeCaseIndex];
-        for (let k = 0; k < removeCodes.length; k++) {
-            const removeOpCode = removeCodes[k];
-            const nodeOrIcuIndex = removeOpCode >>> 3 /* SHIFT_REF */;
-            switch (removeOpCode & 7 /* MASK_INSTRUCTION */) {
-                case 3 /* Remove */:
-                    // FIXME(misko): this comment is wrong!
-                    // Remove DOM element, but do *not* mark TNode as detached, since we are
-                    // just switching ICU cases (while keeping the same TNode), so a DOM element
-                    // representing a new ICU case will be re-created.
-                    removeNode(tView, lView, nodeOrIcuIndex, /* markAsDetached */ false);
-                    break;
-                case 6 /* RemoveNestedIcu */:
-                    applyIcuSwitchCaseRemove(tView, tIcus, nodeOrIcuIndex, lView);
-                    break;
-            }
-        }
-    }
-}
-function appendI18nNode(tView, tNode, parentTNode, previousTNode, lView) {
-    ngDevMode && ngDevMode.rendererMoveNode++;
-    const nextNode = tNode.next;
-    if (!previousTNode) {
-        previousTNode = parentTNode;
-    }
-    // Re-organize node tree to put this node in the correct position.
-    if (previousTNode === parentTNode && tNode !== parentTNode.child) {
-        tNode.next = parentTNode.child;
-        parentTNode.child = tNode;
-    }
-    else if (previousTNode !== parentTNode && tNode !== previousTNode.next) {
-        tNode.next = previousTNode.next;
-        previousTNode.next = tNode;
-    }
-    else {
-        tNode.next = null;
-    }
-    if (parentTNode !== lView[T_HOST]) {
-        tNode.parent = parentTNode;
-    }
-    // If tNode was moved around, we might need to fix a broken link.
-    let cursor = tNode.next;
-    while (cursor) {
-        if (cursor.next === tNode) {
-            cursor.next = nextNode;
-        }
-        cursor = cursor.next;
-    }
-    // If the placeholder to append is a projection, we need to move the projected nodes instead
-    if (tNode.type === 1 /* Projection */) {
-        applyProjection(tView, lView, tNode);
-        return tNode;
-    }
-    appendChild(tView, lView, getNativeByTNode(tNode, lView), tNode);
-    const slotValue = lView[tNode.index];
-    if (tNode.type !== 0 /* Container */ && isLContainer(slotValue)) {
-        // Nodes that inject ViewContainerRef also have a comment node that should be moved
-        appendChild(tView, lView, slotValue[NATIVE], tNode);
-    }
-    return tNode;
-}
-/**
- * See `i18nEnd` above.
- */
-function i18nEndFirstPass(tView, lView) {
-    ngDevMode &&
-        assertEqual(getBindingIndex(), tView.bindingStartIndex, 'i18nEnd should be called before any binding');
-    const rootIndex = popI18nIndex();
-    const tI18n = tView.data[rootIndex + HEADER_OFFSET];
-    ngDevMode && assertDefined(tI18n, `You should call i18nStart before i18nEnd`);
-    // Find the last node that was added before `i18nEnd`
-    const lastCreatedNode = getPreviousOrParentTNode();
-    // Read the instructions to insert/move/remove DOM elements
-    const visitedNodes = applyCreateOpCodes(tView, rootIndex, tI18n.create, lView);
-    // Remove deleted nodes
-    let index = rootIndex + 1;
-    while (index <= lastCreatedNode.index - HEADER_OFFSET) {
-        if (visitedNodes.indexOf(index) === -1) {
-            removeNode(tView, lView, index, /* markAsDetached */ true);
-        }
-        // Check if an element has any local refs and skip them
-        const tNode = getTNode(tView, index);
-        if (tNode &&
-            (tNode.type === 0 /* Container */ || tNode.type === 3 /* Element */ ||
-                tNode.type === 4 /* ElementContainer */) &&
-            tNode.localNames !== null) {
-            // Divide by 2 to get the number of local refs,
-            // since they are stored as an array that also includes directive indexes,
-            // i.e. ["localRef", directiveIndex, ...]
-            index += tNode.localNames.length >> 1;
-        }
-        index++;
-    }
-}
-function removeNode(tView, lView, index, markAsDetached) {
-    const removedPhTNode = getTNode(tView, index);
-    const removedPhRNode = getNativeByIndex(index, lView);
-    if (removedPhRNode) {
-        nativeRemoveNode(lView[RENDERER], removedPhRNode);
-    }
-    const slotValue = load(lView, index);
-    if (isLContainer(slotValue)) {
-        const lContainer = slotValue;
-        if (removedPhTNode.type !== 0 /* Container */) {
-            nativeRemoveNode(lView[RENDERER], lContainer[NATIVE]);
-        }
-    }
-    if (markAsDetached) {
-        // Define this node as detached to avoid projecting it later
-        removedPhTNode.flags |= 64 /* isDetached */;
-    }
-    ngDevMode && ngDevMode.rendererRemoveNode++;
-}
-/**
- * Creates and stores the dynamic TNode, and unhooks it from the tree for now.
- */
-function createDynamicNodeAtIndex(tView, lView, index, type, native, name) {
-    const previousOrParentTNode = getPreviousOrParentTNode();
-    ngDevMode && assertIndexInRange(lView, index + HEADER_OFFSET);
-    lView[index + HEADER_OFFSET] = native;
-    // FIXME(misko): Why does this create A TNode??? I would not expect this to be here.
-    const tNode = getOrCreateTNode(tView, lView[T_HOST], index, type, name, null);
-    // We are creating a dynamic node, the previous tNode might not be pointing at this node.
-    // We will link ourselves into the tree later with `appendI18nNode`.
-    if (previousOrParentTNode && previousOrParentTNode.next === tNode) {
-        previousOrParentTNode.next = null;
-    }
-    return tNode;
-}
-/**
- * Returns the index of the current case of an ICU expression depending on the main binding value
- *
- * @param icuExpression
- * @param bindingValue The value of the main binding used by this ICU expression
- */
-function getCaseIndex(icuExpression, bindingValue) {
-    let index = icuExpression.cases.indexOf(bindingValue);
-    if (index === -1) {
-        switch (icuExpression.type) {
-            case 1 /* plural */: {
-                const resolvedCase = getPluralCase(bindingValue, getLocaleId());
-                index = icuExpression.cases.indexOf(resolvedCase);
-                if (index === -1 && resolvedCase !== 'other') {
-                    index = icuExpression.cases.indexOf('other');
-                }
-                break;
-            }
-            case 0 /* select */: {
-                index = icuExpression.cases.indexOf('other');
-                break;
-            }
-        }
-    }
-    return index;
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-/**
- * Converts `I18nUpdateOpCodes` array into a human readable format.
- *
- * This function is attached to the `I18nUpdateOpCodes.debug` property if `ngDevMode` is enabled.
- * This function provides a human readable view of the opcodes. This is useful when debugging the
- * application as well as writing more readable tests.
- *
- * @param this `I18nUpdateOpCodes` if attached as a method.
- * @param opcodes `I18nUpdateOpCodes` if invoked as a function.
- */
-function i18nUpdateOpCodesToString(opcodes) {
-    const parser = new OpCodeParser(opcodes || (Array.isArray(this) ? this : []));
-    let lines = [];
-    function consumeOpCode(value) {
-        const ref = value >>> 2 /* SHIFT_REF */;
-        const opCode = value & 3 /* MASK_OPCODE */;
-        switch (opCode) {
-            case 0 /* Text */:
-                return `(lView[${ref}] as Text).textContent = $$$`;
-            case 1 /* Attr */:
-                const attrName = parser.consumeString();
-                const sanitizationFn = parser.consumeFunction();
-                const value = sanitizationFn ? `(${sanitizationFn})($$$)` : '$$$';
-                return `(lView[${ref}] as Element).setAttribute('${attrName}', ${value})`;
-            case 2 /* IcuSwitch */:
-                return `icuSwitchCase(lView[${ref}] as Comment, ${parser.consumeNumber()}, $$$)`;
-            case 3 /* IcuUpdate */:
-                return `icuUpdateCase(lView[${ref}] as Comment, ${parser.consumeNumber()})`;
-        }
-        throw new Error('unexpected OpCode');
-    }
-    while (parser.hasMore()) {
-        let mask = parser.consumeNumber();
-        let size = parser.consumeNumber();
-        const end = parser.i + size;
-        const statements = [];
-        let statement = '';
-        while (parser.i < end) {
-            let value = parser.consumeNumberOrString();
-            if (typeof value === 'string') {
-                statement += value;
-            }
-            else if (value < 0) {
-                // Negative numbers are ref indexes
-                statement += '${lView[' + (0 - value) + ']}';
-            }
-            else {
-                // Positive numbers are operations.
-                const opCodeText = consumeOpCode(value);
-                statements.push(opCodeText.replace('$$$', '`' + statement + '`') + ';');
-                statement = '';
-            }
-        }
-        lines.push(`if (mask & 0b${mask.toString(2)}) { ${statements.join(' ')} }`);
-    }
-    return lines;
-}
-/**
- * Converts `I18nMutableOpCodes` array into a human readable format.
- *
- * This function is attached to the `I18nMutableOpCodes.debug` if `ngDevMode` is enabled. This
- * function provides a human readable view of the opcodes. This is useful when debugging the
- * application as well as writing more readable tests.
- *
- * @param this `I18nMutableOpCodes` if attached as a method.
- * @param opcodes `I18nMutableOpCodes` if invoked as a function.
- */
-function i18nMutateOpCodesToString(opcodes) {
-    const parser = new OpCodeParser(opcodes || (Array.isArray(this) ? this : []));
-    let lines = [];
-    function consumeOpCode(opCode) {
-        const parent = getParentFromI18nMutateOpCode(opCode);
-        const ref = getRefFromI18nMutateOpCode(opCode);
-        switch (getInstructionFromI18nMutateOpCode(opCode)) {
-            case 0 /* Select */:
-                lastRef = ref;
-                return '';
-            case 1 /* AppendChild */:
-                return `(lView[${parent}] as Element).appendChild(lView[${lastRef}])`;
-            case 3 /* Remove */:
-                return `(lView[${parent}] as Element).remove(lView[${ref}])`;
-            case 4 /* Attr */:
-                return `(lView[${ref}] as Element).setAttribute("${parser.consumeString()}", "${parser.consumeString()}")`;
-            case 5 /* ElementEnd */:
-                return `setPreviousOrParentTNode(tView.data[${ref}] as TNode)`;
-            case 6 /* RemoveNestedIcu */:
-                return `removeNestedICU(${ref})`;
-        }
-        throw new Error('Unexpected OpCode');
-    }
-    let lastRef = -1;
-    while (parser.hasMore()) {
-        let value = parser.consumeNumberStringOrMarker();
-        if (value === COMMENT_MARKER) {
-            const text = parser.consumeString();
-            lastRef = parser.consumeNumber();
-            lines.push(`lView[${lastRef}] = document.createComment("${text}")`);
-        }
-        else if (value === ELEMENT_MARKER) {
-            const text = parser.consumeString();
-            lastRef = parser.consumeNumber();
-            lines.push(`lView[${lastRef}] = document.createElement("${text}")`);
-        }
-        else if (typeof value === 'string') {
-            lastRef = parser.consumeNumber();
-            lines.push(`lView[${lastRef}] = document.createTextNode("${value}")`);
-        }
-        else if (typeof value === 'number') {
-            const line = consumeOpCode(value);
-            line && lines.push(line);
-        }
-        else {
-            throw new Error('Unexpected value');
-        }
-    }
-    return lines;
-}
-class OpCodeParser {
-    constructor(codes) {
-        this.i = 0;
-        this.codes = codes;
-    }
-    hasMore() {
-        return this.i < this.codes.length;
-    }
-    consumeNumber() {
-        let value = this.codes[this.i++];
-        assertNumber(value, 'expecting number in OpCode');
-        return value;
-    }
-    consumeString() {
-        let value = this.codes[this.i++];
-        assertString(value, 'expecting string in OpCode');
-        return value;
-    }
-    consumeFunction() {
-        let value = this.codes[this.i++];
-        if (value === null || typeof value === 'function') {
-            return value;
-        }
-        throw new Error('expecting function in OpCode');
-    }
-    consumeNumberOrString() {
-        let value = this.codes[this.i++];
-        if (typeof value === 'string') {
-            return value;
-        }
-        assertNumber(value, 'expecting number or string in OpCode');
-        return value;
-    }
-    consumeNumberStringOrMarker() {
-        let value = this.codes[this.i++];
-        if (typeof value === 'string' || typeof value === 'number' || value == COMMENT_MARKER ||
-            value == ELEMENT_MARKER) {
-            return value;
-        }
-        assertNumber(value, 'expecting number, string, COMMENT_MARKER or ELEMENT_MARKER in OpCode');
-        return value;
-    }
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
+const MARKER = `�`;
+const ICU_BLOCK_REGEXP = /^\s*(�\d+:?\d*�)\s*,\s*(select|plural)\s*,/;
+const SUBTEMPLATE_REGEXP = /�\/?\*(\d+:\d+)�/gi;
+const PH_REGEXP = /�(\/?[#*!]\d+):?\d*�/gi;
 const BINDING_REGEXP = /�(\d+):?\d*�/gi;
 const ICU_REGEXP = /({\s*�\d+:?\d*�\s*,\s*\S{6}\s*,[\s\S]*})/gi;
-const NESTED_ICU = /�(\d+)�/;
-const ICU_BLOCK_REGEXP = /^\s*(�\d+:?\d*�)\s*,\s*(select|plural)\s*,/;
+// i18nPostprocess consts
+const ROOT_TEMPLATE_ID = 0;
+const PP_MULTI_VALUE_PLACEHOLDERS_REGEXP = /\[(�.+?�?)\]/;
+const PP_PLACEHOLDERS_REGEXP = /\[(�.+?�?)\]|(�\/?\*\d+:\d+�)/g;
+const PP_ICU_VARS_REGEXP = /({\s*)(VAR_(PLURAL|SELECT)(_\d+)?)(\s*,)/g;
+const PP_ICU_PLACEHOLDERS_REGEXP = /{([A-Z0-9_]+)}/g;
+const PP_ICUS_REGEXP = /�I18N_EXP_(ICU(_\d+)?)�/g;
+const PP_CLOSE_TEMPLATE_REGEXP = /\/\*/;
+const PP_TEMPLATE_ID_REGEXP = /\d+\:(\d+)/;
+/**
+ * Breaks pattern into strings and top level {...} blocks.
+ * Can be used to break a message into text and ICU expressions, or to break an ICU expression into
+ * keys and cases.
+ * Original code from closure library, modified for Angular.
+ *
+ * @param pattern (sub)Pattern to be broken.
+ *
+ */
+function extractParts(pattern) {
+    if (!pattern) {
+        return [];
+    }
+    let prevPos = 0;
+    const braceStack = [];
+    const results = [];
+    const braces = /[{}]/g;
+    // lastIndex doesn't get set to 0 so we have to.
+    braces.lastIndex = 0;
+    let match;
+    while (match = braces.exec(pattern)) {
+        const pos = match.index;
+        if (match[0] == '}') {
+            braceStack.pop();
+            if (braceStack.length == 0) {
+                // End of the block.
+                const block = pattern.substring(prevPos, pos);
+                if (ICU_BLOCK_REGEXP.test(block)) {
+                    results.push(parseICUBlock(block));
+                }
+                else {
+                    results.push(block);
+                }
+                prevPos = pos + 1;
+            }
+        }
+        else {
+            if (braceStack.length == 0) {
+                const substring = pattern.substring(prevPos, pos);
+                results.push(substring);
+                prevPos = pos + 1;
+            }
+            braceStack.push('{');
+        }
+    }
+    const substring = pattern.substring(prevPos);
+    results.push(substring);
+    return results;
+}
+/**
+ * Parses text containing an ICU expression and produces a JSON object for it.
+ * Original code from closure library, modified for Angular.
+ *
+ * @param pattern Text containing an ICU expression that needs to be parsed.
+ *
+ */
+function parseICUBlock(pattern) {
+    const cases = [];
+    const values = [];
+    let icuType = 1 /* plural */;
+    let mainBinding = 0;
+    pattern = pattern.replace(ICU_BLOCK_REGEXP, function (str, binding, type) {
+        if (type === 'select') {
+            icuType = 0 /* select */;
+        }
+        else {
+            icuType = 1 /* plural */;
+        }
+        mainBinding = parseInt(binding.substr(1), 10);
+        return '';
+    });
+    const parts = extractParts(pattern);
+    // Looking for (key block)+ sequence. One of the keys has to be "other".
+    for (let pos = 0; pos < parts.length;) {
+        let key = parts[pos++].trim();
+        if (icuType === 1 /* plural */) {
+            // Key can be "=x", we just want "x"
+            key = key.replace(/\s*(?:=)?(\w+)\s*/, '$1');
+        }
+        if (key.length) {
+            cases.push(key);
+        }
+        const blocks = extractParts(parts[pos++]);
+        if (cases.length > values.length) {
+            values.push(blocks);
+        }
+    }
+    // TODO(ocombe): support ICU expressions in attributes, see #21615
+    return { type: icuType, mainBinding: mainBinding, cases, values };
+}
+/**
+ * Removes everything inside the sub-templates of a message.
+ */
+function removeInnerTemplateTranslation(message) {
+    let match;
+    let res = '';
+    let index = 0;
+    let inTemplate = false;
+    let tagMatched;
+    while ((match = SUBTEMPLATE_REGEXP.exec(message)) !== null) {
+        if (!inTemplate) {
+            res += message.substring(index, match.index + match[0].length);
+            tagMatched = match[1];
+            inTemplate = true;
+        }
+        else {
+            if (match[0] === `${MARKER}/*${tagMatched}${MARKER}`) {
+                index = match.index;
+                inTemplate = false;
+            }
+        }
+    }
+    ngDevMode &&
+        assertEqual(inTemplate, false, `Tag mismatch: unable to find the end of the sub-template in the translation "${message}"`);
+    res += message.substr(index);
+    return res;
+}
+/**
+ * Extracts a part of a message and removes the rest.
+ *
+ * This method is used for extracting a part of the message associated with a template. A translated
+ * message can span multiple templates.
+ *
+ * Example:
+ * ```
+ * <div i18n>Translate <span *ngIf>me</span>!</div>
+ * ```
+ *
+ * @param message The message to crop
+ * @param subTemplateIndex Index of the sub-template to extract. If undefined it returns the
+ * external template and removes all sub-templates.
+ */
+function getTranslationForTemplate(message, subTemplateIndex) {
+    if (isRootTemplateMessage(subTemplateIndex)) {
+        // We want the root template message, ignore all sub-templates
+        return removeInnerTemplateTranslation(message);
+    }
+    else {
+        // We want a specific sub-template
+        const start = message.indexOf(`:${subTemplateIndex}${MARKER}`) + 2 + subTemplateIndex.toString().length;
+        const end = message.search(new RegExp(`${MARKER}\\/\\*\\d+:${subTemplateIndex}${MARKER}`));
+        return removeInnerTemplateTranslation(message.substring(start, end));
+    }
+}
+/**
+ * Generate the OpCodes to update the bindings of a string.
+ *
+ * @param str The string containing the bindings.
+ * @param destinationNode Index of the destination node which will receive the binding.
+ * @param attrName Name of the attribute, if the string belongs to an attribute.
+ * @param sanitizeFn Sanitization function used to sanitize the string after update, if necessary.
+ */
+function generateBindingUpdateOpCodes(str, destinationNode, attrName, sanitizeFn = null) {
+    const updateOpCodes = [null, null]; // Alloc space for mask and size
+    const textParts = str.split(BINDING_REGEXP);
+    let mask = 0;
+    for (let j = 0; j < textParts.length; j++) {
+        const textValue = textParts[j];
+        if (j & 1) {
+            // Odd indexes are bindings
+            const bindingIndex = parseInt(textValue, 10);
+            updateOpCodes.push(-1 - bindingIndex);
+            mask = mask | toMaskBit(bindingIndex);
+        }
+        else if (textValue !== '') {
+            // Even indexes are text
+            updateOpCodes.push(textValue);
+        }
+    }
+    updateOpCodes.push(destinationNode << 2 /* SHIFT_REF */ |
+        (attrName ? 1 /* Attr */ : 0 /* Text */));
+    if (attrName) {
+        updateOpCodes.push(attrName, sanitizeFn);
+    }
+    updateOpCodes[0] = mask;
+    updateOpCodes[1] = updateOpCodes.length - 2;
+    return updateOpCodes;
+}
+function getBindingMask(icuExpression, mask = 0) {
+    mask = mask | toMaskBit(icuExpression.mainBinding);
+    let match;
+    for (let i = 0; i < icuExpression.values.length; i++) {
+        const valueArr = icuExpression.values[i];
+        for (let j = 0; j < valueArr.length; j++) {
+            const value = valueArr[j];
+            if (typeof value === 'string') {
+                while (match = BINDING_REGEXP.exec(value)) {
+                    mask = mask | toMaskBit(parseInt(match[1], 10));
+                }
+            }
+            else {
+                mask = getBindingMask(value, mask);
+            }
+        }
+    }
+    return mask;
+}
+const i18nIndexStack = [];
+let i18nIndexStackPointer = -1;
+/**
+ * Convert binding index to mask bit.
+ *
+ * Each index represents a single bit on the bit-mask. Because bit-mask only has 32 bits, we make
+ * the 32nd bit share all masks for all bindings higher than 32. Since it is extremely rare to have
+ * more than 32 bindings this will be hit very rarely. The downside of hitting this corner case is
+ * that we will execute binding code more often than necessary. (penalty of performance)
+ */
+function toMaskBit(bindingIndex) {
+    return 1 << Math.min(bindingIndex, 31);
+}
+const parentIndexStack = [];
+/**
+ * Marks a block of text as translatable.
+ *
+ * The instructions `i18nStart` and `i18nEnd` mark the translation block in the template.
+ * The translation `message` is the value which is locale specific. The translation string may
+ * contain placeholders which associate inner elements and sub-templates within the translation.
+ *
+ * The translation `message` placeholders are:
+ * - `�{index}(:{block})�`: *Binding Placeholder*: Marks a location where an expression will be
+ *   interpolated into. The placeholder `index` points to the expression binding index. An optional
+ *   `block` that matches the sub-template in which it was declared.
+ * - `�#{index}(:{block})�`/`�/#{index}(:{block})�`: *Element Placeholder*:  Marks the beginning
+ *   and end of DOM element that were embedded in the original translation block. The placeholder
+ *   `index` points to the element index in the template instructions set. An optional `block` that
+ *   matches the sub-template in which it was declared.
+ * - `�!{index}(:{block})�`/`�/!{index}(:{block})�`: *Projection Placeholder*:  Marks the
+ *   beginning and end of <ng-content> that was embedded in the original translation block.
+ *   The placeholder `index` points to the element index in the template instructions set.
+ *   An optional `block` that matches the sub-template in which it was declared.
+ * - `�*{index}:{block}�`/`�/*{index}:{block}�`: *Sub-template Placeholder*: Sub-templates must be
+ *   split up and translated separately in each angular template function. The `index` points to the
+ *   `template` instruction index. A `block` that matches the sub-template in which it was declared.
+ *
+ * @param index A unique index of the translation in the static block.
+ * @param message The translation message.
+ * @param subTemplateIndex Optional sub-template index in the `message`.
+ *
+ * @codeGenApi
+ */
+function ɵɵi18nStart(index, message, subTemplateIndex) {
+    const tView = getTView();
+    ngDevMode && assertDefined(tView, `tView should be defined`);
+    i18nIndexStack[++i18nIndexStackPointer] = index;
+    // We need to delay projections until `i18nEnd`
+    setDelayProjection(true);
+    if (tView.firstCreatePass && tView.data[index + HEADER_OFFSET] === null) {
+        i18nStartFirstPass(getLView(), tView, index, message, subTemplateIndex);
+    }
+}
 // Count for the number of vars that will be allocated for each i18n block.
 // It is global because this is used in multiple functions that include loops and recursive calls.
 // This is reset to 0 when `i18nStartFirstPass` is called.
 let i18nVarsCount;
-const parentIndexStack = [];
-const MARKER = `�`;
-const SUBTEMPLATE_REGEXP = /�\/?\*(\d+:\d+)�/gi;
-const PH_REGEXP = /�(\/?[#*!]\d+):?\d*�/gi;
-/**
- * Angular Dart introduced &ngsp; as a placeholder for non-removable space, see:
- * https://github.com/dart-lang/angular/blob/0bb611387d29d65b5af7f9d2515ab571fd3fbee4/_tests/test/compiler/preserve_whitespace_test.dart#L25-L32
- * In Angular Dart &ngsp; is converted to the 0xE500 PUA (Private Use Areas) unicode character
- * and later on replaced by a space. We are re-implementing the same idea here, since translations
- * might contain this special character.
- */
-const NGSP_UNICODE_REGEXP = /\uE500/g;
-function replaceNgsp(value) {
-    return value.replace(NGSP_UNICODE_REGEXP, ' ');
+function allocNodeIndex(startIndex) {
+    return startIndex + i18nVarsCount++;
 }
 /**
  * See `i18nStart` above.
@@ -47668,9 +47190,6 @@ function i18nStartFirstPass(lView, tView, index, message, subTemplateIndex) {
     let parentIndexPointer = 0;
     parentIndexStack[parentIndexPointer] = parentIndex;
     const createOpCodes = [];
-    if (ngDevMode) {
-        attachDebugGetter(createOpCodes, i18nMutateOpCodesToString);
-    }
     // If the previous node wasn't the direct parent then we have a translation without top level
     // element and we need to keep a reference of the previous element if there is one. We should also
     // keep track whether an element was a parent node or not, so that the logic that consumes
@@ -47687,9 +47206,6 @@ function i18nStartFirstPass(lView, tView, index, message, subTemplateIndex) {
         createOpCodes.push(previousTNodeIndex << 3 /* SHIFT_REF */ | 0 /* Select */);
     }
     const updateOpCodes = [];
-    if (ngDevMode) {
-        attachDebugGetter(updateOpCodes, i18nUpdateOpCodesToString);
-    }
     const icuExpressions = [];
     if (message === '' && isRootTemplateMessage(subTemplateIndex)) {
         // If top level translation is an empty string, do not invoke additional processing
@@ -47771,6 +47287,8 @@ function i18nStartFirstPass(lView, tView, index, message, subTemplateIndex) {
     if (i18nVarsCount > 0) {
         allocExpando(tView, lView, i18nVarsCount);
     }
+    ngDevMode &&
+        attachI18nOpCodesDebug(createOpCodes, updateOpCodes, icuExpressions.length ? icuExpressions : null, lView);
     // NOTE: local var needed to properly assert the type of `TI18n`.
     const tI18n = {
         vars: i18nVarsCount,
@@ -47780,6 +47298,469 @@ function i18nStartFirstPass(lView, tView, index, message, subTemplateIndex) {
     };
     tView.data[index + HEADER_OFFSET] = tI18n;
 }
+function appendI18nNode(tView, tNode, parentTNode, previousTNode, lView) {
+    ngDevMode && ngDevMode.rendererMoveNode++;
+    const nextNode = tNode.next;
+    if (!previousTNode) {
+        previousTNode = parentTNode;
+    }
+    // Re-organize node tree to put this node in the correct position.
+    if (previousTNode === parentTNode && tNode !== parentTNode.child) {
+        tNode.next = parentTNode.child;
+        parentTNode.child = tNode;
+    }
+    else if (previousTNode !== parentTNode && tNode !== previousTNode.next) {
+        tNode.next = previousTNode.next;
+        previousTNode.next = tNode;
+    }
+    else {
+        tNode.next = null;
+    }
+    if (parentTNode !== lView[T_HOST]) {
+        tNode.parent = parentTNode;
+    }
+    // If tNode was moved around, we might need to fix a broken link.
+    let cursor = tNode.next;
+    while (cursor) {
+        if (cursor.next === tNode) {
+            cursor.next = nextNode;
+        }
+        cursor = cursor.next;
+    }
+    // If the placeholder to append is a projection, we need to move the projected nodes instead
+    if (tNode.type === 1 /* Projection */) {
+        applyProjection(tView, lView, tNode);
+        return tNode;
+    }
+    appendChild(tView, lView, getNativeByTNode(tNode, lView), tNode);
+    const slotValue = lView[tNode.index];
+    if (tNode.type !== 0 /* Container */ && isLContainer(slotValue)) {
+        // Nodes that inject ViewContainerRef also have a comment node that should be moved
+        appendChild(tView, lView, slotValue[NATIVE], tNode);
+    }
+    return tNode;
+}
+function isRootTemplateMessage(subTemplateIndex) {
+    return subTemplateIndex === undefined;
+}
+/**
+ * Handles message string post-processing for internationalization.
+ *
+ * Handles message string post-processing by transforming it from intermediate
+ * format (that might contain some markers that we need to replace) to the final
+ * form, consumable by i18nStart instruction. Post processing steps include:
+ *
+ * 1. Resolve all multi-value cases (like [�*1:1��#2:1�|�#4:1�|�5�])
+ * 2. Replace all ICU vars (like "VAR_PLURAL")
+ * 3. Replace all placeholders used inside ICUs in a form of {PLACEHOLDER}
+ * 4. Replace all ICU references with corresponding values (like �ICU_EXP_ICU_1�)
+ *    in case multiple ICUs have the same placeholder name
+ *
+ * @param message Raw translation string for post processing
+ * @param replacements Set of replacements that should be applied
+ *
+ * @returns Transformed string that can be consumed by i18nStart instruction
+ *
+ * @codeGenApi
+ */
+function ɵɵi18nPostprocess(message, replacements = {}) {
+    /**
+     * Step 1: resolve all multi-value placeholders like [�#5�|�*1:1��#2:1�|�#4:1�]
+     *
+     * Note: due to the way we process nested templates (BFS), multi-value placeholders are typically
+     * grouped by templates, for example: [�#5�|�#6�|�#1:1�|�#3:2�] where �#5� and �#6� belong to root
+     * template, �#1:1� belong to nested template with index 1 and �#1:2� - nested template with index
+     * 3. However in real templates the order might be different: i.e. �#1:1� and/or �#3:2� may go in
+     * front of �#6�. The post processing step restores the right order by keeping track of the
+     * template id stack and looks for placeholders that belong to the currently active template.
+     */
+    let result = message;
+    if (PP_MULTI_VALUE_PLACEHOLDERS_REGEXP.test(message)) {
+        const matches = {};
+        const templateIdsStack = [ROOT_TEMPLATE_ID];
+        result = result.replace(PP_PLACEHOLDERS_REGEXP, (m, phs, tmpl) => {
+            const content = phs || tmpl;
+            const placeholders = matches[content] || [];
+            if (!placeholders.length) {
+                content.split('|').forEach((placeholder) => {
+                    const match = placeholder.match(PP_TEMPLATE_ID_REGEXP);
+                    const templateId = match ? parseInt(match[1], 10) : ROOT_TEMPLATE_ID;
+                    const isCloseTemplateTag = PP_CLOSE_TEMPLATE_REGEXP.test(placeholder);
+                    placeholders.push([templateId, isCloseTemplateTag, placeholder]);
+                });
+                matches[content] = placeholders;
+            }
+            if (!placeholders.length) {
+                throw new Error(`i18n postprocess: unmatched placeholder - ${content}`);
+            }
+            const currentTemplateId = templateIdsStack[templateIdsStack.length - 1];
+            let idx = 0;
+            // find placeholder index that matches current template id
+            for (let i = 0; i < placeholders.length; i++) {
+                if (placeholders[i][0] === currentTemplateId) {
+                    idx = i;
+                    break;
+                }
+            }
+            // update template id stack based on the current tag extracted
+            const [templateId, isCloseTemplateTag, placeholder] = placeholders[idx];
+            if (isCloseTemplateTag) {
+                templateIdsStack.pop();
+            }
+            else if (currentTemplateId !== templateId) {
+                templateIdsStack.push(templateId);
+            }
+            // remove processed tag from the list
+            placeholders.splice(idx, 1);
+            return placeholder;
+        });
+    }
+    // return current result if no replacements specified
+    if (!Object.keys(replacements).length) {
+        return result;
+    }
+    /**
+     * Step 2: replace all ICU vars (like "VAR_PLURAL")
+     */
+    result = result.replace(PP_ICU_VARS_REGEXP, (match, start, key, _type, _idx, end) => {
+        return replacements.hasOwnProperty(key) ? `${start}${replacements[key]}${end}` : match;
+    });
+    /**
+     * Step 3: replace all placeholders used inside ICUs in a form of {PLACEHOLDER}
+     */
+    result = result.replace(PP_ICU_PLACEHOLDERS_REGEXP, (match, key) => {
+        return replacements.hasOwnProperty(key) ? replacements[key] : match;
+    });
+    /**
+     * Step 4: replace all ICU references with corresponding values (like �ICU_EXP_ICU_1�) in case
+     * multiple ICUs have the same placeholder name
+     */
+    result = result.replace(PP_ICUS_REGEXP, (match, key) => {
+        if (replacements.hasOwnProperty(key)) {
+            const list = replacements[key];
+            if (!list.length) {
+                throw new Error(`i18n postprocess: unmatched ICU - ${match} with key: ${key}`);
+            }
+            return list.shift();
+        }
+        return match;
+    });
+    return result;
+}
+/**
+ * Translates a translation block marked by `i18nStart` and `i18nEnd`. It inserts the text/ICU nodes
+ * into the render tree, moves the placeholder nodes and removes the deleted nodes.
+ *
+ * @codeGenApi
+ */
+function ɵɵi18nEnd() {
+    const lView = getLView();
+    const tView = getTView();
+    ngDevMode && assertDefined(tView, `tView should be defined`);
+    i18nEndFirstPass(tView, lView);
+    // Stop delaying projections
+    setDelayProjection(false);
+}
+/**
+ * See `i18nEnd` above.
+ */
+function i18nEndFirstPass(tView, lView) {
+    ngDevMode &&
+        assertEqual(getBindingIndex(), tView.bindingStartIndex, 'i18nEnd should be called before any binding');
+    const rootIndex = i18nIndexStack[i18nIndexStackPointer--];
+    const tI18n = tView.data[rootIndex + HEADER_OFFSET];
+    ngDevMode && assertDefined(tI18n, `You should call i18nStart before i18nEnd`);
+    // Find the last node that was added before `i18nEnd`
+    const lastCreatedNode = getPreviousOrParentTNode();
+    // Read the instructions to insert/move/remove DOM elements
+    const visitedNodes = readCreateOpCodes(rootIndex, tI18n.create, tView, lView);
+    // Remove deleted nodes
+    let index = rootIndex + 1;
+    while (index <= lastCreatedNode.index - HEADER_OFFSET) {
+        if (visitedNodes.indexOf(index) === -1) {
+            removeNode(tView, lView, index, /* markAsDetached */ true);
+        }
+        // Check if an element has any local refs and skip them
+        const tNode = getTNode(tView, index);
+        if (tNode &&
+            (tNode.type === 0 /* Container */ || tNode.type === 3 /* Element */ ||
+                tNode.type === 4 /* ElementContainer */) &&
+            tNode.localNames !== null) {
+            // Divide by 2 to get the number of local refs,
+            // since they are stored as an array that also includes directive indexes,
+            // i.e. ["localRef", directiveIndex, ...]
+            index += tNode.localNames.length >> 1;
+        }
+        index++;
+    }
+}
+/**
+ * Creates and stores the dynamic TNode, and unhooks it from the tree for now.
+ */
+function createDynamicNodeAtIndex(tView, lView, index, type, native, name) {
+    const previousOrParentTNode = getPreviousOrParentTNode();
+    ngDevMode && assertDataInRange(lView, index + HEADER_OFFSET);
+    lView[index + HEADER_OFFSET] = native;
+    const tNode = getOrCreateTNode(tView, lView[T_HOST], index, type, name, null);
+    // We are creating a dynamic node, the previous tNode might not be pointing at this node.
+    // We will link ourselves into the tree later with `appendI18nNode`.
+    if (previousOrParentTNode && previousOrParentTNode.next === tNode) {
+        previousOrParentTNode.next = null;
+    }
+    return tNode;
+}
+function readCreateOpCodes(index, createOpCodes, tView, lView) {
+    const renderer = lView[RENDERER];
+    let currentTNode = null;
+    let previousTNode = null;
+    const visitedNodes = [];
+    for (let i = 0; i < createOpCodes.length; i++) {
+        const opCode = createOpCodes[i];
+        if (typeof opCode == 'string') {
+            const textRNode = createTextNode(opCode, renderer);
+            const textNodeIndex = createOpCodes[++i];
+            ngDevMode && ngDevMode.rendererCreateTextNode++;
+            previousTNode = currentTNode;
+            currentTNode =
+                createDynamicNodeAtIndex(tView, lView, textNodeIndex, 3 /* Element */, textRNode, null);
+            visitedNodes.push(textNodeIndex);
+            setIsNotParent();
+        }
+        else if (typeof opCode == 'number') {
+            switch (opCode & 7 /* MASK_OPCODE */) {
+                case 1 /* AppendChild */:
+                    const destinationNodeIndex = opCode >>> 17 /* SHIFT_PARENT */;
+                    let destinationTNode;
+                    if (destinationNodeIndex === index) {
+                        // If the destination node is `i18nStart`, we don't have a
+                        // top-level node and we should use the host node instead
+                        destinationTNode = lView[T_HOST];
+                    }
+                    else {
+                        destinationTNode = getTNode(tView, destinationNodeIndex);
+                    }
+                    ngDevMode &&
+                        assertDefined(currentTNode, `You need to create or select a node before you can insert it into the DOM`);
+                    previousTNode =
+                        appendI18nNode(tView, currentTNode, destinationTNode, previousTNode, lView);
+                    break;
+                case 0 /* Select */:
+                    // Negative indicies indicate that a given TNode is a sibling node, not a parent node
+                    // (see `i18nStartFirstPass` for additional information).
+                    const isParent = opCode >= 0;
+                    const nodeIndex = (isParent ? opCode : ~opCode) >>> 3 /* SHIFT_REF */;
+                    visitedNodes.push(nodeIndex);
+                    previousTNode = currentTNode;
+                    currentTNode = getTNode(tView, nodeIndex);
+                    if (currentTNode) {
+                        setPreviousOrParentTNode(currentTNode, isParent);
+                    }
+                    break;
+                case 5 /* ElementEnd */:
+                    const elementIndex = opCode >>> 3 /* SHIFT_REF */;
+                    previousTNode = currentTNode = getTNode(tView, elementIndex);
+                    setPreviousOrParentTNode(currentTNode, false);
+                    break;
+                case 4 /* Attr */:
+                    const elementNodeIndex = opCode >>> 3 /* SHIFT_REF */;
+                    const attrName = createOpCodes[++i];
+                    const attrValue = createOpCodes[++i];
+                    // This code is used for ICU expressions only, since we don't support
+                    // directives/components in ICUs, we don't need to worry about inputs here
+                    elementAttributeInternal(getTNode(tView, elementNodeIndex), lView, attrName, attrValue, null, null);
+                    break;
+                default:
+                    throw new Error(`Unable to determine the type of mutate operation for "${opCode}"`);
+            }
+        }
+        else {
+            switch (opCode) {
+                case COMMENT_MARKER:
+                    const commentValue = createOpCodes[++i];
+                    const commentNodeIndex = createOpCodes[++i];
+                    ngDevMode &&
+                        assertEqual(typeof commentValue, 'string', `Expected "${commentValue}" to be a comment node value`);
+                    const commentRNode = renderer.createComment(commentValue);
+                    ngDevMode && ngDevMode.rendererCreateComment++;
+                    previousTNode = currentTNode;
+                    currentTNode = createDynamicNodeAtIndex(tView, lView, commentNodeIndex, 5 /* IcuContainer */, commentRNode, null);
+                    visitedNodes.push(commentNodeIndex);
+                    attachPatchData(commentRNode, lView);
+                    currentTNode.activeCaseIndex = null;
+                    // We will add the case nodes later, during the update phase
+                    setIsNotParent();
+                    break;
+                case ELEMENT_MARKER:
+                    const tagNameValue = createOpCodes[++i];
+                    const elementNodeIndex = createOpCodes[++i];
+                    ngDevMode &&
+                        assertEqual(typeof tagNameValue, 'string', `Expected "${tagNameValue}" to be an element node tag name`);
+                    const elementRNode = renderer.createElement(tagNameValue);
+                    ngDevMode && ngDevMode.rendererCreateElement++;
+                    previousTNode = currentTNode;
+                    currentTNode = createDynamicNodeAtIndex(tView, lView, elementNodeIndex, 3 /* Element */, elementRNode, tagNameValue);
+                    visitedNodes.push(elementNodeIndex);
+                    break;
+                default:
+                    throw new Error(`Unable to determine the type of mutate operation for "${opCode}"`);
+            }
+        }
+    }
+    setIsNotParent();
+    return visitedNodes;
+}
+function readUpdateOpCodes(updateOpCodes, icus, bindingsStartIndex, changeMask, tView, lView, bypassCheckBit = false) {
+    let caseCreated = false;
+    for (let i = 0; i < updateOpCodes.length; i++) {
+        // bit code to check if we should apply the next update
+        const checkBit = updateOpCodes[i];
+        // Number of opCodes to skip until next set of update codes
+        const skipCodes = updateOpCodes[++i];
+        if (bypassCheckBit || (checkBit & changeMask)) {
+            // The value has been updated since last checked
+            let value = '';
+            for (let j = i + 1; j <= (i + skipCodes); j++) {
+                const opCode = updateOpCodes[j];
+                if (typeof opCode == 'string') {
+                    value += opCode;
+                }
+                else if (typeof opCode == 'number') {
+                    if (opCode < 0) {
+                        // It's a binding index whose value is negative
+                        value += renderStringify(lView[bindingsStartIndex - opCode]);
+                    }
+                    else {
+                        const nodeIndex = opCode >>> 2 /* SHIFT_REF */;
+                        let tIcuIndex;
+                        let tIcu;
+                        let icuTNode;
+                        switch (opCode & 3 /* MASK_OPCODE */) {
+                            case 1 /* Attr */:
+                                const propName = updateOpCodes[++j];
+                                const sanitizeFn = updateOpCodes[++j];
+                                elementPropertyInternal(tView, getTNode(tView, nodeIndex), lView, propName, value, lView[RENDERER], sanitizeFn, false);
+                                break;
+                            case 0 /* Text */:
+                                textBindingInternal(lView, nodeIndex, value);
+                                break;
+                            case 2 /* IcuSwitch */:
+                                tIcuIndex = updateOpCodes[++j];
+                                tIcu = icus[tIcuIndex];
+                                icuTNode = getTNode(tView, nodeIndex);
+                                // If there is an active case, delete the old nodes
+                                if (icuTNode.activeCaseIndex !== null) {
+                                    const removeCodes = tIcu.remove[icuTNode.activeCaseIndex];
+                                    for (let k = 0; k < removeCodes.length; k++) {
+                                        const removeOpCode = removeCodes[k];
+                                        switch (removeOpCode & 7 /* MASK_OPCODE */) {
+                                            case 3 /* Remove */:
+                                                const nodeIndex = removeOpCode >>> 3 /* SHIFT_REF */;
+                                                // Remove DOM element, but do *not* mark TNode as detached, since we are
+                                                // just switching ICU cases (while keeping the same TNode), so a DOM element
+                                                // representing a new ICU case will be re-created.
+                                                removeNode(tView, lView, nodeIndex, /* markAsDetached */ false);
+                                                break;
+                                            case 6 /* RemoveNestedIcu */:
+                                                const nestedIcuNodeIndex = removeCodes[k + 1] >>> 3 /* SHIFT_REF */;
+                                                const nestedIcuTNode = getTNode(tView, nestedIcuNodeIndex);
+                                                const activeIndex = nestedIcuTNode.activeCaseIndex;
+                                                if (activeIndex !== null) {
+                                                    const nestedIcuTIndex = removeOpCode >>> 3 /* SHIFT_REF */;
+                                                    const nestedTIcu = icus[nestedIcuTIndex];
+                                                    addAllToArray(nestedTIcu.remove[activeIndex], removeCodes);
+                                                }
+                                                break;
+                                        }
+                                    }
+                                }
+                                // Update the active caseIndex
+                                const caseIndex = getCaseIndex(tIcu, value);
+                                icuTNode.activeCaseIndex = caseIndex !== -1 ? caseIndex : null;
+                                if (caseIndex > -1) {
+                                    // Add the nodes for the new case
+                                    readCreateOpCodes(-1, tIcu.create[caseIndex], tView, lView);
+                                    caseCreated = true;
+                                }
+                                break;
+                            case 3 /* IcuUpdate */:
+                                tIcuIndex = updateOpCodes[++j];
+                                tIcu = icus[tIcuIndex];
+                                icuTNode = getTNode(tView, nodeIndex);
+                                if (icuTNode.activeCaseIndex !== null) {
+                                    readUpdateOpCodes(tIcu.update[icuTNode.activeCaseIndex], icus, bindingsStartIndex, changeMask, tView, lView, caseCreated);
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        i += skipCodes;
+    }
+}
+function removeNode(tView, lView, index, markAsDetached) {
+    const removedPhTNode = getTNode(tView, index);
+    const removedPhRNode = getNativeByIndex(index, lView);
+    if (removedPhRNode) {
+        nativeRemoveNode(lView[RENDERER], removedPhRNode);
+    }
+    const slotValue = load(lView, index);
+    if (isLContainer(slotValue)) {
+        const lContainer = slotValue;
+        if (removedPhTNode.type !== 0 /* Container */) {
+            nativeRemoveNode(lView[RENDERER], lContainer[NATIVE]);
+        }
+    }
+    if (markAsDetached) {
+        // Define this node as detached to avoid projecting it later
+        removedPhTNode.flags |= 64 /* isDetached */;
+    }
+    ngDevMode && ngDevMode.rendererRemoveNode++;
+}
+/**
+ *
+ * Use this instruction to create a translation block that doesn't contain any placeholder.
+ * It calls both {@link i18nStart} and {@link i18nEnd} in one instruction.
+ *
+ * The translation `message` is the value which is locale specific. The translation string may
+ * contain placeholders which associate inner elements and sub-templates within the translation.
+ *
+ * The translation `message` placeholders are:
+ * - `�{index}(:{block})�`: *Binding Placeholder*: Marks a location where an expression will be
+ *   interpolated into. The placeholder `index` points to the expression binding index. An optional
+ *   `block` that matches the sub-template in which it was declared.
+ * - `�#{index}(:{block})�`/`�/#{index}(:{block})�`: *Element Placeholder*:  Marks the beginning
+ *   and end of DOM element that were embedded in the original translation block. The placeholder
+ *   `index` points to the element index in the template instructions set. An optional `block` that
+ *   matches the sub-template in which it was declared.
+ * - `�*{index}:{block}�`/`�/*{index}:{block}�`: *Sub-template Placeholder*: Sub-templates must be
+ *   split up and translated separately in each angular template function. The `index` points to the
+ *   `template` instruction index. A `block` that matches the sub-template in which it was declared.
+ *
+ * @param index A unique index of the translation in the static block.
+ * @param message The translation message.
+ * @param subTemplateIndex Optional sub-template index in the `message`.
+ *
+ * @codeGenApi
+ */
+function ɵɵi18n(index, message, subTemplateIndex) {
+    ɵɵi18nStart(index, message, subTemplateIndex);
+    ɵɵi18nEnd();
+}
+/**
+ * Marks a list of attributes as translatable.
+ *
+ * @param index A unique index in the static block
+ * @param values
+ *
+ * @codeGenApi
+ */
+function ɵɵi18nAttributes(index, values) {
+    const lView = getLView();
+    const tView = getTView();
+    ngDevMode && assertDefined(tView, `tView should be defined`);
+    i18nAttributesFirstPass(lView, tView, index, values);
+}
 /**
  * See `i18nAttributes` above.
  */
@@ -47787,9 +47768,6 @@ function i18nAttributesFirstPass(lView, tView, index, values) {
     const previousElement = getPreviousOrParentTNode();
     const previousElementIndex = previousElement.index - HEADER_OFFSET;
     const updateOpCodes = [];
-    if (ngDevMode) {
-        attachDebugGetter(updateOpCodes, i18nUpdateOpCodesToString);
-    }
     for (let i = 0; i < values.length; i += 2) {
         const attrName = values[i];
         const message = values[i + 1];
@@ -47833,132 +47811,81 @@ function i18nAttributesFirstPass(lView, tView, index, values) {
         tView.data[index + HEADER_OFFSET] = updateOpCodes;
     }
 }
+let changeMask = 0b0;
+let shiftsCounter = 0;
 /**
- * Generate the OpCodes to update the bindings of a string.
+ * Stores the values of the bindings during each update cycle in order to determine if we need to
+ * update the translated nodes.
  *
- * @param str The string containing the bindings.
- * @param destinationNode Index of the destination node which will receive the binding.
- * @param attrName Name of the attribute, if the string belongs to an attribute.
- * @param sanitizeFn Sanitization function used to sanitize the string after update, if necessary.
- */
-function generateBindingUpdateOpCodes(str, destinationNode, attrName, sanitizeFn = null) {
-    const updateOpCodes = [null, null]; // Alloc space for mask and size
-    if (ngDevMode) {
-        attachDebugGetter(updateOpCodes, i18nUpdateOpCodesToString);
-    }
-    const textParts = str.split(BINDING_REGEXP);
-    let mask = 0;
-    for (let j = 0; j < textParts.length; j++) {
-        const textValue = textParts[j];
-        if (j & 1) {
-            // Odd indexes are bindings
-            const bindingIndex = parseInt(textValue, 10);
-            updateOpCodes.push(-1 - bindingIndex);
-            mask = mask | toMaskBit(bindingIndex);
-        }
-        else if (textValue !== '') {
-            // Even indexes are text
-            updateOpCodes.push(textValue);
-        }
-    }
-    updateOpCodes.push(destinationNode << 2 /* SHIFT_REF */ |
-        (attrName ? 1 /* Attr */ : 0 /* Text */));
-    if (attrName) {
-        updateOpCodes.push(attrName, sanitizeFn);
-    }
-    updateOpCodes[0] = mask;
-    updateOpCodes[1] = updateOpCodes.length - 2;
-    return updateOpCodes;
-}
-function getBindingMask(icuExpression, mask = 0) {
-    mask = mask | toMaskBit(icuExpression.mainBinding);
-    let match;
-    for (let i = 0; i < icuExpression.values.length; i++) {
-        const valueArr = icuExpression.values[i];
-        for (let j = 0; j < valueArr.length; j++) {
-            const value = valueArr[j];
-            if (typeof value === 'string') {
-                while (match = BINDING_REGEXP.exec(value)) {
-                    mask = mask | toMaskBit(parseInt(match[1], 10));
-                }
-            }
-            else {
-                mask = getBindingMask(value, mask);
-            }
-        }
-    }
-    return mask;
-}
-function allocNodeIndex(startIndex) {
-    return startIndex + i18nVarsCount++;
-}
-/**
- * Convert binding index to mask bit.
+ * @param value The binding's value
+ * @returns This function returns itself so that it may be chained
+ * (e.g. `i18nExp(ctx.name)(ctx.title)`)
  *
- * Each index represents a single bit on the bit-mask. Because bit-mask only has 32 bits, we make
- * the 32nd bit share all masks for all bindings higher than 32. Since it is extremely rare to have
- * more than 32 bindings this will be hit very rarely. The downside of hitting this corner case is
- * that we will execute binding code more often than necessary. (penalty of performance)
+ * @codeGenApi
  */
-function toMaskBit(bindingIndex) {
-    return 1 << Math.min(bindingIndex, 31);
-}
-function isRootTemplateMessage(subTemplateIndex) {
-    return subTemplateIndex === undefined;
+function ɵɵi18nExp(value) {
+    const lView = getLView();
+    if (bindingUpdated(lView, nextBindingIndex(), value)) {
+        changeMask = changeMask | (1 << shiftsCounter);
+    }
+    shiftsCounter++;
+    return ɵɵi18nExp;
 }
 /**
- * Removes everything inside the sub-templates of a message.
+ * Updates a translation block or an i18n attribute when the bindings have changed.
+ *
+ * @param index Index of either {@link i18nStart} (translation block) or {@link i18nAttributes}
+ * (i18n attribute) on which it should update the content.
+ *
+ * @codeGenApi
  */
-function removeInnerTemplateTranslation(message) {
-    let match;
-    let res = '';
-    let index = 0;
-    let inTemplate = false;
-    let tagMatched;
-    while ((match = SUBTEMPLATE_REGEXP.exec(message)) !== null) {
-        if (!inTemplate) {
-            res += message.substring(index, match.index + match[0].length);
-            tagMatched = match[1];
-            inTemplate = true;
+function ɵɵi18nApply(index) {
+    if (shiftsCounter) {
+        const tView = getTView();
+        ngDevMode && assertDefined(tView, `tView should be defined`);
+        const tI18n = tView.data[index + HEADER_OFFSET];
+        let updateOpCodes;
+        let icus = null;
+        if (Array.isArray(tI18n)) {
+            updateOpCodes = tI18n;
         }
         else {
-            if (match[0] === `${MARKER}/*${tagMatched}${MARKER}`) {
-                index = match.index;
-                inTemplate = false;
+            updateOpCodes = tI18n.update;
+            icus = tI18n.icus;
+        }
+        const bindingsStartIndex = getBindingIndex() - shiftsCounter - 1;
+        const lView = getLView();
+        readUpdateOpCodes(updateOpCodes, icus, bindingsStartIndex, changeMask, tView, lView);
+        // Reset changeMask & maskBit to default for the next update cycle
+        changeMask = 0b0;
+        shiftsCounter = 0;
+    }
+}
+/**
+ * Returns the index of the current case of an ICU expression depending on the main binding value
+ *
+ * @param icuExpression
+ * @param bindingValue The value of the main binding used by this ICU expression
+ */
+function getCaseIndex(icuExpression, bindingValue) {
+    let index = icuExpression.cases.indexOf(bindingValue);
+    if (index === -1) {
+        switch (icuExpression.type) {
+            case 1 /* plural */: {
+                const resolvedCase = getPluralCase(bindingValue, getLocaleId());
+                index = icuExpression.cases.indexOf(resolvedCase);
+                if (index === -1 && resolvedCase !== 'other') {
+                    index = icuExpression.cases.indexOf('other');
+                }
+                break;
+            }
+            case 0 /* select */: {
+                index = icuExpression.cases.indexOf('other');
+                break;
             }
         }
     }
-    ngDevMode &&
-        assertEqual(inTemplate, false, `Tag mismatch: unable to find the end of the sub-template in the translation "${message}"`);
-    res += message.substr(index);
-    return res;
-}
-/**
- * Extracts a part of a message and removes the rest.
- *
- * This method is used for extracting a part of the message associated with a template. A translated
- * message can span multiple templates.
- *
- * Example:
- * ```
- * <div i18n>Translate <span *ngIf>me</span>!</div>
- * ```
- *
- * @param message The message to crop
- * @param subTemplateIndex Index of the sub-template to extract. If undefined it returns the
- * external template and removes all sub-templates.
- */
-function getTranslationForTemplate(message, subTemplateIndex) {
-    if (isRootTemplateMessage(subTemplateIndex)) {
-        // We want the root template message, ignore all sub-templates
-        return removeInnerTemplateTranslation(message);
-    }
-    else {
-        // We want a specific sub-template
-        const start = message.indexOf(`:${subTemplateIndex}${MARKER}`) + 2 + subTemplateIndex.toString().length;
-        const end = message.search(new RegExp(`${MARKER}\\/\\*\\d+:${subTemplateIndex}${MARKER}`));
-        return removeInnerTemplateTranslation(message.substring(start, end));
-    }
+    return index;
 }
 /**
  * Generate the OpCodes for ICU expressions.
@@ -47974,10 +47901,9 @@ function icuStart(tIcus, icuExpression, startIndex, expandoStartIndex) {
     const updateCodes = [];
     const vars = [];
     const childIcus = [];
-    const values = icuExpression.values;
-    for (let i = 0; i < values.length; i++) {
+    for (let i = 0; i < icuExpression.values.length; i++) {
         // Each value is an array of strings & other ICU expressions
-        const valueArr = values[i];
+        const valueArr = icuExpression.values[i];
         const nestedIcus = [];
         for (let j = 0; j < valueArr.length; j++) {
             const value = valueArr[j];
@@ -47998,9 +47924,6 @@ function icuStart(tIcus, icuExpression, startIndex, expandoStartIndex) {
     const tIcu = {
         type: icuExpression.type,
         vars,
-        currentCaseLViewIndex: HEADER_OFFSET +
-            expandoStartIndex // expandoStartIndex does not include the header so add it.
-            + 1,
         childIcus,
         cases: icuExpression.cases,
         create: createCodes,
@@ -48010,47 +47933,6 @@ function icuStart(tIcus, icuExpression, startIndex, expandoStartIndex) {
     tIcus.push(tIcu);
     // Adding the maximum possible of vars needed (based on the cases with the most vars)
     i18nVarsCount += Math.max(...vars);
-}
-/**
- * Parses text containing an ICU expression and produces a JSON object for it.
- * Original code from closure library, modified for Angular.
- *
- * @param pattern Text containing an ICU expression that needs to be parsed.
- *
- */
-function parseICUBlock(pattern) {
-    const cases = [];
-    const values = [];
-    let icuType = 1 /* plural */;
-    let mainBinding = 0;
-    pattern = pattern.replace(ICU_BLOCK_REGEXP, function (str, binding, type) {
-        if (type === 'select') {
-            icuType = 0 /* select */;
-        }
-        else {
-            icuType = 1 /* plural */;
-        }
-        mainBinding = parseInt(binding.substr(1), 10);
-        return '';
-    });
-    const parts = extractParts(pattern);
-    // Looking for (key block)+ sequence. One of the keys has to be "other".
-    for (let pos = 0; pos < parts.length;) {
-        let key = parts[pos++].trim();
-        if (icuType === 1 /* plural */) {
-            // Key can be "=x", we just want "x"
-            key = key.replace(/\s*(?:=)?(\w+)\s*/, '$1');
-        }
-        if (key.length) {
-            cases.push(key);
-        }
-        const blocks = extractParts(parts[pos++]);
-        if (cases.length > values.length) {
-            values.push(blocks);
-        }
-    }
-    // TODO(ocombe): support ICU expressions in attributes, see #21615
-    return { type: icuType, mainBinding: mainBinding, cases, values };
 }
 /**
  * Transforms a string template into an HTML template and a list of instructions used to update
@@ -48063,76 +47945,17 @@ function parseICUBlock(pattern) {
  * @param expandoStartIndex
  */
 function parseIcuCase(unsafeHtml, parentIndex, nestedIcus, tIcus, expandoStartIndex) {
-    const inertBodyHelper = getInertBodyHelper(getDocument());
+    const inertBodyHelper = new InertBodyHelper(getDocument());
     const inertBodyElement = inertBodyHelper.getInertBodyElement(unsafeHtml);
     if (!inertBodyElement) {
         throw new Error('Unable to generate inert body element');
     }
     const wrapper = getTemplateContent(inertBodyElement) || inertBodyElement;
-    const opCodes = {
-        vars: 1,
-        childIcus: [],
-        create: [],
-        remove: [],
-        update: []
-    };
-    if (ngDevMode) {
-        attachDebugGetter(opCodes.create, i18nMutateOpCodesToString);
-        attachDebugGetter(opCodes.remove, i18nMutateOpCodesToString);
-        attachDebugGetter(opCodes.update, i18nUpdateOpCodesToString);
-    }
+    const opCodes = { vars: 0, childIcus: [], create: [], remove: [], update: [] };
     parseNodes(wrapper.firstChild, opCodes, parentIndex, nestedIcus, tIcus, expandoStartIndex);
     return opCodes;
 }
-/**
- * Breaks pattern into strings and top level {...} blocks.
- * Can be used to break a message into text and ICU expressions, or to break an ICU expression into
- * keys and cases.
- * Original code from closure library, modified for Angular.
- *
- * @param pattern (sub)Pattern to be broken.
- *
- */
-function extractParts(pattern) {
-    if (!pattern) {
-        return [];
-    }
-    let prevPos = 0;
-    const braceStack = [];
-    const results = [];
-    const braces = /[{}]/g;
-    // lastIndex doesn't get set to 0 so we have to.
-    braces.lastIndex = 0;
-    let match;
-    while (match = braces.exec(pattern)) {
-        const pos = match.index;
-        if (match[0] == '}') {
-            braceStack.pop();
-            if (braceStack.length == 0) {
-                // End of the block.
-                const block = pattern.substring(prevPos, pos);
-                if (ICU_BLOCK_REGEXP.test(block)) {
-                    results.push(parseICUBlock(block));
-                }
-                else {
-                    results.push(block);
-                }
-                prevPos = pos + 1;
-            }
-        }
-        else {
-            if (braceStack.length == 0) {
-                const substring = pattern.substring(prevPos, pos);
-                results.push(substring);
-                prevPos = pos + 1;
-            }
-            braceStack.push('{');
-        }
-    }
-    const substring = pattern.substring(prevPos);
-    results.push(substring);
-    return results;
-}
+const NESTED_ICU = /�(\d+)�/;
 /**
  * Parses a node, its children and its siblings, and generates the mutate & update OpCodes.
  *
@@ -48234,291 +48057,50 @@ function parseNodes(currentNode, icuCase, parentIndex, nestedIcus, tIcus, expand
             const mask = getBindingMask(nestedIcu);
             icuCase.update.push(toMaskBit(nestedIcu.mainBinding), // mask of the main binding
             3, // skip 3 opCodes if not changed
-            -1 - nestedIcu.mainBinding, nestedIcuNodeIndex << 2 /* SHIFT_REF */ | 2 /* IcuSwitch */, 
-            // FIXME(misko): Index should be part of the opcode
-            nestTIcuIndex, mask, // mask of all the bindings of this ICU expression
+            -1 - nestedIcu.mainBinding, nestedIcuNodeIndex << 2 /* SHIFT_REF */ | 2 /* IcuSwitch */, nestTIcuIndex, mask, // mask of all the bindings of this ICU expression
             2, // skip 2 opCodes if not changed
             nestedIcuNodeIndex << 2 /* SHIFT_REF */ | 3 /* IcuUpdate */, nestTIcuIndex);
-            icuCase.remove.push(nestTIcuIndex << 3 /* SHIFT_REF */ | 6 /* RemoveNestedIcu */, 
-            // FIXME(misko): Index should be part of the opcode
-            nestedIcuNodeIndex << 3 /* SHIFT_REF */ | 3 /* Remove */);
+            icuCase.remove.push(nestTIcuIndex << 3 /* SHIFT_REF */ | 6 /* RemoveNestedIcu */, nestedIcuNodeIndex << 3 /* SHIFT_REF */ | 3 /* Remove */);
         }
     }
 }
-
 /**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * Angular Dart introduced &ngsp; as a placeholder for non-removable space, see:
+ * https://github.com/dart-lang/angular/blob/0bb611387d29d65b5af7f9d2515ab571fd3fbee4/_tests/test/compiler/preserve_whitespace_test.dart#L25-L32
+ * In Angular Dart &ngsp; is converted to the 0xE500 PUA (Private Use Areas) unicode character
+ * and later on replaced by a space. We are re-implementing the same idea here, since translations
+ * might contain this special character.
  */
-// i18nPostprocess consts
-const ROOT_TEMPLATE_ID = 0;
-const PP_MULTI_VALUE_PLACEHOLDERS_REGEXP = /\[(�.+?�?)\]/;
-const PP_PLACEHOLDERS_REGEXP = /\[(�.+?�?)\]|(�\/?\*\d+:\d+�)/g;
-const PP_ICU_VARS_REGEXP = /({\s*)(VAR_(PLURAL|SELECT)(_\d+)?)(\s*,)/g;
-const PP_ICU_PLACEHOLDERS_REGEXP = /{([A-Z0-9_]+)}/g;
-const PP_ICUS_REGEXP = /�I18N_EXP_(ICU(_\d+)?)�/g;
-const PP_CLOSE_TEMPLATE_REGEXP = /\/\*/;
-const PP_TEMPLATE_ID_REGEXP = /\d+\:(\d+)/;
-/**
- * Handles message string post-processing for internationalization.
- *
- * Handles message string post-processing by transforming it from intermediate
- * format (that might contain some markers that we need to replace) to the final
- * form, consumable by i18nStart instruction. Post processing steps include:
- *
- * 1. Resolve all multi-value cases (like [�*1:1��#2:1�|�#4:1�|�5�])
- * 2. Replace all ICU vars (like "VAR_PLURAL")
- * 3. Replace all placeholders used inside ICUs in a form of {PLACEHOLDER}
- * 4. Replace all ICU references with corresponding values (like �ICU_EXP_ICU_1�)
- *    in case multiple ICUs have the same placeholder name
- *
- * @param message Raw translation string for post processing
- * @param replacements Set of replacements that should be applied
- *
- * @returns Transformed string that can be consumed by i18nStart instruction
- *
- * @codeGenApi
- */
-function i18nPostprocess(message, replacements = {}) {
-    /**
-     * Step 1: resolve all multi-value placeholders like [�#5�|�*1:1��#2:1�|�#4:1�]
-     *
-     * Note: due to the way we process nested templates (BFS), multi-value placeholders are typically
-     * grouped by templates, for example: [�#5�|�#6�|�#1:1�|�#3:2�] where �#5� and �#6� belong to root
-     * template, �#1:1� belong to nested template with index 1 and �#1:2� - nested template with index
-     * 3. However in real templates the order might be different: i.e. �#1:1� and/or �#3:2� may go in
-     * front of �#6�. The post processing step restores the right order by keeping track of the
-     * template id stack and looks for placeholders that belong to the currently active template.
-     */
-    let result = message;
-    if (PP_MULTI_VALUE_PLACEHOLDERS_REGEXP.test(message)) {
-        const matches = {};
-        const templateIdsStack = [ROOT_TEMPLATE_ID];
-        result = result.replace(PP_PLACEHOLDERS_REGEXP, (m, phs, tmpl) => {
-            const content = phs || tmpl;
-            const placeholders = matches[content] || [];
-            if (!placeholders.length) {
-                content.split('|').forEach((placeholder) => {
-                    const match = placeholder.match(PP_TEMPLATE_ID_REGEXP);
-                    const templateId = match ? parseInt(match[1], 10) : ROOT_TEMPLATE_ID;
-                    const isCloseTemplateTag = PP_CLOSE_TEMPLATE_REGEXP.test(placeholder);
-                    placeholders.push([templateId, isCloseTemplateTag, placeholder]);
-                });
-                matches[content] = placeholders;
-            }
-            if (!placeholders.length) {
-                throw new Error(`i18n postprocess: unmatched placeholder - ${content}`);
-            }
-            const currentTemplateId = templateIdsStack[templateIdsStack.length - 1];
-            let idx = 0;
-            // find placeholder index that matches current template id
-            for (let i = 0; i < placeholders.length; i++) {
-                if (placeholders[i][0] === currentTemplateId) {
-                    idx = i;
-                    break;
-                }
-            }
-            // update template id stack based on the current tag extracted
-            const [templateId, isCloseTemplateTag, placeholder] = placeholders[idx];
-            if (isCloseTemplateTag) {
-                templateIdsStack.pop();
-            }
-            else if (currentTemplateId !== templateId) {
-                templateIdsStack.push(templateId);
-            }
-            // remove processed tag from the list
-            placeholders.splice(idx, 1);
-            return placeholder;
-        });
-    }
-    // return current result if no replacements specified
-    if (!Object.keys(replacements).length) {
-        return result;
-    }
-    /**
-     * Step 2: replace all ICU vars (like "VAR_PLURAL")
-     */
-    result = result.replace(PP_ICU_VARS_REGEXP, (match, start, key, _type, _idx, end) => {
-        return replacements.hasOwnProperty(key) ? `${start}${replacements[key]}${end}` : match;
-    });
-    /**
-     * Step 3: replace all placeholders used inside ICUs in a form of {PLACEHOLDER}
-     */
-    result = result.replace(PP_ICU_PLACEHOLDERS_REGEXP, (match, key) => {
-        return replacements.hasOwnProperty(key) ? replacements[key] : match;
-    });
-    /**
-     * Step 4: replace all ICU references with corresponding values (like �ICU_EXP_ICU_1�) in case
-     * multiple ICUs have the same placeholder name
-     */
-    result = result.replace(PP_ICUS_REGEXP, (match, key) => {
-        if (replacements.hasOwnProperty(key)) {
-            const list = replacements[key];
-            if (!list.length) {
-                throw new Error(`i18n postprocess: unmatched ICU - ${match} with key: ${key}`);
-            }
-            return list.shift();
-        }
-        return match;
-    });
-    return result;
+const NGSP_UNICODE_REGEXP = /\uE500/g;
+function replaceNgsp(value) {
+    return value.replace(NGSP_UNICODE_REGEXP, ' ');
 }
-
 /**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * The locale id that the application is currently using (for translations and ICU expressions).
+ * This is the ivy version of `LOCALE_ID` that was defined as an injection token for the view engine
+ * but is now defined as a global value.
  */
+let LOCALE_ID = DEFAULT_LOCALE_ID;
 /**
- * Marks a block of text as translatable.
+ * Sets the locale id that will be used for translations and ICU expressions.
+ * This is the ivy version of `LOCALE_ID` that was defined as an injection token for the view engine
+ * but is now defined as a global value.
  *
- * The instructions `i18nStart` and `i18nEnd` mark the translation block in the template.
- * The translation `message` is the value which is locale specific. The translation string may
- * contain placeholders which associate inner elements and sub-templates within the translation.
- *
- * The translation `message` placeholders are:
- * - `�{index}(:{block})�`: *Binding Placeholder*: Marks a location where an expression will be
- *   interpolated into. The placeholder `index` points to the expression binding index. An optional
- *   `block` that matches the sub-template in which it was declared.
- * - `�#{index}(:{block})�`/`�/#{index}(:{block})�`: *Element Placeholder*:  Marks the beginning
- *   and end of DOM element that were embedded in the original translation block. The placeholder
- *   `index` points to the element index in the template instructions set. An optional `block` that
- *   matches the sub-template in which it was declared.
- * - `�!{index}(:{block})�`/`�/!{index}(:{block})�`: *Projection Placeholder*:  Marks the
- *   beginning and end of <ng-content> that was embedded in the original translation block.
- *   The placeholder `index` points to the element index in the template instructions set.
- *   An optional `block` that matches the sub-template in which it was declared.
- * - `�*{index}:{block}�`/`�/*{index}:{block}�`: *Sub-template Placeholder*: Sub-templates must be
- *   split up and translated separately in each angular template function. The `index` points to the
- *   `template` instruction index. A `block` that matches the sub-template in which it was declared.
- *
- * @param index A unique index of the translation in the static block.
- * @param message The translation message.
- * @param subTemplateIndex Optional sub-template index in the `message`.
- *
- * @codeGenApi
+ * @param localeId
  */
-function ɵɵi18nStart(index, message, subTemplateIndex) {
-    const tView = getTView();
-    ngDevMode && assertDefined(tView, `tView should be defined`);
-    pushI18nIndex(index);
-    // We need to delay projections until `i18nEnd`
-    setDelayProjection(true);
-    if (tView.firstCreatePass && tView.data[index + HEADER_OFFSET] === null) {
-        i18nStartFirstPass(getLView(), tView, index, message, subTemplateIndex);
+function setLocaleId(localeId) {
+    assertDefined(localeId, `Expected localeId to be defined`);
+    if (typeof localeId === 'string') {
+        LOCALE_ID = localeId.toLowerCase().replace(/_/g, '-');
     }
 }
 /**
- * Translates a translation block marked by `i18nStart` and `i18nEnd`. It inserts the text/ICU nodes
- * into the render tree, moves the placeholder nodes and removes the deleted nodes.
- *
- * @codeGenApi
+ * Gets the locale id that will be used for translations and ICU expressions.
+ * This is the ivy version of `LOCALE_ID` that was defined as an injection token for the view engine
+ * but is now defined as a global value.
  */
-function ɵɵi18nEnd() {
-    const lView = getLView();
-    const tView = getTView();
-    ngDevMode && assertDefined(tView, `tView should be defined`);
-    i18nEndFirstPass(tView, lView);
-    // Stop delaying projections
-    setDelayProjection(false);
-}
-/**
- *
- * Use this instruction to create a translation block that doesn't contain any placeholder.
- * It calls both {@link i18nStart} and {@link i18nEnd} in one instruction.
- *
- * The translation `message` is the value which is locale specific. The translation string may
- * contain placeholders which associate inner elements and sub-templates within the translation.
- *
- * The translation `message` placeholders are:
- * - `�{index}(:{block})�`: *Binding Placeholder*: Marks a location where an expression will be
- *   interpolated into. The placeholder `index` points to the expression binding index. An optional
- *   `block` that matches the sub-template in which it was declared.
- * - `�#{index}(:{block})�`/`�/#{index}(:{block})�`: *Element Placeholder*:  Marks the beginning
- *   and end of DOM element that were embedded in the original translation block. The placeholder
- *   `index` points to the element index in the template instructions set. An optional `block` that
- *   matches the sub-template in which it was declared.
- * - `�*{index}:{block}�`/`�/*{index}:{block}�`: *Sub-template Placeholder*: Sub-templates must be
- *   split up and translated separately in each angular template function. The `index` points to the
- *   `template` instruction index. A `block` that matches the sub-template in which it was declared.
- *
- * @param index A unique index of the translation in the static block.
- * @param message The translation message.
- * @param subTemplateIndex Optional sub-template index in the `message`.
- *
- * @codeGenApi
- */
-function ɵɵi18n(index, message, subTemplateIndex) {
-    ɵɵi18nStart(index, message, subTemplateIndex);
-    ɵɵi18nEnd();
-}
-/**
- * Marks a list of attributes as translatable.
- *
- * @param index A unique index in the static block
- * @param values
- *
- * @codeGenApi
- */
-function ɵɵi18nAttributes(index, values) {
-    const lView = getLView();
-    const tView = getTView();
-    ngDevMode && assertDefined(tView, `tView should be defined`);
-    i18nAttributesFirstPass(lView, tView, index, values);
-}
-/**
- * Stores the values of the bindings during each update cycle in order to determine if we need to
- * update the translated nodes.
- *
- * @param value The binding's value
- * @returns This function returns itself so that it may be chained
- * (e.g. `i18nExp(ctx.name)(ctx.title)`)
- *
- * @codeGenApi
- */
-function ɵɵi18nExp(value) {
-    const lView = getLView();
-    setMaskBit(bindingUpdated(lView, nextBindingIndex(), value));
-    return ɵɵi18nExp;
-}
-/**
- * Updates a translation block or an i18n attribute when the bindings have changed.
- *
- * @param index Index of either {@link i18nStart} (translation block) or {@link i18nAttributes}
- * (i18n attribute) on which it should update the content.
- *
- * @codeGenApi
- */
-function ɵɵi18nApply(index) {
-    applyI18n(getTView(), getLView(), index);
-}
-/**
- * Handles message string post-processing for internationalization.
- *
- * Handles message string post-processing by transforming it from intermediate
- * format (that might contain some markers that we need to replace) to the final
- * form, consumable by i18nStart instruction. Post processing steps include:
- *
- * 1. Resolve all multi-value cases (like [�*1:1��#2:1�|�#4:1�|�5�])
- * 2. Replace all ICU vars (like "VAR_PLURAL")
- * 3. Replace all placeholders used inside ICUs in a form of {PLACEHOLDER}
- * 4. Replace all ICU references with corresponding values (like �ICU_EXP_ICU_1�)
- *    in case multiple ICUs have the same placeholder name
- *
- * @param message Raw translation string for post processing
- * @param replacements Set of replacements that should be applied
- *
- * @returns Transformed string that can be consumed by i18nStart instruction
- *
- * @codeGenApi
- */
-function ɵɵi18nPostprocess(message, replacements = {}) {
-    return i18nPostprocess(message, replacements);
+function getLocaleId() {
+    return LOCALE_ID;
 }
 
 /**
@@ -48963,7 +48545,7 @@ function ɵɵpureFunctionV(slotOffset, pureFn, exps, thisArg) {
  * it to `undefined`.
  */
 function getPureFunctionReturnValue(lView, returnValueIndex) {
-    ngDevMode && assertIndexInRange(lView, returnValueIndex);
+    ngDevMode && assertDataInRange(lView, returnValueIndex);
     const lastReturnValue = lView[returnValueIndex];
     return lastReturnValue === NO_CHANGE ? undefined : lastReturnValue;
 }
@@ -49584,7 +49166,7 @@ class TQueries_ {
         }
     }
     getByIndex(index) {
-        ngDevMode && assertIndexInRange(this.queries, index);
+        ngDevMode && assertDataInRange(this.queries, index);
         return this.queries[index];
     }
     get length() {
@@ -49654,23 +49236,21 @@ class TQuery_ {
         return this._appliesToNextNode;
     }
     matchTNode(tView, tNode) {
-        const predicate = this.metadata.predicate;
-        if (Array.isArray(predicate)) {
-            for (let i = 0; i < predicate.length; i++) {
-                const name = predicate[i];
-                this.matchTNodeWithReadOption(tView, tNode, getIdxOfMatchingSelector(tNode, name));
-                // Also try matching the name to a provider since strings can be used as DI tokens too.
-                this.matchTNodeWithReadOption(tView, tNode, locateDirectiveOrProvider(tNode, tView, name, false, false));
+        if (Array.isArray(this.metadata.predicate)) {
+            const localNames = this.metadata.predicate;
+            for (let i = 0; i < localNames.length; i++) {
+                this.matchTNodeWithReadOption(tView, tNode, getIdxOfMatchingSelector(tNode, localNames[i]));
             }
         }
         else {
-            if (predicate === TemplateRef) {
+            const typePredicate = this.metadata.predicate;
+            if (typePredicate === TemplateRef) {
                 if (tNode.type === 0 /* Container */) {
                     this.matchTNodeWithReadOption(tView, tNode, -1);
                 }
             }
             else {
-                this.matchTNodeWithReadOption(tView, tNode, locateDirectiveOrProvider(tNode, tView, predicate, false, false));
+                this.matchTNodeWithReadOption(tView, tNode, locateDirectiveOrProvider(tNode, tView, typePredicate, false, false));
             }
         }
     }
@@ -49754,7 +49334,7 @@ function createSpecialToken(lView, tNode, read) {
     }
     else if (read === ViewContainerRef) {
         ngDevMode &&
-            assertNodeOfPossibleTypes(tNode, [3 /* Element */, 0 /* Container */, 4 /* ElementContainer */]);
+            assertNodeOfPossibleTypes(tNode, 3 /* Element */, 0 /* Container */, 4 /* ElementContainer */);
         return createContainerRef(ViewContainerRef, ElementRef, tNode, lView);
     }
     else {
@@ -49782,7 +49362,7 @@ function materializeViewResults(tView, lView, tQuery, queryIndex) {
                 result.push(null);
             }
             else {
-                ngDevMode && assertIndexInRange(tViewData, matchedNodeIdx);
+                ngDevMode && assertDataInRange(tViewData, matchedNodeIdx);
                 const tNode = tViewData[matchedNodeIdx];
                 result.push(createResultForNode(lView, tNode, tQueryMatches[i + 1], tQuery.metadata.read));
             }
@@ -49944,7 +49524,7 @@ function ɵɵloadQuery() {
 function loadQueryInternal(lView, queryIndex) {
     ngDevMode &&
         assertDefined(lView[QUERIES], 'LQueries should be defined when trying to load a query');
-    ngDevMode && assertIndexInRange(lView[QUERIES].queries, queryIndex);
+    ngDevMode && assertDataInRange(lView[QUERIES].queries, queryIndex);
     return lView[QUERIES].queries[queryIndex].queryList;
 }
 function createLQuery(tView, lView) {
@@ -50073,8 +49653,8 @@ const ɵ0$d = () => ({
     'ɵɵrestoreView': ɵɵrestoreView,
     'ɵɵlistener': ɵɵlistener,
     'ɵɵprojection': ɵɵprojection,
-    'ɵɵsyntheticHostProperty': ɵɵsyntheticHostProperty,
-    'ɵɵsyntheticHostListener': ɵɵsyntheticHostListener,
+    'ɵɵupdateSyntheticHostBinding': ɵɵupdateSyntheticHostBinding,
+    'ɵɵcomponentHostSyntheticListener': ɵɵcomponentHostSyntheticListener,
     'ɵɵpipeBind1': ɵɵpipeBind1,
     'ɵɵpipeBind2': ɵɵpipeBind2,
     'ɵɵpipeBind3': ɵɵpipeBind3,
@@ -50649,20 +50229,6 @@ function isNgModule(value) {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * Keep track of the compilation depth to avoid reentrancy issues during JIT compilation. This
- * matters in the following scenario:
- *
- * Consider a component 'A' that extends component 'B', both declared in module 'M'. During
- * the compilation of 'A' the definition of 'B' is requested to capture the inheritance chain,
- * potentially triggering compilation of 'B'. If this nested compilation were to trigger
- * `flushModuleScopingQueueAsMuchAsPossible` it may happen that module 'M' is still pending in the
- * queue, resulting in 'A' and 'B' to be patched with the NgModule scope. As the compilation of
- * 'A' is still in progress, this would introduce a circular dependency on its compilation. To avoid
- * this issue, the module scope queue is only flushed for compilations at the depth 0, to ensure
- * all compilations have finished.
- */
-let compilationDepth = 0;
-/**
  * Compile an Angular component according to its decorator metadata, and patch the resulting
  * component def (ɵcmp) onto the component type.
  *
@@ -50722,25 +50288,16 @@ function compileComponent(type, metadata) {
                 }
                 const templateUrl = metadata.templateUrl || `ng:///${type.name}/template.html`;
                 const meta = Object.assign(Object.assign({}, directiveMetadata(type, metadata)), { typeSourceSpan: compiler.createParseSourceSpan('Component', type.name, templateUrl), template: metadata.template || '', preserveWhitespaces, styles: metadata.styles || EMPTY_ARRAY, animations: metadata.animations, directives: [], changeDetection: metadata.changeDetection, pipes: new Map(), encapsulation, interpolation: metadata.interpolation, viewProviders: metadata.viewProviders || null });
-                compilationDepth++;
-                try {
-                    if (meta.usesInheritance) {
-                        addDirectiveDefToUndecoratedParents(type);
-                    }
-                    ngComponentDef = compiler.compileComponent(angularCoreEnv, templateUrl, meta);
+                if (meta.usesInheritance) {
+                    addDirectiveDefToUndecoratedParents(type);
                 }
-                finally {
-                    // Ensure that the compilation depth is decremented even when the compilation failed.
-                    compilationDepth--;
-                }
-                if (compilationDepth === 0) {
-                    // When NgModule decorator executed, we enqueued the module definition such that
-                    // it would only dequeue and add itself as module scope to all of its declarations,
-                    // but only if  if all of its declarations had resolved. This call runs the check
-                    // to see if any modules that are in the queue can be dequeued and add scope to
-                    // their declarations.
-                    flushModuleScopingQueueAsMuchAsPossible();
-                }
+                ngComponentDef = compiler.compileComponent(angularCoreEnv, templateUrl, meta);
+                // When NgModule decorator executed, we enqueued the module definition such that
+                // it would only dequeue and add itself as module scope to all of its declarations,
+                // but only if  if all of its declarations had resolved. This call runs the check
+                // to see if any modules that are in the queue can be dequeued and add scope to
+                // their declarations.
+                flushModuleScopingQueueAsMuchAsPossible();
                 // If component compilation is async, then the @NgModule annotation which declares the
                 // component may execute and set an ngSelectorScope property on the component type. This
                 // allows the component to patch itself with directiveDefs from the module after it
@@ -51157,25 +50714,21 @@ const SWITCH_COMPILE_NGMODULE = SWITCH_COMPILE_NGMODULE__POST_R3__;
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * A [DI token](guide/glossary#di-token "DI token definition") that you can use to provide
- * one or more initialization functions.
- *
- * The provided functions are injected at application startup and executed during
+ * An injection token that allows you to provide one or more initialization functions.
+ * These function are injected at application startup and executed during
  * app initialization. If any of these functions returns a Promise, initialization
  * does not complete until the Promise is resolved.
  *
  * You can, for example, create a factory function that loads language data
  * or an external configuration, and provide that function to the `APP_INITIALIZER` token.
- * The function is executed during the application bootstrap process,
+ * That way, the function is executed during the application bootstrap process,
  * and the needed data is available on startup.
- *
- * @see `ApplicationInitStatus`
  *
  * @publicApi
  */
 const APP_INITIALIZER = new InjectionToken('Application Initializer');
 /**
- * A class that reflects the state of running {@link APP_INITIALIZER} functions.
+ * A class that reflects the state of running {@link APP_INITIALIZER}s.
  *
  * @publicApi
  */
@@ -51242,14 +50795,13 @@ ApplicationInitStatus.ctorParameters = () => [
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * A [DI token](guide/glossary#di-token "DI token definition") representing a unique string ID, used
+ * A DI Token representing a unique string id assigned to the application by Angular and used
  * primarily for prefixing application attributes and CSS styles when
  * {@link ViewEncapsulation#Emulated ViewEncapsulation.Emulated} is being used.
  *
- * BY default, the value is randomly generated and assigned to the application by Angular.
- * To provide a custom ID value, use a DI provider <!-- TODO: provider --> to configure
- * the root {@link Injector} that uses this token.
- *
+ * If you need to avoid randomly generated value to be used as an application id, you can provide
+ * a custom value via a DI provider <!-- TODO: provider --> configuring the root {@link Injector}
+ * using this token.
  * @publicApi
  */
 const APP_ID = new InjectionToken('AppId');
@@ -51257,7 +50809,7 @@ function _appIdRandomProviderFactory() {
     return `${_randomChar()}${_randomChar()}${_randomChar()}`;
 }
 /**
- * Providers that generate a random `APP_ID_TOKEN`.
+ * Providers that will generate a random APP_ID_TOKEN.
  * @publicApi
  */
 const APP_ID_RANDOM_PROVIDER = {
@@ -51269,29 +50821,26 @@ function _randomChar() {
     return String.fromCharCode(97 + Math.floor(Math.random() * 25));
 }
 /**
- * A function that is executed when a platform is initialized.
+ * A function that will be executed when a platform is initialized.
  * @publicApi
  */
 const PLATFORM_INITIALIZER = new InjectionToken('Platform Initializer');
 /**
- * A token that indicates an opaque platform ID.
+ * A token that indicates an opaque platform id.
  * @publicApi
  */
 const PLATFORM_ID = new InjectionToken('Platform ID');
 /**
- * A [DI token](guide/glossary#di-token "DI token definition") that provides a set of callbacks to
- * be called for every component that is bootstrapped.
+ * All callbacks provided via this token will be called for every component that is bootstrapped.
+ * Signature of the callback:
  *
- * Each callback must take a `ComponentRef` instance and return nothing.
- *
- * `(componentRef: ComponentRef) => void`
+ * `(componentRef: ComponentRef) => void`.
  *
  * @publicApi
  */
 const APP_BOOTSTRAP_LISTENER = new InjectionToken('appBootstrapListener');
 /**
- * A [DI token](guide/glossary#di-token "DI token definition") that indicates the root directory of
- * the application
+ * A token which indicates the root directory of the application
  * @publicApi
  */
 const PACKAGE_ROOT_URL = new InjectionToken('Application Packages Root URL');
@@ -53056,9 +52605,12 @@ function checkNotEmpty(value, modulePath, exportName) {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * Represents an Angular [view](guide/glossary#view "Definition").
+ * Represents an Angular [view](guide/glossary#view),
+ * specifically the [host view](guide/glossary#view-tree) that is defined by a component.
+ * Also serves as the base class
+ * that adds destroy methods for [embedded views](guide/glossary#view-tree).
  *
- * @see {@link ChangeDetectorRef#usage-notes Change detection usage}
+ * @see `EmbeddedViewRef`
  *
  * @publicApi
  */
@@ -56337,7 +55889,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm2015/operators/index.js");
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -56868,7 +56420,7 @@ class ControlContainer extends AbstractControlDirective {
 }
 ControlContainer.ɵfac = function ControlContainer_Factory(t) { return ɵControlContainer_BaseFactory(t || ControlContainer); };
 ControlContainer.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineDirective"]({ type: ControlContainer, features: [_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵInheritDefinitionFeature"]] });
-const ɵControlContainer_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](ControlContainer);
+const ɵControlContainer_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](ControlContainer);
 
 /**
  * @license
@@ -56882,7 +56434,7 @@ function unimplemented() {
 }
 /**
  * @description
- * A base class that all `FormControl`-based directives extend. It binds a `FormControl`
+ * A base class that all control `FormControl`-based directives extend. It binds a `FormControl`
  * object to a DOM element.
  *
  * @publicApi
@@ -57458,7 +57010,7 @@ class Validators {
         if (presentValidators.length == 0)
             return null;
         return function (control) {
-            return mergeErrors(executeValidators(control, presentValidators));
+            return _mergeErrors(_executeValidators(control, presentValidators));
         };
     }
     /**
@@ -57479,8 +57031,8 @@ class Validators {
         if (presentValidators.length == 0)
             return null;
         return function (control) {
-            const observables = executeValidators(control, presentValidators).map(toObservable);
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["forkJoin"])(observables).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(mergeErrors));
+            const observables = _executeAsyncValidators(control, presentValidators).map(toObservable);
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["forkJoin"])(observables).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(_mergeErrors));
         };
     }
 }
@@ -57494,7 +57046,13 @@ function toObservable(r) {
     }
     return obs;
 }
-function mergeErrors(arrayOfErrors) {
+function _executeValidators(control, validators) {
+    return validators.map(v => v(control));
+}
+function _executeAsyncValidators(control, validators) {
+    return validators.map(v => v(control));
+}
+function _mergeErrors(arrayOfErrors) {
     let res = {};
     // Not using Array.reduce here due to a Chrome 80 bug
     // https://bugs.chromium.org/p/chromium/issues/detail?id=1049982
@@ -57503,26 +57061,29 @@ function mergeErrors(arrayOfErrors) {
     });
     return Object.keys(res).length === 0 ? null : res;
 }
-function executeValidators(control, validators) {
-    return validators.map(validator => validator(control));
-}
-function isValidatorFn(validator) {
-    return !validator.validate;
-}
+
 /**
- * Given the list of validators that may contain both functions as well as classes, return the list
- * of validator functions (convert validator classes into validator functions). This is needed to
- * have consistent structure in validators list before composing them.
+ * @license
+ * Copyright Google LLC All Rights Reserved.
  *
- * @param validators The set of validators that may contain validators both in plain function form
- *     as well as represented as a validator class.
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
  */
-function normalizeValidators(validators) {
-    return validators.map(validator => {
-        return isValidatorFn(validator) ?
-            validator :
-            ((c) => validator.validate(c));
-    });
+function normalizeValidator(validator) {
+    if (!!validator.validate) {
+        return (c) => validator.validate(c);
+    }
+    else {
+        return validator;
+    }
+}
+function normalizeAsyncValidator(validator) {
+    if (!!validator.validate) {
+        return (c) => validator.validate(c);
+    }
+    else {
+        return validator;
+    }
 }
 
 /**
@@ -58078,7 +57639,7 @@ class ReactiveErrors {
     It looks like you're using ngModel on the same form field as ${directiveName}.
     Support for using the ngModel input property and ngModelChange event with
     reactive form directives has been deprecated in Angular v6 and will be removed
-    in a future version of Angular.
+    in Angular v7.
 
     For more information on this, see our API docs here:
     https://angular.io/api/forms/${directiveName === 'formControl' ? 'FormControlDirective' :
@@ -58488,7 +58049,7 @@ class SelectMultipleControlValueAccessor {
     registerOnChange(fn) {
         this.onChange = (_) => {
             const selected = [];
-            if (_.selectedOptions !== undefined) {
+            if (_.hasOwnProperty('selectedOptions')) {
                 const options = _.selectedOptions;
                 for (let i = 0; i < options.length; i++) {
                     const opt = options.item(i);
@@ -58769,12 +58330,10 @@ function _throwError(dir, message) {
     throw new Error(`${message} ${messageEnd}`);
 }
 function composeValidators(validators) {
-    return validators != null ? Validators.compose(normalizeValidators(validators)) :
-        null;
+    return validators != null ? Validators.compose(validators.map(normalizeValidator)) : null;
 }
 function composeAsyncValidators(validators) {
-    return validators != null ?
-        Validators.composeAsync(normalizeValidators(validators)) :
+    return validators != null ? Validators.composeAsync(validators.map(normalizeAsyncValidator)) :
         null;
 }
 function isPropertyUpdated(changes, viewModel) {
@@ -61012,7 +60571,7 @@ class AbstractFormGroupDirective extends ControlContainer {
 }
 AbstractFormGroupDirective.ɵfac = function AbstractFormGroupDirective_Factory(t) { return ɵAbstractFormGroupDirective_BaseFactory(t || AbstractFormGroupDirective); };
 AbstractFormGroupDirective.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineDirective"]({ type: AbstractFormGroupDirective, features: [_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵInheritDefinitionFeature"]] });
-const ɵAbstractFormGroupDirective_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](AbstractFormGroupDirective);
+const ɵAbstractFormGroupDirective_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](AbstractFormGroupDirective);
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](AbstractFormGroupDirective, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Directive"]
     }], null, null); })();
@@ -62516,9 +62075,6 @@ const CHECKBOX_REQUIRED_VALIDATOR = {
  * @publicApi
  */
 class RequiredValidator {
-    constructor() {
-        this._required = false;
-    }
     /**
      * @description
      * Tracks changes to the required attribute bound to this directive.
@@ -62563,7 +62119,7 @@ RequiredValidator.propDecorators = {
                 providers: [REQUIRED_VALIDATOR],
                 host: { '[attr.required]': 'required ? "" : null' }
             }]
-    }], function () { return []; }, { required: [{
+    }], null, { required: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }] }); })();
 /**
@@ -62601,7 +62157,7 @@ CheckboxRequiredValidator.ɵfac = function CheckboxRequiredValidator_Factory(t) 
 CheckboxRequiredValidator.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineDirective"]({ type: CheckboxRequiredValidator, selectors: [["input", "type", "checkbox", "required", "", "formControlName", ""], ["input", "type", "checkbox", "required", "", "formControl", ""], ["input", "type", "checkbox", "required", "", "ngModel", ""]], hostVars: 1, hostBindings: function CheckboxRequiredValidator_HostBindings(rf, ctx) { if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵattribute"]("required", ctx.required ? "" : null);
     } }, features: [_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵProvidersFeature"]([CHECKBOX_REQUIRED_VALIDATOR]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵInheritDefinitionFeature"]] });
-const ɵCheckboxRequiredValidator_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](CheckboxRequiredValidator);
+const ɵCheckboxRequiredValidator_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](CheckboxRequiredValidator);
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](CheckboxRequiredValidator, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Directive"],
         args: [{
@@ -62643,9 +62199,6 @@ const EMAIL_VALIDATOR = {
  * @ngModule ReactiveFormsModule
  */
 class EmailValidator {
-    constructor() {
-        this._enabled = false;
-    }
     /**
      * @description
      * Tracks changes to the email attribute bound to this directive.
@@ -62684,7 +62237,7 @@ EmailValidator.propDecorators = {
                 selector: '[email][formControlName],[email][formControl],[email][ngModel]',
                 providers: [EMAIL_VALIDATOR]
             }]
-    }], function () { return []; }, { email: [{
+    }], null, { email: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }] }); })();
 /**
@@ -62718,9 +62271,6 @@ const MIN_LENGTH_VALIDATOR = {
  * @publicApi
  */
 class MinLengthValidator {
-    constructor() {
-        this._validator = Validators.nullValidator;
-    }
     /**
      * @description
      * A lifecycle method called when the directive's inputs change. For internal use
@@ -62770,7 +62320,7 @@ MinLengthValidator.propDecorators = {
                 providers: [MIN_LENGTH_VALIDATOR],
                 host: { '[attr.minlength]': 'minlength ? minlength : null' }
             }]
-    }], function () { return []; }, { minlength: [{
+    }], null, { minlength: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }] }); })();
 /**
@@ -62804,9 +62354,6 @@ const MAX_LENGTH_VALIDATOR = {
  * @publicApi
  */
 class MaxLengthValidator {
-    constructor() {
-        this._validator = Validators.nullValidator;
-    }
     /**
      * @description
      * A lifecycle method called when the directive's inputs change. For internal use
@@ -62856,7 +62403,7 @@ MaxLengthValidator.propDecorators = {
                 providers: [MAX_LENGTH_VALIDATOR],
                 host: { '[attr.maxlength]': 'maxlength ? maxlength : null' }
             }]
-    }], function () { return []; }, { maxlength: [{
+    }], null, { maxlength: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }] }); })();
 /**
@@ -62892,9 +62439,6 @@ const PATTERN_VALIDATOR = {
  * @publicApi
  */
 class PatternValidator {
-    constructor() {
-        this._validator = Validators.nullValidator;
-    }
     /**
      * @description
      * A lifecycle method called when the directive's inputs change. For internal use
@@ -62944,7 +62488,7 @@ PatternValidator.propDecorators = {
                 providers: [PATTERN_VALIDATOR],
                 host: { '[attr.pattern]': 'pattern ? pattern : null' }
             }]
-    }], function () { return []; }, { pattern: [{
+    }], null, { pattern: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }] }); })();
 
@@ -63144,7 +62688,7 @@ FormBuilder.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjec
 /**
  * @publicApi
  */
-const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.0.14');
+const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.0.0');
 
 /**
  * @license
@@ -63284,7 +62828,6 @@ __webpack_require__.r(__webpack_exports__);
 
 const _c0 = ["mat-button", ""];
 const _c1 = ["*"];
-const _c2 = ".mat-button .mat-button-focus-overlay,.mat-icon-button .mat-button-focus-overlay{opacity:0}.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:.04}@media(hover: none){.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:0}}.mat-button,.mat-icon-button,.mat-stroked-button,.mat-flat-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-button.mat-button-disabled,.mat-icon-button.mat-button-disabled,.mat-stroked-button.mat-button-disabled,.mat-flat-button.mat-button-disabled{cursor:default}.mat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-button.cdk-program-focused .mat-button-focus-overlay,.mat-icon-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-icon-button.cdk-program-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-program-focused .mat-button-focus-overlay,.mat-flat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-flat-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-raised-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-raised-button::-moz-focus-inner{border:0}.mat-raised-button.mat-button-disabled{cursor:default}.mat-raised-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-raised-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-raised-button::-moz-focus-inner{border:0}._mat-animation-noopable.mat-raised-button{transition:none;animation:none}.mat-stroked-button{border:1px solid currentColor;padding:0 15px;line-height:34px}.mat-stroked-button .mat-button-ripple.mat-ripple,.mat-stroked-button .mat-button-focus-overlay{top:-1px;left:-1px;right:-1px;bottom:-1px}.mat-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:56px;height:56px;padding:0;flex-shrink:0}.mat-fab::-moz-focus-inner{border:0}.mat-fab.mat-button-disabled{cursor:default}.mat-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-fab{transition:none;animation:none}.mat-fab .mat-button-wrapper{padding:16px 0;display:inline-block;line-height:24px}.mat-mini-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0}.mat-mini-fab::-moz-focus-inner{border:0}.mat-mini-fab.mat-button-disabled{cursor:default}.mat-mini-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-mini-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-mini-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-mini-fab{transition:none;animation:none}.mat-mini-fab .mat-button-wrapper{padding:8px 0;display:inline-block;line-height:24px}.mat-icon-button{padding:0;min-width:0;width:40px;height:40px;flex-shrink:0;line-height:40px;border-radius:50%}.mat-icon-button i,.mat-icon-button .mat-icon{line-height:24px}.mat-button-ripple.mat-ripple,.mat-button-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;pointer-events:none;border-radius:inherit}.mat-button-ripple.mat-ripple:not(:empty){transform:translateZ(0)}.mat-button-focus-overlay{opacity:0;transition:opacity 200ms cubic-bezier(0.35, 0, 0.25, 1),background-color 200ms cubic-bezier(0.35, 0, 0.25, 1)}._mat-animation-noopable .mat-button-focus-overlay{transition:none}.mat-button-ripple-round{border-radius:50%;z-index:1}.mat-button .mat-button-wrapper>*,.mat-flat-button .mat-button-wrapper>*,.mat-stroked-button .mat-button-wrapper>*,.mat-raised-button .mat-button-wrapper>*,.mat-icon-button .mat-button-wrapper>*,.mat-fab .mat-button-wrapper>*,.mat-mini-fab .mat-button-wrapper>*{vertical-align:middle}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button{display:block;font-size:inherit;width:2.5em;height:2.5em}.cdk-high-contrast-active .mat-button,.cdk-high-contrast-active .mat-flat-button,.cdk-high-contrast-active .mat-raised-button,.cdk-high-contrast-active .mat-icon-button,.cdk-high-contrast-active .mat-fab,.cdk-high-contrast-active .mat-mini-fab{outline:solid 1px}.cdk-high-contrast-active .mat-button-base.cdk-keyboard-focused,.cdk-high-contrast-active .mat-button-base.cdk-program-focused{outline:solid 3px}\n";
 const DEFAULT_ROUND_BUTTON_COLOR = 'accent';
 /**
  * List of classes to add to MatButton instances based on host attributes to
@@ -63369,13 +62912,13 @@ MatButton.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponen
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "span", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵprojection"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](2, "span", 1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](3, "span", 2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](2, "div", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](3, "div", 2);
     } if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵclassProp"]("mat-button-ripple-round", ctx.isRoundButton || ctx.isIconButton);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("matRippleDisabled", ctx._isRippleDisabled())("matRippleCentered", ctx.isIconButton)("matRippleTrigger", ctx._getHostElement());
-    } }, directives: [_angular_material_core__WEBPACK_IMPORTED_MODULE_1__["MatRipple"]], styles: [_c2], encapsulation: 2, changeDetection: 0 });
+    } }, directives: [_angular_material_core__WEBPACK_IMPORTED_MODULE_1__["MatRipple"]], styles: [".mat-button .mat-button-focus-overlay,.mat-icon-button .mat-button-focus-overlay{opacity:0}.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:.04}@media(hover: none){.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:0}}.mat-button,.mat-icon-button,.mat-stroked-button,.mat-flat-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-button.mat-button-disabled,.mat-icon-button.mat-button-disabled,.mat-stroked-button.mat-button-disabled,.mat-flat-button.mat-button-disabled{cursor:default}.mat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-button.cdk-program-focused .mat-button-focus-overlay,.mat-icon-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-icon-button.cdk-program-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-program-focused .mat-button-focus-overlay,.mat-flat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-flat-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-raised-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-raised-button::-moz-focus-inner{border:0}.mat-raised-button.mat-button-disabled{cursor:default}.mat-raised-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-raised-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-raised-button::-moz-focus-inner{border:0}._mat-animation-noopable.mat-raised-button{transition:none;animation:none}.mat-stroked-button{border:1px solid currentColor;padding:0 15px;line-height:34px}.mat-stroked-button .mat-button-ripple.mat-ripple,.mat-stroked-button .mat-button-focus-overlay{top:-1px;left:-1px;right:-1px;bottom:-1px}.mat-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:56px;height:56px;padding:0;flex-shrink:0}.mat-fab::-moz-focus-inner{border:0}.mat-fab.mat-button-disabled{cursor:default}.mat-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-fab{transition:none;animation:none}.mat-fab .mat-button-wrapper{padding:16px 0;display:inline-block;line-height:24px}.mat-mini-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0}.mat-mini-fab::-moz-focus-inner{border:0}.mat-mini-fab.mat-button-disabled{cursor:default}.mat-mini-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-mini-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-mini-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-mini-fab{transition:none;animation:none}.mat-mini-fab .mat-button-wrapper{padding:8px 0;display:inline-block;line-height:24px}.mat-icon-button{padding:0;min-width:0;width:40px;height:40px;flex-shrink:0;line-height:40px;border-radius:50%}.mat-icon-button i,.mat-icon-button .mat-icon{line-height:24px}.mat-button-ripple.mat-ripple,.mat-button-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;pointer-events:none;border-radius:inherit}.mat-button-ripple.mat-ripple:not(:empty){transform:translateZ(0)}.mat-button-focus-overlay{opacity:0;transition:opacity 200ms cubic-bezier(0.35, 0, 0.25, 1),background-color 200ms cubic-bezier(0.35, 0, 0.25, 1)}._mat-animation-noopable .mat-button-focus-overlay{transition:none}.cdk-high-contrast-active .mat-button-focus-overlay{background-color:#fff}.cdk-high-contrast-black-on-white .mat-button-focus-overlay{background-color:#000}.mat-button-ripple-round{border-radius:50%;z-index:1}.mat-button .mat-button-wrapper>*,.mat-flat-button .mat-button-wrapper>*,.mat-stroked-button .mat-button-wrapper>*,.mat-raised-button .mat-button-wrapper>*,.mat-icon-button .mat-button-wrapper>*,.mat-fab .mat-button-wrapper>*,.mat-mini-fab .mat-button-wrapper>*{vertical-align:middle}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button{display:block;font-size:inherit;width:2.5em;height:2.5em}.cdk-high-contrast-active .mat-button,.cdk-high-contrast-active .mat-flat-button,.cdk-high-contrast-active .mat-raised-button,.cdk-high-contrast-active .mat-icon-button,.cdk-high-contrast-active .mat-fab,.cdk-high-contrast-active .mat-mini-fab{outline:solid 1px}\n"], encapsulation: 2, changeDetection: 0 });
 MatButton.ctorParameters = () => [
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ElementRef"] },
     { type: _angular_cdk_a11y__WEBPACK_IMPORTED_MODULE_2__["FocusMonitor"] },
@@ -63400,11 +62943,11 @@ MatButton.propDecorators = {
                     '[class.mat-button-disabled]': 'disabled',
                     'class': 'mat-focus-indicator'
                 },
-                template: "<span class=\"mat-button-wrapper\"><ng-content></ng-content></span>\n<span matRipple class=\"mat-button-ripple\"\n      [class.mat-button-ripple-round]=\"isRoundButton || isIconButton\"\n      [matRippleDisabled]=\"_isRippleDisabled()\"\n      [matRippleCentered]=\"isIconButton\"\n      [matRippleTrigger]=\"_getHostElement()\"></span>\n<span class=\"mat-button-focus-overlay\"></span>\n",
+                template: "<span class=\"mat-button-wrapper\"><ng-content></ng-content></span>\n<div matRipple class=\"mat-button-ripple\"\n     [class.mat-button-ripple-round]=\"isRoundButton || isIconButton\"\n     [matRippleDisabled]=\"_isRippleDisabled()\"\n     [matRippleCentered]=\"isIconButton\"\n     [matRippleTrigger]=\"_getHostElement()\"></div>\n<div class=\"mat-button-focus-overlay\"></div>\n",
                 inputs: ['disabled', 'disableRipple', 'color'],
                 encapsulation: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewEncapsulation"].None,
                 changeDetection: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ChangeDetectionStrategy"].OnPush,
-                styles: [".mat-button .mat-button-focus-overlay,.mat-icon-button .mat-button-focus-overlay{opacity:0}.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:.04}@media(hover: none){.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:0}}.mat-button,.mat-icon-button,.mat-stroked-button,.mat-flat-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-button.mat-button-disabled,.mat-icon-button.mat-button-disabled,.mat-stroked-button.mat-button-disabled,.mat-flat-button.mat-button-disabled{cursor:default}.mat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-button.cdk-program-focused .mat-button-focus-overlay,.mat-icon-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-icon-button.cdk-program-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-program-focused .mat-button-focus-overlay,.mat-flat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-flat-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-raised-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-raised-button::-moz-focus-inner{border:0}.mat-raised-button.mat-button-disabled{cursor:default}.mat-raised-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-raised-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-raised-button::-moz-focus-inner{border:0}._mat-animation-noopable.mat-raised-button{transition:none;animation:none}.mat-stroked-button{border:1px solid currentColor;padding:0 15px;line-height:34px}.mat-stroked-button .mat-button-ripple.mat-ripple,.mat-stroked-button .mat-button-focus-overlay{top:-1px;left:-1px;right:-1px;bottom:-1px}.mat-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:56px;height:56px;padding:0;flex-shrink:0}.mat-fab::-moz-focus-inner{border:0}.mat-fab.mat-button-disabled{cursor:default}.mat-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-fab{transition:none;animation:none}.mat-fab .mat-button-wrapper{padding:16px 0;display:inline-block;line-height:24px}.mat-mini-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0}.mat-mini-fab::-moz-focus-inner{border:0}.mat-mini-fab.mat-button-disabled{cursor:default}.mat-mini-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-mini-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-mini-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-mini-fab{transition:none;animation:none}.mat-mini-fab .mat-button-wrapper{padding:8px 0;display:inline-block;line-height:24px}.mat-icon-button{padding:0;min-width:0;width:40px;height:40px;flex-shrink:0;line-height:40px;border-radius:50%}.mat-icon-button i,.mat-icon-button .mat-icon{line-height:24px}.mat-button-ripple.mat-ripple,.mat-button-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;pointer-events:none;border-radius:inherit}.mat-button-ripple.mat-ripple:not(:empty){transform:translateZ(0)}.mat-button-focus-overlay{opacity:0;transition:opacity 200ms cubic-bezier(0.35, 0, 0.25, 1),background-color 200ms cubic-bezier(0.35, 0, 0.25, 1)}._mat-animation-noopable .mat-button-focus-overlay{transition:none}.mat-button-ripple-round{border-radius:50%;z-index:1}.mat-button .mat-button-wrapper>*,.mat-flat-button .mat-button-wrapper>*,.mat-stroked-button .mat-button-wrapper>*,.mat-raised-button .mat-button-wrapper>*,.mat-icon-button .mat-button-wrapper>*,.mat-fab .mat-button-wrapper>*,.mat-mini-fab .mat-button-wrapper>*{vertical-align:middle}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button{display:block;font-size:inherit;width:2.5em;height:2.5em}.cdk-high-contrast-active .mat-button,.cdk-high-contrast-active .mat-flat-button,.cdk-high-contrast-active .mat-raised-button,.cdk-high-contrast-active .mat-icon-button,.cdk-high-contrast-active .mat-fab,.cdk-high-contrast-active .mat-mini-fab{outline:solid 1px}.cdk-high-contrast-active .mat-button-base.cdk-keyboard-focused,.cdk-high-contrast-active .mat-button-base.cdk-program-focused{outline:solid 3px}\n"]
+                styles: [".mat-button .mat-button-focus-overlay,.mat-icon-button .mat-button-focus-overlay{opacity:0}.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:.04}@media(hover: none){.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:0}}.mat-button,.mat-icon-button,.mat-stroked-button,.mat-flat-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-button.mat-button-disabled,.mat-icon-button.mat-button-disabled,.mat-stroked-button.mat-button-disabled,.mat-flat-button.mat-button-disabled{cursor:default}.mat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-button.cdk-program-focused .mat-button-focus-overlay,.mat-icon-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-icon-button.cdk-program-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-program-focused .mat-button-focus-overlay,.mat-flat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-flat-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-raised-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-raised-button::-moz-focus-inner{border:0}.mat-raised-button.mat-button-disabled{cursor:default}.mat-raised-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-raised-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-raised-button::-moz-focus-inner{border:0}._mat-animation-noopable.mat-raised-button{transition:none;animation:none}.mat-stroked-button{border:1px solid currentColor;padding:0 15px;line-height:34px}.mat-stroked-button .mat-button-ripple.mat-ripple,.mat-stroked-button .mat-button-focus-overlay{top:-1px;left:-1px;right:-1px;bottom:-1px}.mat-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:56px;height:56px;padding:0;flex-shrink:0}.mat-fab::-moz-focus-inner{border:0}.mat-fab.mat-button-disabled{cursor:default}.mat-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-fab{transition:none;animation:none}.mat-fab .mat-button-wrapper{padding:16px 0;display:inline-block;line-height:24px}.mat-mini-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0}.mat-mini-fab::-moz-focus-inner{border:0}.mat-mini-fab.mat-button-disabled{cursor:default}.mat-mini-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-mini-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-mini-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-mini-fab{transition:none;animation:none}.mat-mini-fab .mat-button-wrapper{padding:8px 0;display:inline-block;line-height:24px}.mat-icon-button{padding:0;min-width:0;width:40px;height:40px;flex-shrink:0;line-height:40px;border-radius:50%}.mat-icon-button i,.mat-icon-button .mat-icon{line-height:24px}.mat-button-ripple.mat-ripple,.mat-button-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;pointer-events:none;border-radius:inherit}.mat-button-ripple.mat-ripple:not(:empty){transform:translateZ(0)}.mat-button-focus-overlay{opacity:0;transition:opacity 200ms cubic-bezier(0.35, 0, 0.25, 1),background-color 200ms cubic-bezier(0.35, 0, 0.25, 1)}._mat-animation-noopable .mat-button-focus-overlay{transition:none}.cdk-high-contrast-active .mat-button-focus-overlay{background-color:#fff}.cdk-high-contrast-black-on-white .mat-button-focus-overlay{background-color:#000}.mat-button-ripple-round{border-radius:50%;z-index:1}.mat-button .mat-button-wrapper>*,.mat-flat-button .mat-button-wrapper>*,.mat-stroked-button .mat-button-wrapper>*,.mat-raised-button .mat-button-wrapper>*,.mat-icon-button .mat-button-wrapper>*,.mat-fab .mat-button-wrapper>*,.mat-mini-fab .mat-button-wrapper>*{vertical-align:middle}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button{display:block;font-size:inherit;width:2.5em;height:2.5em}.cdk-high-contrast-active .mat-button,.cdk-high-contrast-active .mat-flat-button,.cdk-high-contrast-active .mat-raised-button,.cdk-high-contrast-active .mat-icon-button,.cdk-high-contrast-active .mat-fab,.cdk-high-contrast-active .mat-mini-fab{outline:solid 1px}\n"]
             }]
     }], function () { return [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ElementRef"] }, { type: _angular_cdk_a11y__WEBPACK_IMPORTED_MODULE_2__["FocusMonitor"] }, { type: String, decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Optional"]
@@ -63441,13 +62984,13 @@ MatAnchor.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponen
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "span", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵprojection"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](2, "span", 1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](3, "span", 2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](2, "div", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](3, "div", 2);
     } if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵclassProp"]("mat-button-ripple-round", ctx.isRoundButton || ctx.isIconButton);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("matRippleDisabled", ctx._isRippleDisabled())("matRippleCentered", ctx.isIconButton)("matRippleTrigger", ctx._getHostElement());
-    } }, directives: [_angular_material_core__WEBPACK_IMPORTED_MODULE_1__["MatRipple"]], styles: [_c2], encapsulation: 2, changeDetection: 0 });
+    } }, directives: [_angular_material_core__WEBPACK_IMPORTED_MODULE_1__["MatRipple"]], styles: [".mat-button .mat-button-focus-overlay,.mat-icon-button .mat-button-focus-overlay{opacity:0}.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:.04}@media(hover: none){.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:0}}.mat-button,.mat-icon-button,.mat-stroked-button,.mat-flat-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-button.mat-button-disabled,.mat-icon-button.mat-button-disabled,.mat-stroked-button.mat-button-disabled,.mat-flat-button.mat-button-disabled{cursor:default}.mat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-button.cdk-program-focused .mat-button-focus-overlay,.mat-icon-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-icon-button.cdk-program-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-program-focused .mat-button-focus-overlay,.mat-flat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-flat-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-raised-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-raised-button::-moz-focus-inner{border:0}.mat-raised-button.mat-button-disabled{cursor:default}.mat-raised-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-raised-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-raised-button::-moz-focus-inner{border:0}._mat-animation-noopable.mat-raised-button{transition:none;animation:none}.mat-stroked-button{border:1px solid currentColor;padding:0 15px;line-height:34px}.mat-stroked-button .mat-button-ripple.mat-ripple,.mat-stroked-button .mat-button-focus-overlay{top:-1px;left:-1px;right:-1px;bottom:-1px}.mat-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:56px;height:56px;padding:0;flex-shrink:0}.mat-fab::-moz-focus-inner{border:0}.mat-fab.mat-button-disabled{cursor:default}.mat-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-fab{transition:none;animation:none}.mat-fab .mat-button-wrapper{padding:16px 0;display:inline-block;line-height:24px}.mat-mini-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0}.mat-mini-fab::-moz-focus-inner{border:0}.mat-mini-fab.mat-button-disabled{cursor:default}.mat-mini-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-mini-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-mini-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-mini-fab{transition:none;animation:none}.mat-mini-fab .mat-button-wrapper{padding:8px 0;display:inline-block;line-height:24px}.mat-icon-button{padding:0;min-width:0;width:40px;height:40px;flex-shrink:0;line-height:40px;border-radius:50%}.mat-icon-button i,.mat-icon-button .mat-icon{line-height:24px}.mat-button-ripple.mat-ripple,.mat-button-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;pointer-events:none;border-radius:inherit}.mat-button-ripple.mat-ripple:not(:empty){transform:translateZ(0)}.mat-button-focus-overlay{opacity:0;transition:opacity 200ms cubic-bezier(0.35, 0, 0.25, 1),background-color 200ms cubic-bezier(0.35, 0, 0.25, 1)}._mat-animation-noopable .mat-button-focus-overlay{transition:none}.cdk-high-contrast-active .mat-button-focus-overlay{background-color:#fff}.cdk-high-contrast-black-on-white .mat-button-focus-overlay{background-color:#000}.mat-button-ripple-round{border-radius:50%;z-index:1}.mat-button .mat-button-wrapper>*,.mat-flat-button .mat-button-wrapper>*,.mat-stroked-button .mat-button-wrapper>*,.mat-raised-button .mat-button-wrapper>*,.mat-icon-button .mat-button-wrapper>*,.mat-fab .mat-button-wrapper>*,.mat-mini-fab .mat-button-wrapper>*{vertical-align:middle}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button{display:block;font-size:inherit;width:2.5em;height:2.5em}.cdk-high-contrast-active .mat-button,.cdk-high-contrast-active .mat-flat-button,.cdk-high-contrast-active .mat-raised-button,.cdk-high-contrast-active .mat-icon-button,.cdk-high-contrast-active .mat-fab,.cdk-high-contrast-active .mat-mini-fab{outline:solid 1px}\n"], encapsulation: 2, changeDetection: 0 });
 MatAnchor.ctorParameters = () => [
     { type: _angular_cdk_a11y__WEBPACK_IMPORTED_MODULE_2__["FocusMonitor"] },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ElementRef"] },
@@ -63475,10 +63018,10 @@ MatAnchor.propDecorators = {
                     'class': 'mat-focus-indicator'
                 },
                 inputs: ['disabled', 'disableRipple', 'color'],
-                template: "<span class=\"mat-button-wrapper\"><ng-content></ng-content></span>\n<span matRipple class=\"mat-button-ripple\"\n      [class.mat-button-ripple-round]=\"isRoundButton || isIconButton\"\n      [matRippleDisabled]=\"_isRippleDisabled()\"\n      [matRippleCentered]=\"isIconButton\"\n      [matRippleTrigger]=\"_getHostElement()\"></span>\n<span class=\"mat-button-focus-overlay\"></span>\n",
+                template: "<span class=\"mat-button-wrapper\"><ng-content></ng-content></span>\n<div matRipple class=\"mat-button-ripple\"\n     [class.mat-button-ripple-round]=\"isRoundButton || isIconButton\"\n     [matRippleDisabled]=\"_isRippleDisabled()\"\n     [matRippleCentered]=\"isIconButton\"\n     [matRippleTrigger]=\"_getHostElement()\"></div>\n<div class=\"mat-button-focus-overlay\"></div>\n",
                 encapsulation: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewEncapsulation"].None,
                 changeDetection: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ChangeDetectionStrategy"].OnPush,
-                styles: [".mat-button .mat-button-focus-overlay,.mat-icon-button .mat-button-focus-overlay{opacity:0}.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:.04}@media(hover: none){.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:0}}.mat-button,.mat-icon-button,.mat-stroked-button,.mat-flat-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-button.mat-button-disabled,.mat-icon-button.mat-button-disabled,.mat-stroked-button.mat-button-disabled,.mat-flat-button.mat-button-disabled{cursor:default}.mat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-button.cdk-program-focused .mat-button-focus-overlay,.mat-icon-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-icon-button.cdk-program-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-program-focused .mat-button-focus-overlay,.mat-flat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-flat-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-raised-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-raised-button::-moz-focus-inner{border:0}.mat-raised-button.mat-button-disabled{cursor:default}.mat-raised-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-raised-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-raised-button::-moz-focus-inner{border:0}._mat-animation-noopable.mat-raised-button{transition:none;animation:none}.mat-stroked-button{border:1px solid currentColor;padding:0 15px;line-height:34px}.mat-stroked-button .mat-button-ripple.mat-ripple,.mat-stroked-button .mat-button-focus-overlay{top:-1px;left:-1px;right:-1px;bottom:-1px}.mat-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:56px;height:56px;padding:0;flex-shrink:0}.mat-fab::-moz-focus-inner{border:0}.mat-fab.mat-button-disabled{cursor:default}.mat-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-fab{transition:none;animation:none}.mat-fab .mat-button-wrapper{padding:16px 0;display:inline-block;line-height:24px}.mat-mini-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0}.mat-mini-fab::-moz-focus-inner{border:0}.mat-mini-fab.mat-button-disabled{cursor:default}.mat-mini-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-mini-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-mini-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-mini-fab{transition:none;animation:none}.mat-mini-fab .mat-button-wrapper{padding:8px 0;display:inline-block;line-height:24px}.mat-icon-button{padding:0;min-width:0;width:40px;height:40px;flex-shrink:0;line-height:40px;border-radius:50%}.mat-icon-button i,.mat-icon-button .mat-icon{line-height:24px}.mat-button-ripple.mat-ripple,.mat-button-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;pointer-events:none;border-radius:inherit}.mat-button-ripple.mat-ripple:not(:empty){transform:translateZ(0)}.mat-button-focus-overlay{opacity:0;transition:opacity 200ms cubic-bezier(0.35, 0, 0.25, 1),background-color 200ms cubic-bezier(0.35, 0, 0.25, 1)}._mat-animation-noopable .mat-button-focus-overlay{transition:none}.mat-button-ripple-round{border-radius:50%;z-index:1}.mat-button .mat-button-wrapper>*,.mat-flat-button .mat-button-wrapper>*,.mat-stroked-button .mat-button-wrapper>*,.mat-raised-button .mat-button-wrapper>*,.mat-icon-button .mat-button-wrapper>*,.mat-fab .mat-button-wrapper>*,.mat-mini-fab .mat-button-wrapper>*{vertical-align:middle}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button{display:block;font-size:inherit;width:2.5em;height:2.5em}.cdk-high-contrast-active .mat-button,.cdk-high-contrast-active .mat-flat-button,.cdk-high-contrast-active .mat-raised-button,.cdk-high-contrast-active .mat-icon-button,.cdk-high-contrast-active .mat-fab,.cdk-high-contrast-active .mat-mini-fab{outline:solid 1px}.cdk-high-contrast-active .mat-button-base.cdk-keyboard-focused,.cdk-high-contrast-active .mat-button-base.cdk-program-focused{outline:solid 3px}\n"]
+                styles: [".mat-button .mat-button-focus-overlay,.mat-icon-button .mat-button-focus-overlay{opacity:0}.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:.04}@media(hover: none){.mat-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay,.mat-stroked-button:hover:not(.mat-button-disabled) .mat-button-focus-overlay{opacity:0}}.mat-button,.mat-icon-button,.mat-stroked-button,.mat-flat-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-button.mat-button-disabled,.mat-icon-button.mat-button-disabled,.mat-stroked-button.mat-button-disabled,.mat-flat-button.mat-button-disabled{cursor:default}.mat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-button.cdk-program-focused .mat-button-focus-overlay,.mat-icon-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-icon-button.cdk-program-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-stroked-button.cdk-program-focused .mat-button-focus-overlay,.mat-flat-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-flat-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-button::-moz-focus-inner,.mat-icon-button::-moz-focus-inner,.mat-stroked-button::-moz-focus-inner,.mat-flat-button::-moz-focus-inner{border:0}.mat-raised-button{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-raised-button::-moz-focus-inner{border:0}.mat-raised-button.mat-button-disabled{cursor:default}.mat-raised-button.cdk-keyboard-focused .mat-button-focus-overlay,.mat-raised-button.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-raised-button::-moz-focus-inner{border:0}._mat-animation-noopable.mat-raised-button{transition:none;animation:none}.mat-stroked-button{border:1px solid currentColor;padding:0 15px;line-height:34px}.mat-stroked-button .mat-button-ripple.mat-ripple,.mat-stroked-button .mat-button-focus-overlay{top:-1px;left:-1px;right:-1px;bottom:-1px}.mat-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:56px;height:56px;padding:0;flex-shrink:0}.mat-fab::-moz-focus-inner{border:0}.mat-fab.mat-button-disabled{cursor:default}.mat-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-fab{transition:none;animation:none}.mat-fab .mat-button-wrapper{padding:16px 0;display:inline-block;line-height:24px}.mat-mini-fab{box-sizing:border-box;position:relative;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;outline:none;border:none;-webkit-tap-highlight-color:transparent;display:inline-block;white-space:nowrap;text-decoration:none;vertical-align:baseline;text-align:center;margin:0;min-width:64px;line-height:36px;padding:0 16px;border-radius:4px;overflow:visible;transform:translate3d(0, 0, 0);transition:background 400ms cubic-bezier(0.25, 0.8, 0.25, 1),box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);min-width:0;border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0}.mat-mini-fab::-moz-focus-inner{border:0}.mat-mini-fab.mat-button-disabled{cursor:default}.mat-mini-fab.cdk-keyboard-focused .mat-button-focus-overlay,.mat-mini-fab.cdk-program-focused .mat-button-focus-overlay{opacity:.12}.mat-mini-fab::-moz-focus-inner{border:0}._mat-animation-noopable.mat-mini-fab{transition:none;animation:none}.mat-mini-fab .mat-button-wrapper{padding:8px 0;display:inline-block;line-height:24px}.mat-icon-button{padding:0;min-width:0;width:40px;height:40px;flex-shrink:0;line-height:40px;border-radius:50%}.mat-icon-button i,.mat-icon-button .mat-icon{line-height:24px}.mat-button-ripple.mat-ripple,.mat-button-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;pointer-events:none;border-radius:inherit}.mat-button-ripple.mat-ripple:not(:empty){transform:translateZ(0)}.mat-button-focus-overlay{opacity:0;transition:opacity 200ms cubic-bezier(0.35, 0, 0.25, 1),background-color 200ms cubic-bezier(0.35, 0, 0.25, 1)}._mat-animation-noopable .mat-button-focus-overlay{transition:none}.cdk-high-contrast-active .mat-button-focus-overlay{background-color:#fff}.cdk-high-contrast-black-on-white .mat-button-focus-overlay{background-color:#000}.mat-button-ripple-round{border-radius:50%;z-index:1}.mat-button .mat-button-wrapper>*,.mat-flat-button .mat-button-wrapper>*,.mat-stroked-button .mat-button-wrapper>*,.mat-raised-button .mat-button-wrapper>*,.mat-icon-button .mat-button-wrapper>*,.mat-fab .mat-button-wrapper>*,.mat-mini-fab .mat-button-wrapper>*{vertical-align:middle}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button{display:block;font-size:inherit;width:2.5em;height:2.5em}.cdk-high-contrast-active .mat-button,.cdk-high-contrast-active .mat-flat-button,.cdk-high-contrast-active .mat-raised-button,.cdk-high-contrast-active .mat-icon-button,.cdk-high-contrast-active .mat-fab,.cdk-high-contrast-active .mat-mini-fab{outline:solid 1px}\n"]
             }]
     }], function () { return [{ type: _angular_cdk_a11y__WEBPACK_IMPORTED_MODULE_2__["FocusMonitor"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ElementRef"] }, { type: String, decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Optional"]
@@ -63655,7 +63198,7 @@ function MatOption_mat_pseudo_checkbox_0_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("state", ctx_r0.selected ? "checked" : "unchecked")("disabled", ctx_r0.disabled);
 } }
 const _c2 = ["*"];
-const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.2.7');
+const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.1.3');
 
 /**
  * @license
@@ -63689,7 +63232,7 @@ AnimationDurations.EXITING = '195ms';
 // i.e. avoid core to depend on the @angular/material primary entry-point
 // Can be removed once the Material primary entry-point no longer
 // re-exports all secondary entry-points
-const VERSION$1 = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.2.7');
+const VERSION$1 = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["Version"]('10.1.3');
 /** @docs-private */
 function MATERIAL_SANITY_CHECKS_FACTORY() {
     return true;
@@ -63738,10 +63281,6 @@ class MatCommonModule {
     }
     /** Whether any sanity checks are enabled. */
     _checksAreEnabled() {
-        // TODO(crisbeto): we can't use `ngDevMode` here yet, because ViewEngine apps might not support
-        // it. Since these checks can have performance implications and they aren't tree shakeable
-        // in their current form, we can leave the `isDevMode` check in for now.
-        // tslint:disable-next-line:ban
         return Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["isDevMode"])() && !this._isTestEnv();
     }
     /** Whether the code is running in tests. */
@@ -63850,13 +63389,12 @@ function mixinColor(base, defaultColor) {
     return class extends base {
         constructor(...args) {
             super(...args);
-            this.defaultColor = defaultColor;
             // Set the default color that can be specified from the mixin.
             this.color = defaultColor;
         }
         get color() { return this._color; }
         set color(value) {
-            const colorPalette = value || this.defaultColor;
+            const colorPalette = value || defaultColor;
             if (colorPalette !== this._color) {
                 if (this._color) {
                     this._elementRef.nativeElement.classList.remove(`mat-${this._color}`);
@@ -63879,7 +63417,7 @@ function mixinColor(base, defaultColor) {
  */
 /** Mixin to augment a directive with a `disableRipple` property. */
 function mixinDisableRipple(base) {
-    class Mixin extends base {
+    return class extends base {
         constructor(...args) {
             super(...args);
             this._disableRipple = false;
@@ -63887,11 +63425,7 @@ function mixinDisableRipple(base) {
         /** Whether the ripple effect is disabled or not. */
         get disableRipple() { return this._disableRipple; }
         set disableRipple(value) { this._disableRipple = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_5__["coerceBooleanProperty"])(value); }
-    }
-    // Since we don't directly extend from `base` with it's original types, and we instruct
-    // TypeScript that `T` actually is instantiatable through `new`, the types don't overlap.
-    // This is a limitation in TS as abstract classes cannot be typed properly dynamically.
-    return Mixin;
+    };
 }
 
 /**
@@ -63903,24 +63437,17 @@ function mixinDisableRipple(base) {
  */
 /** Mixin to augment a directive with a `tabIndex` property. */
 function mixinTabIndex(base, defaultTabIndex = 0) {
-    // Note: We cast `base` to `unknown` and then `Constructor`. It could be an abstract class,
-    // but given we `extend` it from another class, we can assume a constructor being accessible.
-    class Mixin extends base {
+    return class extends base {
         constructor(...args) {
             super(...args);
             this._tabIndex = defaultTabIndex;
-            this.defaultTabIndex = defaultTabIndex;
         }
         get tabIndex() { return this.disabled ? -1 : this._tabIndex; }
         set tabIndex(value) {
             // If the specified tabIndex value is null or undefined, fall back to the default value.
-            this._tabIndex = value != null ? Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_5__["coerceNumberProperty"])(value) : this.defaultTabIndex;
+            this._tabIndex = value != null ? Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_5__["coerceNumberProperty"])(value) : defaultTabIndex;
         }
-    }
-    // Since we don't directly extend from `base` with it's original types, and we instruct
-    // TypeScript that `T` actually is instantiatable through `new`, the types don't overlap.
-    // This is a limitation in TS as abstract classes cannot be typed properly dynamically.
-    return Mixin;
+    };
 }
 
 /**
@@ -64001,7 +63528,7 @@ function mixinInitialized(base) {
          * @docs-private
          */
         _markInitialized() {
-            if (this._isInitialized && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+            if (this._isInitialized) {
                 throw Error('This directive has already been marked as initialized and ' +
                     'should not be called twice.');
             }
@@ -64052,18 +63579,9 @@ const MAT_DATE_LOCALE_PROVIDER = { provide: MAT_DATE_LOCALE, useExisting: _angul
 class DateAdapter {
     constructor() {
         this._localeChanges = new rxjs__WEBPACK_IMPORTED_MODULE_6__["Subject"]();
-        /** A stream that emits when the locale changes. */
-        this.localeChanges = this._localeChanges;
     }
-    /**
-     * Given a potential date object, returns that same date object if it is
-     * a valid date, or `null` if it's not a valid date.
-     * @param obj The object to check.
-     * @returns A date or `null`.
-     */
-    getValidDateOrNull(obj) {
-        return this.isDateInstance(obj) && this.isValid(obj) ? obj : null;
-    }
+    /** A stream that emits when the locale changes. */
+    get localeChanges() { return this._localeChanges; }
     /**
      * Attempts to deserialize a value to a valid date object. This is different from parsing in that
      * deserialize should only accept non-ambiguous, locale-independent formats (e.g. a ISO 8601
@@ -64273,19 +63791,17 @@ class NativeDateAdapter extends DateAdapter {
         return new Date(date.getTime());
     }
     createDate(year, month, date) {
-        if (typeof ngDevMode === 'undefined' || ngDevMode) {
-            // Check for invalid month and date (except upper bound on date which we have to check after
-            // creating the Date).
-            if (month < 0 || month > 11) {
-                throw Error(`Invalid month index "${month}". Month index has to be between 0 and 11.`);
-            }
-            if (date < 1) {
-                throw Error(`Invalid date "${date}". Date has to be greater than 0.`);
-            }
+        // Check for invalid month and date (except upper bound on date which we have to check after
+        // creating the Date).
+        if (month < 0 || month > 11) {
+            throw Error(`Invalid month index "${month}". Month index has to be between 0 and 11.`);
+        }
+        if (date < 1) {
+            throw Error(`Invalid date "${date}". Date has to be greater than 0.`);
         }
         let result = this._createDateWithOverflow(year, month, date);
         // Check that the date wasn't above the upper bound for the month, causing the month to overflow
-        if (result.getMonth() != month && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (result.getMonth() != month) {
             throw Error(`Invalid date "${date}" for month with index "${month}".`);
         }
         return result;
@@ -64374,12 +63890,13 @@ class NativeDateAdapter extends DateAdapter {
     }
     /** Creates a date but allows the month and date to overflow. */
     _createDateWithOverflow(year, month, date) {
-        // Passing the year to the constructor causes year numbers <100 to be converted to 19xx.
-        // To work around this we use `setFullYear` and `setHours` instead.
-        const d = new Date();
-        d.setFullYear(year, month, date);
-        d.setHours(0, 0, 0, 0);
-        return d;
+        const result = new Date(year, month, date);
+        // We need to correct for the fact that JS native Date treats years in range [0, 99] as
+        // abbreviations for 19xx.
+        if (year >= 0 && year < 100) {
+            result.setFullYear(this.getYear(result) - 1900);
+        }
+        return result;
     }
     /**
      * Pads a number to make it two digits.
@@ -64411,11 +63928,7 @@ class NativeDateAdapter extends DateAdapter {
      * @returns A Date object with its UTC representation based on the passed in date info
      */
     _format(dtf, date) {
-        // Passing the year to the constructor causes year numbers <100 to be converted to 19xx.
-        // To work around this we use `setUTCFullYear` and `setUTCHours` instead.
-        const d = new Date();
-        d.setUTCFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-        d.setUTCHours(date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()));
         return dtf.format(d);
     }
 }
@@ -65144,6 +64657,7 @@ class MatOptgroupBase {
 const _MatOptgroupMixinBase = mixinDisabled(MatOptgroupBase);
 // Counter for unique group ids.
 let _uniqueOptgroupIdCounter = 0;
+// tslint:disable-next-line:class-name
 class _MatOptgroupBase extends _MatOptgroupMixinBase {
     constructor() {
         super(...arguments);
@@ -65156,7 +64670,7 @@ _MatOptgroupBase.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineD
 _MatOptgroupBase.propDecorators = {
     label: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"] }]
 };
-const ɵ_MatOptgroupBase_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](_MatOptgroupBase);
+const ɵ_MatOptgroupBase_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](_MatOptgroupBase);
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](_MatOptgroupBase, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Directive"]
     }], null, { label: [{
@@ -65189,7 +64703,7 @@ MatOptgroup.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineCompon
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate1"]("", ctx.label, " ");
     } }, styles: [".mat-optgroup-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;line-height:48px;height:48px;padding:0 16px;text-align:left;text-decoration:none;max-width:100%;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default}.mat-optgroup-label[disabled]{cursor:default}[dir=rtl] .mat-optgroup-label{text-align:right}.mat-optgroup-label .mat-icon{margin-right:16px;vertical-align:middle}.mat-optgroup-label .mat-icon svg{vertical-align:top}[dir=rtl] .mat-optgroup-label .mat-icon{margin-left:16px;margin-right:0}\n"], encapsulation: 2, changeDetection: 0 });
-const ɵMatOptgroup_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](MatOptgroup);
+const ɵMatOptgroup_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetInheritedFactory"](MatOptgroup);
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](MatOptgroup, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"],
         args: [{
@@ -65238,6 +64752,7 @@ class MatOptionSelectionChange {
  * Injection token used to provide the parent component to options.
  */
 const MAT_OPTION_PARENT_COMPONENT = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["InjectionToken"]('MAT_OPTION_PARENT_COMPONENT');
+// tslint:disable-next-line:class-name
 class _MatOptionBase {
     constructor(_element, _changeDetectorRef, _parent, group) {
         this._element = _element;
@@ -65507,13 +65022,14 @@ function _countGroupLabelsBeforeOption(optionIndex, options, optionGroups) {
 }
 /**
  * Determines the position to which to scroll a panel in order for an option to be into view.
- * @param optionOffset Offset of the option from the top of the panel.
+ * @param optionIndex Index of the option to be scrolled into the view.
  * @param optionHeight Height of the options.
  * @param currentScrollPosition Current scroll position of the panel.
  * @param panelHeight Height of the panel.
  * @docs-private
  */
-function _getOptionScrollPosition(optionOffset, optionHeight, currentScrollPosition, panelHeight) {
+function _getOptionScrollPosition(optionIndex, optionHeight, currentScrollPosition, panelHeight) {
+    const optionOffset = optionIndex * optionHeight;
     if (optionOffset < currentScrollPosition) {
         return optionOffset;
     }
@@ -65691,7 +65207,7 @@ function MatFormField_label_9_ng_container_2_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](3);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate"](ctx_r10._control.placeholder);
 } }
-function MatFormField_label_9_ng_content_3_Template(rf, ctx) { if (rf & 1) {
+function MatFormField_label_9_3_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵprojection"](0, 3, ["*ngSwitchCase", "true"]);
 } }
 function MatFormField_label_9_span_4_Template(rf, ctx) { if (rf & 1) {
@@ -65704,7 +65220,7 @@ function MatFormField_label_9_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "label", 20, 21);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("cdkObserveContent", function MatFormField_label_9_Template_label_cdkObserveContent_0_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r14); const ctx_r13 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](); return ctx_r13.updateOutlineGap(); });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](2, MatFormField_label_9_ng_container_2_Template, 4, 1, "ng-container", 12);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](3, MatFormField_label_9_ng_content_3_Template, 1, 0, "ng-content", 12);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](3, MatFormField_label_9_3_Template, 1, 0, undefined, 12);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](4, MatFormField_label_9_span_4_Template, 2, 0, "span", 22);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } if (rf & 2) {
@@ -65889,7 +65405,7 @@ class MatHint {
 MatHint.ɵfac = function MatHint_Factory(t) { return new (t || MatHint)(); };
 MatHint.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineDirective"]({ type: MatHint, selectors: [["mat-hint"]], hostAttrs: [1, "mat-hint"], hostVars: 4, hostBindings: function MatHint_HostBindings(rf, ctx) { if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("id", ctx.id)("align", null);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵclassProp"]("mat-form-field-hint-end", ctx.align === "end");
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵclassProp"]("mat-right", ctx.align == "end");
     } }, inputs: { align: "align", id: "id" }, features: [_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵProvidersFeature"]([{ provide: _MAT_HINT, useExisting: MatHint }])] });
 MatHint.propDecorators = {
     align: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_2__["Input"] }],
@@ -65901,7 +65417,7 @@ MatHint.propDecorators = {
                 selector: 'mat-hint',
                 host: {
                     'class': 'mat-hint',
-                    '[class.mat-form-field-hint-end]': 'align === "end"',
+                    '[class.mat-right]': 'align == "end"',
                     '[attr.id]': 'id',
                     // Remove align attribute to prevent it from interfering with layout.
                     '[attr.align]': 'null'
@@ -66069,7 +65585,7 @@ class MatFormField extends _MatFormFieldMixinBase {
         this._hintLabel = '';
         // Unique id for the hint label.
         this._hintLabelId = `mat-hint-${nextUniqueId$2++}`;
-        // Unique id for the label element.
+        // Unique id for the internal form field label.
         this._labelId = `mat-form-field-label-${nextUniqueId$2++}`;
         this._labelOptions = labelOptions ? labelOptions : {};
         this.floatLabel = this._getDefaultFloatLabelState();
@@ -66131,12 +65647,6 @@ class MatFormField extends _MatFormFieldMixinBase {
         this._explicitFormFieldControl = value;
     }
     /**
-     * Gets the id of the label element. If no label is present, returns `null`.
-     */
-    getLabelId() {
-        return this._hasFloatingLabel() ? this._labelId : null;
-    }
-    /**
      * Gets an ElementRef for the element that a overlay attached to the form-field should be
      * positioned relative to.
      */
@@ -66165,7 +65675,7 @@ class MatFormField extends _MatFormFieldMixinBase {
         // in order to avoid throwing users into an infinite loop
         // if `zone-patch-rxjs` is included.
         this._ngZone.runOutsideAngular(() => {
-            this._ngZone.onStable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_7__["takeUntil"])(this._destroyed)).subscribe(() => {
+            this._ngZone.onStable.asObservable().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_7__["takeUntil"])(this._destroyed)).subscribe(() => {
                 if (this._outlineGapCalculationNeededOnStable) {
                     this.updateOutlineGap();
                 }
@@ -66263,8 +65773,7 @@ class MatFormField extends _MatFormFieldMixinBase {
      * or child element with the `mat-placeholder` directive).
      */
     _validatePlaceholders() {
-        if (this._control.placeholder && this._placeholderChild &&
-            (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (this._control.placeholder && this._placeholderChild) {
             throw getMatFormFieldPlaceholderConflictError();
         }
     }
@@ -66278,7 +65787,7 @@ class MatFormField extends _MatFormFieldMixinBase {
      * attribute being considered as `align="start"`.
      */
     _validateHints() {
-        if (this._hintChildren && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (this._hintChildren) {
             let startHint;
             let endHint;
             this._hintChildren.forEach((hint) => {
@@ -66308,11 +65817,6 @@ class MatFormField extends _MatFormFieldMixinBase {
     _syncDescribedByIds() {
         if (this._control) {
             let ids = [];
-            // TODO(wagnermaciel): Remove the type check when we find the root cause of this bug.
-            if (this._control.userAriaDescribedBy &&
-                typeof this._control.userAriaDescribedBy === 'string') {
-                ids.push(...this._control.userAriaDescribedBy.split(' '));
-            }
             if (this._getDisplayedMessages() === 'hint') {
                 const startHint = this._hintChildren ?
                     this._hintChildren.find(hint => hint.align === 'start') : null;
@@ -66329,14 +65833,14 @@ class MatFormField extends _MatFormFieldMixinBase {
                 }
             }
             else if (this._errorChildren) {
-                ids.push(...this._errorChildren.map(error => error.id));
+                ids = this._errorChildren.map(error => error.id);
             }
             this._control.setDescribedByIds(ids);
         }
     }
     /** Throws an error if the form field's control is missing. */
     _validateControlChild() {
-        if (!this._control && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (!this._control) {
             throw getMatFormFieldMissingControlError();
         }
     }
@@ -66490,7 +65994,7 @@ MatFormField.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineCompo
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngSwitchCase", "error");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngSwitchCase", "hint");
-    } }, directives: [_angular_common__WEBPACK_IMPORTED_MODULE_1__["NgIf"], _angular_common__WEBPACK_IMPORTED_MODULE_1__["NgSwitch"], _angular_common__WEBPACK_IMPORTED_MODULE_1__["NgSwitchCase"], _angular_cdk_observers__WEBPACK_IMPORTED_MODULE_0__["CdkObserveContent"]], styles: [".mat-form-field{display:inline-block;position:relative;text-align:left}[dir=rtl] .mat-form-field{text-align:right}.mat-form-field-wrapper{position:relative}.mat-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-form-field-prefix,.mat-form-field-suffix{white-space:nowrap;flex:none;position:relative}.mat-form-field-infix{display:block;position:relative;flex:auto;min-width:0;width:180px}.cdk-high-contrast-active .mat-form-field-infix{border-image:linear-gradient(transparent, transparent)}.mat-form-field-label-wrapper{position:absolute;left:0;box-sizing:content-box;width:100%;height:100%;overflow:hidden;pointer-events:none}[dir=rtl] .mat-form-field-label-wrapper{left:auto;right:0}.mat-form-field-label{position:absolute;left:0;font:inherit;pointer-events:none;width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;transform-origin:0 0;transition:transform 400ms cubic-bezier(0.25, 0.8, 0.25, 1),color 400ms cubic-bezier(0.25, 0.8, 0.25, 1),width 400ms cubic-bezier(0.25, 0.8, 0.25, 1);display:none}[dir=rtl] .mat-form-field-label{transform-origin:100% 0;left:auto;right:0}.mat-form-field-empty.mat-form-field-label,.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label{display:block}.mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:block;transition:none}.mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-form-field-can-float .mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:block}.mat-form-field-label:not(.mat-form-field-empty){transition:none}.mat-form-field-underline{position:absolute;width:100%;pointer-events:none;transform:scale3d(1, 1.0001, 1)}.mat-form-field-ripple{position:absolute;left:0;width:100%;transform-origin:50%;transform:scaleX(0.5);opacity:0;transition:background-color 300ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-form-field.mat-focused .mat-form-field-ripple,.mat-form-field.mat-form-field-invalid .mat-form-field-ripple{opacity:1;transform:scaleX(1);transition:transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1),opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1),background-color 300ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-subscript-wrapper{position:absolute;box-sizing:border-box;width:100%;overflow:hidden}.mat-form-field-subscript-wrapper .mat-icon,.mat-form-field-label-wrapper .mat-icon{width:1em;height:1em;font-size:inherit;vertical-align:baseline}.mat-form-field-hint-wrapper{display:flex}.mat-form-field-hint-spacer{flex:1 0 1em}.mat-error{display:block}.mat-form-field-control-wrapper{position:relative}.mat-form-field-hint-end{order:1}.mat-form-field._mat-animation-noopable .mat-form-field-label,.mat-form-field._mat-animation-noopable .mat-form-field-ripple{transition:none}\n", ".mat-form-field-appearance-fill .mat-form-field-flex{border-radius:4px 4px 0 0;padding:.75em .75em 0 .75em}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-flex{outline:solid 1px}.mat-form-field-appearance-fill .mat-form-field-underline::before{content:\"\";display:block;position:absolute;bottom:0;height:1px;width:100%}.mat-form-field-appearance-fill .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-fill:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-fill._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}.mat-form-field-appearance-fill .mat-form-field-subscript-wrapper{padding:0 1em}\n", ".mat-input-element{font:inherit;background:transparent;color:currentColor;border:none;outline:none;padding:0;margin:0;width:100%;max-width:100%;vertical-align:bottom;text-align:inherit}.mat-input-element:-moz-ui-invalid{box-shadow:none}.mat-input-element::-ms-clear,.mat-input-element::-ms-reveal{display:none}.mat-input-element,.mat-input-element::-webkit-search-cancel-button,.mat-input-element::-webkit-search-decoration,.mat-input-element::-webkit-search-results-button,.mat-input-element::-webkit-search-results-decoration{-webkit-appearance:none}.mat-input-element::-webkit-contacts-auto-fill-button,.mat-input-element::-webkit-caps-lock-indicator,.mat-input-element::-webkit-credentials-auto-fill-button{visibility:hidden}.mat-input-element[type=date],.mat-input-element[type=datetime],.mat-input-element[type=datetime-local],.mat-input-element[type=month],.mat-input-element[type=week],.mat-input-element[type=time]{line-height:1}.mat-input-element[type=date]::after,.mat-input-element[type=datetime]::after,.mat-input-element[type=datetime-local]::after,.mat-input-element[type=month]::after,.mat-input-element[type=week]::after,.mat-input-element[type=time]::after{content:\" \";white-space:pre;width:1px}.mat-input-element::-webkit-inner-spin-button,.mat-input-element::-webkit-calendar-picker-indicator,.mat-input-element::-webkit-clear-button{font-size:.75em}.mat-input-element::placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-moz-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-moz-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-webkit-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-webkit-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element:-ms-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element:-ms-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-form-field-hide-placeholder .mat-input-element::placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-moz-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-webkit-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element:-ms-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}textarea.mat-input-element{resize:vertical;overflow:auto}textarea.mat-input-element.cdk-textarea-autosize{resize:none}textarea.mat-input-element{padding:2px 0;margin:-2px 0}select.mat-input-element{-moz-appearance:none;-webkit-appearance:none;position:relative;background-color:transparent;display:inline-flex;box-sizing:border-box;padding-top:1em;top:-1em;margin-bottom:-1em}select.mat-input-element::-ms-expand{display:none}select.mat-input-element::-moz-focus-inner{border:0}select.mat-input-element:not(:disabled){cursor:pointer}select.mat-input-element::-ms-value{color:inherit;background:none}.mat-focused .cdk-high-contrast-active select.mat-input-element::-ms-value{color:inherit}.mat-form-field-type-mat-native-select .mat-form-field-infix::after{content:\"\";width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid;position:absolute;top:50%;right:0;margin-top:-2.5px;pointer-events:none}[dir=rtl] .mat-form-field-type-mat-native-select .mat-form-field-infix::after{right:auto;left:0}.mat-form-field-type-mat-native-select .mat-input-element{padding-right:15px}[dir=rtl] .mat-form-field-type-mat-native-select .mat-input-element{padding-right:0;padding-left:15px}.mat-form-field-type-mat-native-select .mat-form-field-label-wrapper{max-width:calc(100% - 10px)}.mat-form-field-type-mat-native-select.mat-form-field-appearance-outline .mat-form-field-infix::after{margin-top:-5px}.mat-form-field-type-mat-native-select.mat-form-field-appearance-fill .mat-form-field-infix::after{margin-top:-10px}\n", ".mat-form-field-appearance-legacy .mat-form-field-label{transform:perspective(100px);-ms-transform:none}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon{width:1em}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button{font:inherit;vertical-align:baseline}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button .mat-icon{font-size:inherit}.mat-form-field-appearance-legacy .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-legacy .mat-form-field-ripple{top:0;height:2px;overflow:hidden}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple{height:1px}\n", ".mat-form-field-appearance-outline .mat-form-field-wrapper{margin:.25em 0}.mat-form-field-appearance-outline .mat-form-field-flex{padding:0 .75em 0 .75em;margin-top:-0.25em;position:relative}.mat-form-field-appearance-outline .mat-form-field-prefix,.mat-form-field-appearance-outline .mat-form-field-suffix{top:.25em}.mat-form-field-appearance-outline .mat-form-field-outline{display:flex;position:absolute;top:.25em;left:0;right:0;bottom:0;pointer-events:none}.mat-form-field-appearance-outline .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-end{border:1px solid currentColor;min-width:5px}.mat-form-field-appearance-outline .mat-form-field-outline-start{border-radius:5px 0 0 5px;border-right-style:none}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-start{border-right-style:solid;border-left-style:none;border-radius:0 5px 5px 0}.mat-form-field-appearance-outline .mat-form-field-outline-end{border-radius:0 5px 5px 0;border-left-style:none;flex-grow:1}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-end{border-left-style:solid;border-right-style:none;border-radius:5px 0 0 5px}.mat-form-field-appearance-outline .mat-form-field-outline-gap{border-radius:.000001px;border:1px solid currentColor;border-left-style:none;border-right-style:none}.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-outline-gap{border-top-color:transparent}.mat-form-field-appearance-outline .mat-form-field-outline-thick{opacity:0}.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-end,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-gap{border-width:2px}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline{opacity:0;transition:opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline{opacity:0;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline .mat-form-field-subscript-wrapper{padding:0 1em}.mat-form-field-appearance-outline._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-start,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-end,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-gap{transition:none}\n", ".mat-form-field-appearance-standard .mat-form-field-flex{padding-top:.75em}.mat-form-field-appearance-standard .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-standard .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-ripple{height:0;border-top:2px}.mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-standard:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-standard._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}\n"], encapsulation: 2, data: { animation: [matFormFieldAnimations.transitionMessages] }, changeDetection: 0 });
+    } }, directives: [_angular_common__WEBPACK_IMPORTED_MODULE_1__["NgIf"], _angular_common__WEBPACK_IMPORTED_MODULE_1__["NgSwitch"], _angular_common__WEBPACK_IMPORTED_MODULE_1__["NgSwitchCase"], _angular_cdk_observers__WEBPACK_IMPORTED_MODULE_0__["CdkObserveContent"]], styles: [".mat-form-field{display:inline-block;position:relative;text-align:left}[dir=rtl] .mat-form-field{text-align:right}.mat-form-field-wrapper{position:relative}.mat-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-form-field-prefix,.mat-form-field-suffix{white-space:nowrap;flex:none;position:relative}.mat-form-field-infix{display:block;position:relative;flex:auto;min-width:0;width:180px}.cdk-high-contrast-active .mat-form-field-infix{border-image:linear-gradient(transparent, transparent)}.mat-form-field-label-wrapper{position:absolute;left:0;box-sizing:content-box;width:100%;height:100%;overflow:hidden;pointer-events:none}[dir=rtl] .mat-form-field-label-wrapper{left:auto;right:0}.mat-form-field-label{position:absolute;left:0;font:inherit;pointer-events:none;width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;transform-origin:0 0;transition:transform 400ms cubic-bezier(0.25, 0.8, 0.25, 1),color 400ms cubic-bezier(0.25, 0.8, 0.25, 1),width 400ms cubic-bezier(0.25, 0.8, 0.25, 1);display:none}[dir=rtl] .mat-form-field-label{transform-origin:100% 0;left:auto;right:0}.mat-form-field-empty.mat-form-field-label,.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label{display:block}.mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:block;transition:none}.mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-form-field-can-float .mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:block}.mat-form-field-label:not(.mat-form-field-empty){transition:none}.mat-form-field-underline{position:absolute;width:100%;pointer-events:none;transform:scale3d(1, 1.0001, 1)}.mat-form-field-ripple{position:absolute;left:0;width:100%;transform-origin:50%;transform:scaleX(0.5);opacity:0;transition:background-color 300ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-form-field.mat-focused .mat-form-field-ripple,.mat-form-field.mat-form-field-invalid .mat-form-field-ripple{opacity:1;transform:scaleX(1);transition:transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1),opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1),background-color 300ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-subscript-wrapper{position:absolute;box-sizing:border-box;width:100%;overflow:hidden}.mat-form-field-subscript-wrapper .mat-icon,.mat-form-field-label-wrapper .mat-icon{width:1em;height:1em;font-size:inherit;vertical-align:baseline}.mat-form-field-hint-wrapper{display:flex}.mat-form-field-hint-spacer{flex:1 0 1em}.mat-error{display:block}.mat-form-field-control-wrapper{position:relative}.mat-form-field._mat-animation-noopable .mat-form-field-label,.mat-form-field._mat-animation-noopable .mat-form-field-ripple{transition:none}\n", ".mat-form-field-appearance-fill .mat-form-field-flex{border-radius:4px 4px 0 0;padding:.75em .75em 0 .75em}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-flex{outline:solid 1px}.mat-form-field-appearance-fill .mat-form-field-underline::before{content:\"\";display:block;position:absolute;bottom:0;height:1px;width:100%}.mat-form-field-appearance-fill .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-fill:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-fill._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}.mat-form-field-appearance-fill .mat-form-field-subscript-wrapper{padding:0 1em}\n", ".mat-input-element{font:inherit;background:transparent;color:currentColor;border:none;outline:none;padding:0;margin:0;width:100%;max-width:100%;vertical-align:bottom;text-align:inherit}.mat-input-element:-moz-ui-invalid{box-shadow:none}.mat-input-element::-ms-clear,.mat-input-element::-ms-reveal{display:none}.mat-input-element,.mat-input-element::-webkit-search-cancel-button,.mat-input-element::-webkit-search-decoration,.mat-input-element::-webkit-search-results-button,.mat-input-element::-webkit-search-results-decoration{-webkit-appearance:none}.mat-input-element::-webkit-contacts-auto-fill-button,.mat-input-element::-webkit-caps-lock-indicator,.mat-input-element::-webkit-credentials-auto-fill-button{visibility:hidden}.mat-input-element[type=date],.mat-input-element[type=datetime],.mat-input-element[type=datetime-local],.mat-input-element[type=month],.mat-input-element[type=week],.mat-input-element[type=time]{line-height:1}.mat-input-element[type=date]::after,.mat-input-element[type=datetime]::after,.mat-input-element[type=datetime-local]::after,.mat-input-element[type=month]::after,.mat-input-element[type=week]::after,.mat-input-element[type=time]::after{content:\" \";white-space:pre;width:1px}.mat-input-element::-webkit-inner-spin-button,.mat-input-element::-webkit-calendar-picker-indicator,.mat-input-element::-webkit-clear-button{font-size:.75em}.mat-input-element::placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-moz-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-moz-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-webkit-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-webkit-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element:-ms-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element:-ms-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-form-field-hide-placeholder .mat-input-element::placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-moz-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-webkit-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element:-ms-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}textarea.mat-input-element{resize:vertical;overflow:auto}textarea.mat-input-element.cdk-textarea-autosize{resize:none}textarea.mat-input-element{padding:2px 0;margin:-2px 0}select.mat-input-element{-moz-appearance:none;-webkit-appearance:none;position:relative;background-color:transparent;display:inline-flex;box-sizing:border-box;padding-top:1em;top:-1em;margin-bottom:-1em}select.mat-input-element::-ms-expand{display:none}select.mat-input-element::-moz-focus-inner{border:0}select.mat-input-element:not(:disabled){cursor:pointer}select.mat-input-element::-ms-value{color:inherit;background:none}.mat-focused .cdk-high-contrast-active select.mat-input-element::-ms-value{color:inherit}.mat-form-field-type-mat-native-select .mat-form-field-infix::after{content:\"\";width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid;position:absolute;top:50%;right:0;margin-top:-2.5px;pointer-events:none}[dir=rtl] .mat-form-field-type-mat-native-select .mat-form-field-infix::after{right:auto;left:0}.mat-form-field-type-mat-native-select .mat-input-element{padding-right:15px}[dir=rtl] .mat-form-field-type-mat-native-select .mat-input-element{padding-right:0;padding-left:15px}.mat-form-field-type-mat-native-select .mat-form-field-label-wrapper{max-width:calc(100% - 10px)}.mat-form-field-type-mat-native-select.mat-form-field-appearance-outline .mat-form-field-infix::after{margin-top:-5px}.mat-form-field-type-mat-native-select.mat-form-field-appearance-fill .mat-form-field-infix::after{margin-top:-10px}\n", ".mat-form-field-appearance-legacy .mat-form-field-label{transform:perspective(100px);-ms-transform:none}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon{width:1em}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button{font:inherit;vertical-align:baseline}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button .mat-icon{font-size:inherit}.mat-form-field-appearance-legacy .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-legacy .mat-form-field-ripple{top:0;height:2px;overflow:hidden}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple{height:1px}\n", ".mat-form-field-appearance-outline .mat-form-field-wrapper{margin:.25em 0}.mat-form-field-appearance-outline .mat-form-field-flex{padding:0 .75em 0 .75em;margin-top:-0.25em;position:relative}.mat-form-field-appearance-outline .mat-form-field-prefix,.mat-form-field-appearance-outline .mat-form-field-suffix{top:.25em}.mat-form-field-appearance-outline .mat-form-field-outline{display:flex;position:absolute;top:.25em;left:0;right:0;bottom:0;pointer-events:none}.mat-form-field-appearance-outline .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-end{border:1px solid currentColor;min-width:5px}.mat-form-field-appearance-outline .mat-form-field-outline-start{border-radius:5px 0 0 5px;border-right-style:none}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-start{border-right-style:solid;border-left-style:none;border-radius:0 5px 5px 0}.mat-form-field-appearance-outline .mat-form-field-outline-end{border-radius:0 5px 5px 0;border-left-style:none;flex-grow:1}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-end{border-left-style:solid;border-right-style:none;border-radius:5px 0 0 5px}.mat-form-field-appearance-outline .mat-form-field-outline-gap{border-radius:.000001px;border:1px solid currentColor;border-left-style:none;border-right-style:none}.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-outline-gap{border-top-color:transparent}.mat-form-field-appearance-outline .mat-form-field-outline-thick{opacity:0}.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-end,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-gap{border-width:2px}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline{opacity:0;transition:opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline{opacity:0;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline .mat-form-field-subscript-wrapper{padding:0 1em}.mat-form-field-appearance-outline._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-start,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-end,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-gap{transition:none}\n", ".mat-form-field-appearance-standard .mat-form-field-flex{padding-top:.75em}.mat-form-field-appearance-standard .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-standard .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-ripple{height:0;border-top:2px}.mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-standard:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-standard._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}\n"], encapsulation: 2, data: { animation: [matFormFieldAnimations.transitionMessages] }, changeDetection: 0 });
 MatFormField.ctorParameters = () => [
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_2__["ElementRef"] },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_2__["ChangeDetectorRef"] },
@@ -66558,7 +66062,7 @@ MatFormField.propDecorators = {
                 providers: [
                     { provide: MAT_FORM_FIELD, useExisting: MatFormField },
                 ],
-                styles: [".mat-form-field{display:inline-block;position:relative;text-align:left}[dir=rtl] .mat-form-field{text-align:right}.mat-form-field-wrapper{position:relative}.mat-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-form-field-prefix,.mat-form-field-suffix{white-space:nowrap;flex:none;position:relative}.mat-form-field-infix{display:block;position:relative;flex:auto;min-width:0;width:180px}.cdk-high-contrast-active .mat-form-field-infix{border-image:linear-gradient(transparent, transparent)}.mat-form-field-label-wrapper{position:absolute;left:0;box-sizing:content-box;width:100%;height:100%;overflow:hidden;pointer-events:none}[dir=rtl] .mat-form-field-label-wrapper{left:auto;right:0}.mat-form-field-label{position:absolute;left:0;font:inherit;pointer-events:none;width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;transform-origin:0 0;transition:transform 400ms cubic-bezier(0.25, 0.8, 0.25, 1),color 400ms cubic-bezier(0.25, 0.8, 0.25, 1),width 400ms cubic-bezier(0.25, 0.8, 0.25, 1);display:none}[dir=rtl] .mat-form-field-label{transform-origin:100% 0;left:auto;right:0}.mat-form-field-empty.mat-form-field-label,.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label{display:block}.mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:block;transition:none}.mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-form-field-can-float .mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:block}.mat-form-field-label:not(.mat-form-field-empty){transition:none}.mat-form-field-underline{position:absolute;width:100%;pointer-events:none;transform:scale3d(1, 1.0001, 1)}.mat-form-field-ripple{position:absolute;left:0;width:100%;transform-origin:50%;transform:scaleX(0.5);opacity:0;transition:background-color 300ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-form-field.mat-focused .mat-form-field-ripple,.mat-form-field.mat-form-field-invalid .mat-form-field-ripple{opacity:1;transform:scaleX(1);transition:transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1),opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1),background-color 300ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-subscript-wrapper{position:absolute;box-sizing:border-box;width:100%;overflow:hidden}.mat-form-field-subscript-wrapper .mat-icon,.mat-form-field-label-wrapper .mat-icon{width:1em;height:1em;font-size:inherit;vertical-align:baseline}.mat-form-field-hint-wrapper{display:flex}.mat-form-field-hint-spacer{flex:1 0 1em}.mat-error{display:block}.mat-form-field-control-wrapper{position:relative}.mat-form-field-hint-end{order:1}.mat-form-field._mat-animation-noopable .mat-form-field-label,.mat-form-field._mat-animation-noopable .mat-form-field-ripple{transition:none}\n", ".mat-form-field-appearance-fill .mat-form-field-flex{border-radius:4px 4px 0 0;padding:.75em .75em 0 .75em}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-flex{outline:solid 1px}.mat-form-field-appearance-fill .mat-form-field-underline::before{content:\"\";display:block;position:absolute;bottom:0;height:1px;width:100%}.mat-form-field-appearance-fill .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-fill:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-fill._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}.mat-form-field-appearance-fill .mat-form-field-subscript-wrapper{padding:0 1em}\n", ".mat-input-element{font:inherit;background:transparent;color:currentColor;border:none;outline:none;padding:0;margin:0;width:100%;max-width:100%;vertical-align:bottom;text-align:inherit}.mat-input-element:-moz-ui-invalid{box-shadow:none}.mat-input-element::-ms-clear,.mat-input-element::-ms-reveal{display:none}.mat-input-element,.mat-input-element::-webkit-search-cancel-button,.mat-input-element::-webkit-search-decoration,.mat-input-element::-webkit-search-results-button,.mat-input-element::-webkit-search-results-decoration{-webkit-appearance:none}.mat-input-element::-webkit-contacts-auto-fill-button,.mat-input-element::-webkit-caps-lock-indicator,.mat-input-element::-webkit-credentials-auto-fill-button{visibility:hidden}.mat-input-element[type=date],.mat-input-element[type=datetime],.mat-input-element[type=datetime-local],.mat-input-element[type=month],.mat-input-element[type=week],.mat-input-element[type=time]{line-height:1}.mat-input-element[type=date]::after,.mat-input-element[type=datetime]::after,.mat-input-element[type=datetime-local]::after,.mat-input-element[type=month]::after,.mat-input-element[type=week]::after,.mat-input-element[type=time]::after{content:\" \";white-space:pre;width:1px}.mat-input-element::-webkit-inner-spin-button,.mat-input-element::-webkit-calendar-picker-indicator,.mat-input-element::-webkit-clear-button{font-size:.75em}.mat-input-element::placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-moz-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-moz-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-webkit-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-webkit-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element:-ms-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element:-ms-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-form-field-hide-placeholder .mat-input-element::placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-moz-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-webkit-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element:-ms-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}textarea.mat-input-element{resize:vertical;overflow:auto}textarea.mat-input-element.cdk-textarea-autosize{resize:none}textarea.mat-input-element{padding:2px 0;margin:-2px 0}select.mat-input-element{-moz-appearance:none;-webkit-appearance:none;position:relative;background-color:transparent;display:inline-flex;box-sizing:border-box;padding-top:1em;top:-1em;margin-bottom:-1em}select.mat-input-element::-ms-expand{display:none}select.mat-input-element::-moz-focus-inner{border:0}select.mat-input-element:not(:disabled){cursor:pointer}select.mat-input-element::-ms-value{color:inherit;background:none}.mat-focused .cdk-high-contrast-active select.mat-input-element::-ms-value{color:inherit}.mat-form-field-type-mat-native-select .mat-form-field-infix::after{content:\"\";width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid;position:absolute;top:50%;right:0;margin-top:-2.5px;pointer-events:none}[dir=rtl] .mat-form-field-type-mat-native-select .mat-form-field-infix::after{right:auto;left:0}.mat-form-field-type-mat-native-select .mat-input-element{padding-right:15px}[dir=rtl] .mat-form-field-type-mat-native-select .mat-input-element{padding-right:0;padding-left:15px}.mat-form-field-type-mat-native-select .mat-form-field-label-wrapper{max-width:calc(100% - 10px)}.mat-form-field-type-mat-native-select.mat-form-field-appearance-outline .mat-form-field-infix::after{margin-top:-5px}.mat-form-field-type-mat-native-select.mat-form-field-appearance-fill .mat-form-field-infix::after{margin-top:-10px}\n", ".mat-form-field-appearance-legacy .mat-form-field-label{transform:perspective(100px);-ms-transform:none}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon{width:1em}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button{font:inherit;vertical-align:baseline}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button .mat-icon{font-size:inherit}.mat-form-field-appearance-legacy .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-legacy .mat-form-field-ripple{top:0;height:2px;overflow:hidden}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple{height:1px}\n", ".mat-form-field-appearance-outline .mat-form-field-wrapper{margin:.25em 0}.mat-form-field-appearance-outline .mat-form-field-flex{padding:0 .75em 0 .75em;margin-top:-0.25em;position:relative}.mat-form-field-appearance-outline .mat-form-field-prefix,.mat-form-field-appearance-outline .mat-form-field-suffix{top:.25em}.mat-form-field-appearance-outline .mat-form-field-outline{display:flex;position:absolute;top:.25em;left:0;right:0;bottom:0;pointer-events:none}.mat-form-field-appearance-outline .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-end{border:1px solid currentColor;min-width:5px}.mat-form-field-appearance-outline .mat-form-field-outline-start{border-radius:5px 0 0 5px;border-right-style:none}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-start{border-right-style:solid;border-left-style:none;border-radius:0 5px 5px 0}.mat-form-field-appearance-outline .mat-form-field-outline-end{border-radius:0 5px 5px 0;border-left-style:none;flex-grow:1}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-end{border-left-style:solid;border-right-style:none;border-radius:5px 0 0 5px}.mat-form-field-appearance-outline .mat-form-field-outline-gap{border-radius:.000001px;border:1px solid currentColor;border-left-style:none;border-right-style:none}.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-outline-gap{border-top-color:transparent}.mat-form-field-appearance-outline .mat-form-field-outline-thick{opacity:0}.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-end,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-gap{border-width:2px}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline{opacity:0;transition:opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline{opacity:0;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline .mat-form-field-subscript-wrapper{padding:0 1em}.mat-form-field-appearance-outline._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-start,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-end,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-gap{transition:none}\n", ".mat-form-field-appearance-standard .mat-form-field-flex{padding-top:.75em}.mat-form-field-appearance-standard .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-standard .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-ripple{height:0;border-top:2px}.mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-standard:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-standard._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}\n"]
+                styles: [".mat-form-field{display:inline-block;position:relative;text-align:left}[dir=rtl] .mat-form-field{text-align:right}.mat-form-field-wrapper{position:relative}.mat-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-form-field-prefix,.mat-form-field-suffix{white-space:nowrap;flex:none;position:relative}.mat-form-field-infix{display:block;position:relative;flex:auto;min-width:0;width:180px}.cdk-high-contrast-active .mat-form-field-infix{border-image:linear-gradient(transparent, transparent)}.mat-form-field-label-wrapper{position:absolute;left:0;box-sizing:content-box;width:100%;height:100%;overflow:hidden;pointer-events:none}[dir=rtl] .mat-form-field-label-wrapper{left:auto;right:0}.mat-form-field-label{position:absolute;left:0;font:inherit;pointer-events:none;width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;transform-origin:0 0;transition:transform 400ms cubic-bezier(0.25, 0.8, 0.25, 1),color 400ms cubic-bezier(0.25, 0.8, 0.25, 1),width 400ms cubic-bezier(0.25, 0.8, 0.25, 1);display:none}[dir=rtl] .mat-form-field-label{transform-origin:100% 0;left:auto;right:0}.mat-form-field-empty.mat-form-field-label,.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label{display:block}.mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-label-wrapper .mat-form-field-label{display:block;transition:none}.mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:none}.mat-form-field-can-float .mat-input-server:focus+.mat-form-field-label-wrapper .mat-form-field-label,.mat-form-field-can-float .mat-input-server[placeholder]:not(:placeholder-shown)+.mat-form-field-label-wrapper .mat-form-field-label{display:block}.mat-form-field-label:not(.mat-form-field-empty){transition:none}.mat-form-field-underline{position:absolute;width:100%;pointer-events:none;transform:scale3d(1, 1.0001, 1)}.mat-form-field-ripple{position:absolute;left:0;width:100%;transform-origin:50%;transform:scaleX(0.5);opacity:0;transition:background-color 300ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-form-field.mat-focused .mat-form-field-ripple,.mat-form-field.mat-form-field-invalid .mat-form-field-ripple{opacity:1;transform:scaleX(1);transition:transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1),opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1),background-color 300ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-subscript-wrapper{position:absolute;box-sizing:border-box;width:100%;overflow:hidden}.mat-form-field-subscript-wrapper .mat-icon,.mat-form-field-label-wrapper .mat-icon{width:1em;height:1em;font-size:inherit;vertical-align:baseline}.mat-form-field-hint-wrapper{display:flex}.mat-form-field-hint-spacer{flex:1 0 1em}.mat-error{display:block}.mat-form-field-control-wrapper{position:relative}.mat-form-field._mat-animation-noopable .mat-form-field-label,.mat-form-field._mat-animation-noopable .mat-form-field-ripple{transition:none}\n", ".mat-form-field-appearance-fill .mat-form-field-flex{border-radius:4px 4px 0 0;padding:.75em .75em 0 .75em}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-flex{outline:solid 1px}.mat-form-field-appearance-fill .mat-form-field-underline::before{content:\"\";display:block;position:absolute;bottom:0;height:1px;width:100%}.mat-form-field-appearance-fill .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-fill .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-fill:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-fill._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}.mat-form-field-appearance-fill .mat-form-field-subscript-wrapper{padding:0 1em}\n", ".mat-input-element{font:inherit;background:transparent;color:currentColor;border:none;outline:none;padding:0;margin:0;width:100%;max-width:100%;vertical-align:bottom;text-align:inherit}.mat-input-element:-moz-ui-invalid{box-shadow:none}.mat-input-element::-ms-clear,.mat-input-element::-ms-reveal{display:none}.mat-input-element,.mat-input-element::-webkit-search-cancel-button,.mat-input-element::-webkit-search-decoration,.mat-input-element::-webkit-search-results-button,.mat-input-element::-webkit-search-results-decoration{-webkit-appearance:none}.mat-input-element::-webkit-contacts-auto-fill-button,.mat-input-element::-webkit-caps-lock-indicator,.mat-input-element::-webkit-credentials-auto-fill-button{visibility:hidden}.mat-input-element[type=date],.mat-input-element[type=datetime],.mat-input-element[type=datetime-local],.mat-input-element[type=month],.mat-input-element[type=week],.mat-input-element[type=time]{line-height:1}.mat-input-element[type=date]::after,.mat-input-element[type=datetime]::after,.mat-input-element[type=datetime-local]::after,.mat-input-element[type=month]::after,.mat-input-element[type=week]::after,.mat-input-element[type=time]::after{content:\" \";white-space:pre;width:1px}.mat-input-element::-webkit-inner-spin-button,.mat-input-element::-webkit-calendar-picker-indicator,.mat-input-element::-webkit-clear-button{font-size:.75em}.mat-input-element::placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-moz-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-moz-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element::-webkit-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element::-webkit-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-input-element:-ms-input-placeholder{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;transition:color 400ms 133.3333333333ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-input-element:-ms-input-placeholder:-ms-input-placeholder{-ms-user-select:text}.mat-form-field-hide-placeholder .mat-input-element::placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-moz-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element::-webkit-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}.mat-form-field-hide-placeholder .mat-input-element:-ms-input-placeholder{color:transparent !important;-webkit-text-fill-color:transparent;transition:none}textarea.mat-input-element{resize:vertical;overflow:auto}textarea.mat-input-element.cdk-textarea-autosize{resize:none}textarea.mat-input-element{padding:2px 0;margin:-2px 0}select.mat-input-element{-moz-appearance:none;-webkit-appearance:none;position:relative;background-color:transparent;display:inline-flex;box-sizing:border-box;padding-top:1em;top:-1em;margin-bottom:-1em}select.mat-input-element::-ms-expand{display:none}select.mat-input-element::-moz-focus-inner{border:0}select.mat-input-element:not(:disabled){cursor:pointer}select.mat-input-element::-ms-value{color:inherit;background:none}.mat-focused .cdk-high-contrast-active select.mat-input-element::-ms-value{color:inherit}.mat-form-field-type-mat-native-select .mat-form-field-infix::after{content:\"\";width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid;position:absolute;top:50%;right:0;margin-top:-2.5px;pointer-events:none}[dir=rtl] .mat-form-field-type-mat-native-select .mat-form-field-infix::after{right:auto;left:0}.mat-form-field-type-mat-native-select .mat-input-element{padding-right:15px}[dir=rtl] .mat-form-field-type-mat-native-select .mat-input-element{padding-right:0;padding-left:15px}.mat-form-field-type-mat-native-select .mat-form-field-label-wrapper{max-width:calc(100% - 10px)}.mat-form-field-type-mat-native-select.mat-form-field-appearance-outline .mat-form-field-infix::after{margin-top:-5px}.mat-form-field-type-mat-native-select.mat-form-field-appearance-fill .mat-form-field-infix::after{margin-top:-10px}\n", ".mat-form-field-appearance-legacy .mat-form-field-label{transform:perspective(100px);-ms-transform:none}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon{width:1em}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button{font:inherit;vertical-align:baseline}.mat-form-field-appearance-legacy .mat-form-field-prefix .mat-icon-button .mat-icon,.mat-form-field-appearance-legacy .mat-form-field-suffix .mat-icon-button .mat-icon{font-size:inherit}.mat-form-field-appearance-legacy .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-legacy .mat-form-field-ripple{top:0;height:2px;overflow:hidden}.cdk-high-contrast-active .mat-form-field-appearance-legacy .mat-form-field-ripple{height:0;border-top:solid 2px}.mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple{height:1px}\n", ".mat-form-field-appearance-outline .mat-form-field-wrapper{margin:.25em 0}.mat-form-field-appearance-outline .mat-form-field-flex{padding:0 .75em 0 .75em;margin-top:-0.25em;position:relative}.mat-form-field-appearance-outline .mat-form-field-prefix,.mat-form-field-appearance-outline .mat-form-field-suffix{top:.25em}.mat-form-field-appearance-outline .mat-form-field-outline{display:flex;position:absolute;top:.25em;left:0;right:0;bottom:0;pointer-events:none}.mat-form-field-appearance-outline .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-end{border:1px solid currentColor;min-width:5px}.mat-form-field-appearance-outline .mat-form-field-outline-start{border-radius:5px 0 0 5px;border-right-style:none}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-start{border-right-style:solid;border-left-style:none;border-radius:0 5px 5px 0}.mat-form-field-appearance-outline .mat-form-field-outline-end{border-radius:0 5px 5px 0;border-left-style:none;flex-grow:1}[dir=rtl] .mat-form-field-appearance-outline .mat-form-field-outline-end{border-left-style:solid;border-right-style:none;border-radius:5px 0 0 5px}.mat-form-field-appearance-outline .mat-form-field-outline-gap{border-radius:.000001px;border:1px solid currentColor;border-left-style:none;border-right-style:none}.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-outline-gap{border-top-color:transparent}.mat-form-field-appearance-outline .mat-form-field-outline-thick{opacity:0}.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-start,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-end,.mat-form-field-appearance-outline .mat-form-field-outline-thick .mat-form-field-outline-gap{border-width:2px}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline{opacity:0;transition:opacity 100ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick,.mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline{opacity:0;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-outline:not(.mat-form-field-disabled) .mat-form-field-flex:hover .mat-form-field-outline-thick{opacity:1}.mat-form-field-appearance-outline .mat-form-field-subscript-wrapper{padding:0 1em}.mat-form-field-appearance-outline._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-start,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-end,.mat-form-field-appearance-outline._mat-animation-noopable .mat-form-field-outline-gap{transition:none}\n", ".mat-form-field-appearance-standard .mat-form-field-flex{padding-top:.75em}.mat-form-field-appearance-standard .mat-form-field-underline{height:1px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-underline{height:0;border-top:solid 1px}.mat-form-field-appearance-standard .mat-form-field-ripple{bottom:0;height:2px}.cdk-high-contrast-active .mat-form-field-appearance-standard .mat-form-field-ripple{height:0;border-top:2px}.mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{background-position:0;background-color:transparent}.cdk-high-contrast-active .mat-form-field-appearance-standard.mat-form-field-disabled .mat-form-field-underline{border-top-style:dotted;border-top-width:2px}.mat-form-field-appearance-standard:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{opacity:1;transform:none;transition:opacity 600ms cubic-bezier(0.25, 0.8, 0.25, 1)}.mat-form-field-appearance-standard._mat-animation-noopable:not(.mat-form-field-disabled) .mat-form-field-flex:hover~.mat-form-field-underline .mat-form-field-ripple{transition:none}\n"]
             }]
     }], function () { return [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_2__["ElementRef"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_2__["ChangeDetectorRef"] }, { type: undefined, decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_2__["Optional"]
@@ -66783,10 +66287,16 @@ function getMatIconFailedToSanitizeLiteralError(literal) {
  * @docs-private
  */
 class SvgIconConfig {
-    constructor(url, svgText, options) {
-        this.url = url;
-        this.svgText = svgText;
+    constructor(data, options) {
         this.options = options;
+        // Note that we can't use `instanceof SVGElement` here,
+        // because it'll break during server-side rendering.
+        if (!!data.nodeName) {
+            this.svgElement = data;
+        }
+        else {
+            this.url = data;
+        }
     }
 }
 /**
@@ -66847,7 +66357,7 @@ class MatIconRegistry {
      * @param url
      */
     addSvgIconInNamespace(namespace, iconName, url, options) {
-        return this._addSvgIconConfig(namespace, iconName, new SvgIconConfig(url, null, options));
+        return this._addSvgIconConfig(namespace, iconName, new SvgIconConfig(url, options));
     }
     /**
      * Registers an icon using an HTML string in the specified namespace.
@@ -66856,12 +66366,12 @@ class MatIconRegistry {
      * @param literal SVG source of the icon.
      */
     addSvgIconLiteralInNamespace(namespace, iconName, literal, options) {
-        const cleanLiteral = this._sanitizer.sanitize(_angular_core__WEBPACK_IMPORTED_MODULE_0__["SecurityContext"].HTML, literal);
-        // TODO: add an ngDevMode check
-        if (!cleanLiteral) {
+        const sanitizedLiteral = this._sanitizer.sanitize(_angular_core__WEBPACK_IMPORTED_MODULE_0__["SecurityContext"].HTML, literal);
+        if (!sanitizedLiteral) {
             throw getMatIconFailedToSanitizeLiteralError(literal);
         }
-        return this._addSvgIconConfig(namespace, iconName, new SvgIconConfig('', cleanLiteral, options));
+        const svgElement = this._createSvgElementForSingleIcon(sanitizedLiteral, options);
+        return this._addSvgIconConfig(namespace, iconName, new SvgIconConfig(svgElement, options));
     }
     /**
      * Registers an icon set by URL in the default namespace.
@@ -66883,7 +66393,7 @@ class MatIconRegistry {
      * @param url
      */
     addSvgIconSetInNamespace(namespace, url, options) {
-        return this._addSvgIconSetConfig(namespace, new SvgIconConfig(url, null, options));
+        return this._addSvgIconSetConfig(namespace, new SvgIconConfig(url, options));
     }
     /**
      * Registers an icon set using an HTML string in the specified namespace.
@@ -66891,11 +66401,12 @@ class MatIconRegistry {
      * @param literal SVG source of the icon set.
      */
     addSvgIconSetLiteralInNamespace(namespace, literal, options) {
-        const cleanLiteral = this._sanitizer.sanitize(_angular_core__WEBPACK_IMPORTED_MODULE_0__["SecurityContext"].HTML, literal);
-        if (!cleanLiteral) {
+        const sanitizedLiteral = this._sanitizer.sanitize(_angular_core__WEBPACK_IMPORTED_MODULE_0__["SecurityContext"].HTML, literal);
+        if (!sanitizedLiteral) {
             throw getMatIconFailedToSanitizeLiteralError(literal);
         }
-        return this._addSvgIconSetConfig(namespace, new SvgIconConfig('', cleanLiteral, options));
+        const svgElement = this._svgElementFromString(sanitizedLiteral);
+        return this._addSvgIconSetConfig(namespace, new SvgIconConfig(svgElement, options));
     }
     /**
      * Defines an alias for a CSS class name to be used for icon fonts. Creating an matIcon
@@ -66950,7 +66461,7 @@ class MatIconRegistry {
         if (cachedIcon) {
             return Object(rxjs__WEBPACK_IMPORTED_MODULE_4__["of"])(cloneSvg(cachedIcon));
         }
-        return this._loadSvgIconFromConfig(new SvgIconConfig(safeUrl, null)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["tap"])(svg => this._cachedIconsByUrl.set(url, svg)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(svg => cloneSvg(svg)));
+        return this._loadSvgIconFromConfig(new SvgIconConfig(safeUrl)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["tap"])(svg => this._cachedIconsByUrl.set(url, svg)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(svg => cloneSvg(svg)));
     }
     /**
      * Returns an Observable that produces the icon (as an `<svg>` DOM element) with the given name
@@ -66983,13 +66494,13 @@ class MatIconRegistry {
      * Returns the cached icon for a SvgIconConfig if available, or fetches it from its URL if not.
      */
     _getSvgFromConfig(config) {
-        if (config.svgText) {
+        if (config.svgElement) {
             // We already have the SVG element for this icon, return a copy.
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_4__["of"])(cloneSvg(this._svgElementFromConfig(config)));
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_4__["of"])(cloneSvg(config.svgElement));
         }
         else {
             // Fetch the icon from the config's URL, cache it, and return a copy.
-            return this._loadSvgIconFromConfig(config).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(svg => cloneSvg(svg)));
+            return this._loadSvgIconFromConfig(config).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["tap"])(svg => config.svgElement = svg), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(svg => cloneSvg(svg)));
         }
     }
     /**
@@ -67013,7 +66524,7 @@ class MatIconRegistry {
         // Not found in any cached icon sets. If there are icon sets with URLs that we haven't
         // fetched, fetch them now and look for iconName in the results.
         const iconSetFetchRequests = iconSetConfigs
-            .filter(iconSetConfig => !iconSetConfig.svgText)
+            .filter(iconSetConfig => !iconSetConfig.svgElement)
             .map(iconSetConfig => {
             return this._loadSvgIconSetFromConfig(iconSetConfig).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["catchError"])((err) => {
                 const url = this._sanitizer.sanitize(_angular_core__WEBPACK_IMPORTED_MODULE_0__["SecurityContext"].RESOURCE_URL, iconSetConfig.url);
@@ -67028,7 +66539,6 @@ class MatIconRegistry {
         // cached SVG element (unless the request failed), and we can check again for the icon.
         return Object(rxjs__WEBPACK_IMPORTED_MODULE_4__["forkJoin"])(iconSetFetchRequests).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(() => {
             const foundIcon = this._extractIconWithNameFromAnySet(name, iconSetConfigs);
-            // TODO: add an ngDevMode check
             if (!foundIcon) {
                 throw getMatIconNameNotFoundError(name);
             }
@@ -67044,13 +66554,8 @@ class MatIconRegistry {
         // Iterate backwards, so icon sets added later have precedence.
         for (let i = iconSetConfigs.length - 1; i >= 0; i--) {
             const config = iconSetConfigs[i];
-            // Parsing the icon set's text into an SVG element can be expensive. We can avoid some of
-            // the parsing by doing a quick check using `indexOf` to see if there's any chance for the
-            // icon to be in the set. This won't be 100% accurate, but it should help us avoid at least
-            // some of the parsing.
-            if (config.svgText && config.svgText.indexOf(iconName) > -1) {
-                const svg = this._svgElementFromConfig(config);
-                const foundIcon = this._extractSvgIconFromSet(svg, iconName, config.options);
+            if (config.svgElement) {
+                const foundIcon = this._extractSvgIconFromSet(config.svgElement, iconName, config.options);
                 if (foundIcon) {
                     return foundIcon;
                 }
@@ -67063,17 +66568,34 @@ class MatIconRegistry {
      * from it.
      */
     _loadSvgIconFromConfig(config) {
-        return this._fetchIcon(config).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["tap"])(svgText => config.svgText = svgText), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(() => this._svgElementFromConfig(config)));
+        return this._fetchIcon(config)
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(svgText => this._createSvgElementForSingleIcon(svgText, config.options)));
     }
     /**
-     * Loads the content of the icon set URL specified in the
-     * SvgIconConfig and attaches it to the config.
+     * Loads the content of the icon set URL specified in the SvgIconConfig and creates an SVG element
+     * from it.
      */
     _loadSvgIconSetFromConfig(config) {
-        if (config.svgText) {
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_4__["of"])(null);
+        // If the SVG for this icon set has already been parsed, do nothing.
+        if (config.svgElement) {
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_4__["of"])(config.svgElement);
         }
-        return this._fetchIcon(config).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["tap"])(svgText => config.svgText = svgText));
+        return this._fetchIcon(config).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["map"])(svgText => {
+            // It is possible that the icon set was parsed and cached by an earlier request, so parsing
+            // only needs to occur if the cache is yet unset.
+            if (!config.svgElement) {
+                config.svgElement = this._svgElementFromString(svgText);
+            }
+            return config.svgElement;
+        }));
+    }
+    /**
+     * Creates a DOM element from the given SVG string, and adds default attributes.
+     */
+    _createSvgElementForSingleIcon(responseText, options) {
+        const svg = this._svgElementFromString(responseText);
+        this._setSvgAttributes(svg, options);
+        return svg;
     }
     /**
      * Searches the cached element of the given SvgIconConfig for a nested icon element whose "id"
@@ -67119,7 +66641,6 @@ class MatIconRegistry {
         const div = this._document.createElement('DIV');
         div.innerHTML = str;
         const svg = div.querySelector('svg');
-        // TODO: add an ngDevMode check
         if (!svg) {
             throw Error('<svg> tag not found');
         }
@@ -67170,12 +66691,10 @@ class MatIconRegistry {
         if (!this._httpClient) {
             throw getMatIconNoHttpProviderError();
         }
-        // TODO: add an ngDevMode check
         if (safeUrl == null) {
             throw Error(`Cannot fetch icon from URL "${safeUrl}".`);
         }
         const url = this._sanitizer.sanitize(_angular_core__WEBPACK_IMPORTED_MODULE_0__["SecurityContext"].RESOURCE_URL, safeUrl);
-        // TODO: add an ngDevMode check
         if (!url) {
             throw getMatIconFailedToSanitizeUrlError(safeUrl);
         }
@@ -67186,6 +66705,8 @@ class MatIconRegistry {
         if (inProgressFetch) {
             return inProgressFetch;
         }
+        // TODO(jelbourn): for some reason, the `finalize` operator "loses" the generic type on the
+        // Observable. Figure out why and fix it.
         const req = this._httpClient.get(url, { responseType: 'text', withCredentials }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["finalize"])(() => this._inProgressUrlFetches.delete(url)), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["share"])());
         this._inProgressUrlFetches.set(url, req);
         return req;
@@ -67214,15 +66735,6 @@ class MatIconRegistry {
             this._iconSetConfigs.set(namespace, [config]);
         }
         return this;
-    }
-    /** Parses a config's text into an SVG element. */
-    _svgElementFromConfig(config) {
-        if (!config.svgElement) {
-            const svg = this._svgElementFromString(config.svgText);
-            this._setSvgAttributes(svg, config.options);
-            config.svgElement = svg;
-        }
-        return config.svgElement;
     }
 }
 MatIconRegistry.ɵfac = function MatIconRegistry_Factory(t) { return new (t || MatIconRegistry)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_6__["HttpClient"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_platform_browser__WEBPACK_IMPORTED_MODULE_7__["DomSanitizer"]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_common__WEBPACK_IMPORTED_MODULE_3__["DOCUMENT"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_0__["ErrorHandler"])); };
@@ -67376,36 +66888,15 @@ class MatIcon extends _MatIconMixinBase {
     set inline(inline) {
         this._inline = Object(_angular_cdk_coercion__WEBPACK_IMPORTED_MODULE_2__["coerceBooleanProperty"])(inline);
     }
-    /** Name of the icon in the SVG icon set. */
-    get svgIcon() { return this._svgIcon; }
-    set svgIcon(value) {
-        if (value !== this._svgIcon) {
-            if (value) {
-                this._updateSvgIcon(value);
-            }
-            else if (this._svgIcon) {
-                this._clearSvgElement();
-            }
-            this._svgIcon = value;
-        }
-    }
     /** Font set that the icon is a part of. */
     get fontSet() { return this._fontSet; }
     set fontSet(value) {
-        const newValue = this._cleanupFontValue(value);
-        if (newValue !== this._fontSet) {
-            this._fontSet = newValue;
-            this._updateFontIconClasses();
-        }
+        this._fontSet = this._cleanupFontValue(value);
     }
     /** Name of an icon within a font set. */
     get fontIcon() { return this._fontIcon; }
     set fontIcon(value) {
-        const newValue = this._cleanupFontValue(value);
-        if (newValue !== this._fontIcon) {
-            this._fontIcon = newValue;
-            this._updateFontIconClasses();
-        }
+        this._fontIcon = this._cleanupFontValue(value);
     }
     /**
      * Splits an svgIcon binding value into its icon set and icon name components.
@@ -67428,13 +66919,37 @@ class MatIcon extends _MatIconMixinBase {
         switch (parts.length) {
             case 1: return ['', parts[0]]; // Use default namespace.
             case 2: return parts;
-            default: throw Error(`Invalid icon name: "${iconName}"`); // TODO: add an ngDevMode check
+            default: throw Error(`Invalid icon name: "${iconName}"`);
+        }
+    }
+    ngOnChanges(changes) {
+        // Only update the inline SVG icon if the inputs changed, to avoid unnecessary DOM operations.
+        const svgIconChanges = changes['svgIcon'];
+        if (svgIconChanges) {
+            this._currentIconFetch.unsubscribe();
+            if (this.svgIcon) {
+                const [namespace, iconName] = this._splitIconName(this.svgIcon);
+                this._currentIconFetch = this._iconRegistry.getNamedSvgIcon(iconName, namespace)
+                    .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["take"])(1))
+                    .subscribe(svg => this._setSvgElement(svg), (err) => {
+                    const errorMessage = `Error retrieving icon ${namespace}:${iconName}! ${err.message}`;
+                    this._errorHandler.handleError(new Error(errorMessage));
+                });
+            }
+            else if (svgIconChanges.previousValue) {
+                this._clearSvgElement();
+            }
+        }
+        if (this._usingFontIcon()) {
+            this._updateFontIconClasses();
         }
     }
     ngOnInit() {
         // Update font classes because ngOnChanges won't be called if none of the inputs are present,
         // e.g. <mat-icon>arrow</mat-icon> In this case we need to add a CSS class for the default font.
-        this._updateFontIconClasses();
+        if (this._usingFontIcon()) {
+            this._updateFontIconClasses();
+        }
     }
     ngAfterViewChecked() {
         const cachedElements = this._elementsWithExternalReferences;
@@ -67569,33 +67084,11 @@ class MatIcon extends _MatIconMixinBase {
             });
         }
     }
-    /** Sets a new SVG icon with a particular name. */
-    _updateSvgIcon(rawName) {
-        this._svgNamespace = null;
-        this._svgName = null;
-        this._currentIconFetch.unsubscribe();
-        if (rawName) {
-            const [namespace, iconName] = this._splitIconName(rawName);
-            if (namespace) {
-                this._svgNamespace = namespace;
-            }
-            if (iconName) {
-                this._svgName = iconName;
-            }
-            this._currentIconFetch = this._iconRegistry.getNamedSvgIcon(iconName, namespace)
-                .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["take"])(1))
-                .subscribe(svg => this._setSvgElement(svg), (err) => {
-                const errorMessage = `Error retrieving icon ${namespace}:${iconName}! ${err.message}`;
-                this._errorHandler.handleError(new Error(errorMessage));
-            });
-        }
-    }
 }
 MatIcon.ɵfac = function MatIcon_Factory(t) { return new (t || MatIcon)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_0__["ElementRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](MatIconRegistry), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinjectAttribute"]('aria-hidden'), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](MAT_ICON_LOCATION), _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_0__["ErrorHandler"])); };
-MatIcon.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: MatIcon, selectors: [["mat-icon"]], hostAttrs: ["role", "img", 1, "mat-icon", "notranslate"], hostVars: 7, hostBindings: function MatIcon_HostBindings(rf, ctx) { if (rf & 2) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵattribute"]("data-mat-icon-type", ctx._usingFontIcon() ? "font" : "svg")("data-mat-icon-name", ctx._svgName || ctx.fontIcon)("data-mat-icon-namespace", ctx._svgNamespace || ctx.fontSet);
+MatIcon.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: MatIcon, selectors: [["mat-icon"]], hostAttrs: ["role", "img", 1, "mat-icon", "notranslate"], hostVars: 4, hostBindings: function MatIcon_HostBindings(rf, ctx) { if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵclassProp"]("mat-icon-inline", ctx.inline)("mat-icon-no-color", ctx.color !== "primary" && ctx.color !== "accent" && ctx.color !== "warn");
-    } }, inputs: { color: "color", inline: "inline", svgIcon: "svgIcon", fontSet: "fontSet", fontIcon: "fontIcon" }, exportAs: ["matIcon"], features: [_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵInheritDefinitionFeature"]], ngContentSelectors: _c0, decls: 1, vars: 0, template: function MatIcon_Template(rf, ctx) { if (rf & 1) {
+    } }, inputs: { color: "color", inline: "inline", fontSet: "fontSet", fontIcon: "fontIcon", svgIcon: "svgIcon" }, exportAs: ["matIcon"], features: [_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵInheritDefinitionFeature"], _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵNgOnChangesFeature"]], ngContentSelectors: _c0, decls: 1, vars: 0, template: function MatIcon_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵprojectionDef"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵprojection"](0);
     } }, styles: [".mat-icon{background-repeat:no-repeat;display:inline-block;fill:currentColor;height:24px;width:24px}.mat-icon.mat-icon-inline{font-size:inherit;height:inherit;line-height:inherit;width:inherit}[dir=rtl] .mat-icon-rtl-mirror{transform:scale(-1, 1)}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon{display:block}.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-prefix .mat-icon-button .mat-icon,.mat-form-field:not(.mat-form-field-appearance-legacy) .mat-form-field-suffix .mat-icon-button .mat-icon{margin:auto}\n"], encapsulation: 2, changeDetection: 0 });
@@ -67622,9 +67115,6 @@ MatIcon.propDecorators = {
                 host: {
                     'role': 'img',
                     'class': 'mat-icon notranslate',
-                    '[attr.data-mat-icon-type]': '_usingFontIcon() ? "font" : "svg"',
-                    '[attr.data-mat-icon-name]': '_svgName || fontIcon',
-                    '[attr.data-mat-icon-namespace]': '_svgNamespace || fontSet',
                     '[class.mat-icon-inline]': 'inline',
                     '[class.mat-icon-no-color]': 'color !== "primary" && color !== "accent" && color !== "warn"'
                 },
@@ -67640,11 +67130,11 @@ MatIcon.propDecorators = {
                 args: [MAT_ICON_LOCATION]
             }] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ErrorHandler"] }]; }, { inline: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
-        }], svgIcon: [{
-            type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }], fontSet: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }], fontIcon: [{
+            type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
+        }], svgIcon: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"]
         }] }); })();
 
@@ -67754,7 +67244,7 @@ MatTextareaAutosize.propDecorators = {
     matAutosize: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"], args: ['mat-autosize',] }],
     matTextareaAutosize: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }]
 };
-const ɵMatTextareaAutosize_BaseFactory = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵgetInheritedFactory"](MatTextareaAutosize);
+const ɵMatTextareaAutosize_BaseFactory = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵgetInheritedFactory"](MatTextareaAutosize);
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵsetClassMetadata"](MatTextareaAutosize, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Directive"],
         args: [{
@@ -67844,8 +67334,7 @@ class MatInput extends _MatInputMixinBase {
     constructor(_elementRef, _platform, 
     /** @docs-private */
     ngControl, _parentForm, _parentFormGroup, _defaultErrorStateMatcher, inputValueAccessor, _autofillMonitor, ngZone, 
-    // TODO: Remove this once the legacy appearance has been removed. We only need
-    // to inject the form-field for determining whether the placeholder has been promoted.
+    // @breaking-change 8.0.0 `_formField` parameter to be made required.
     _formField) {
         super(_defaultErrorStateMatcher, _parentForm, _parentFormGroup, ngControl);
         this._elementRef = _elementRef;
@@ -68042,12 +67531,12 @@ class MatInput extends _MatInputMixinBase {
     }
     /** Does some manual dirty checking on the native input `placeholder` attribute. */
     _dirtyCheckPlaceholder() {
-        var _a, _b;
         // If we're hiding the native placeholder, it should also be cleared from the DOM, otherwise
         // screen readers will read it out twice: once from the label and once from the attribute.
         // TODO: can be removed once we get rid of the `legacy` style for the form field, because it's
         // the only one that supports promoting the placeholder to a label.
-        const placeholder = ((_b = (_a = this._formField) === null || _a === void 0 ? void 0 : _a._hideControlPlaceholder) === null || _b === void 0 ? void 0 : _b.call(_a)) ? null : this.placeholder;
+        const formField = this._formField;
+        const placeholder = (!formField || !formField._hideControlPlaceholder()) ? this.placeholder : null;
         if (placeholder !== this._previousPlaceholder) {
             const element = this._elementRef.nativeElement;
             this._previousPlaceholder = placeholder;
@@ -68065,8 +67554,7 @@ class MatInput extends _MatInputMixinBase {
     }
     /** Make sure the input is a supported type. */
     _validateType() {
-        if (MAT_INPUT_INVALID_TYPES.indexOf(this._type) > -1 &&
-            (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (MAT_INPUT_INVALID_TYPES.indexOf(this._type) > -1) {
             throw getMatInputUnsupportedTypeError(this._type);
         }
     }
@@ -68113,12 +67601,7 @@ class MatInput extends _MatInputMixinBase {
      * @docs-private
      */
     setDescribedByIds(ids) {
-        if (ids.length) {
-            this._elementRef.nativeElement.setAttribute('aria-describedby', ids.join(' '));
-        }
-        else {
-            this._elementRef.nativeElement.removeAttribute('aria-describedby');
-        }
+        this._ariaDescribedby = ids.join(' ');
     }
     /**
      * Implemented as part of MatFormFieldControl.
@@ -68133,14 +67616,14 @@ class MatInput extends _MatInputMixinBase {
         }
     }
 }
-MatInput.ɵfac = function MatInput_Factory(t) { return new (t || MatInput)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_cdk_platform__WEBPACK_IMPORTED_MODULE_3__["Platform"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__["NgControl"], 10), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__["NgForm"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__["FormGroupDirective"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_material_core__WEBPACK_IMPORTED_MODULE_5__["ErrorStateMatcher"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](MAT_INPUT_VALUE_ACCESSOR, 10), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_cdk_text_field__WEBPACK_IMPORTED_MODULE_0__["AutofillMonitor"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MAT_FORM_FIELD"], 8)); };
-MatInput.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineDirective"]({ type: MatInput, selectors: [["input", "matInput", ""], ["textarea", "matInput", ""], ["select", "matNativeControl", ""], ["input", "matNativeControl", ""], ["textarea", "matNativeControl", ""]], hostAttrs: [1, "mat-input-element", "mat-form-field-autofill-control"], hostVars: 9, hostBindings: function MatInput_HostBindings(rf, ctx) { if (rf & 1) {
+MatInput.ɵfac = function MatInput_Factory(t) { return new (t || MatInput)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_cdk_platform__WEBPACK_IMPORTED_MODULE_3__["Platform"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__["NgControl"], 10), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__["NgForm"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__["FormGroupDirective"], 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_material_core__WEBPACK_IMPORTED_MODULE_5__["ErrorStateMatcher"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](MAT_INPUT_VALUE_ACCESSOR, 10), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_cdk_text_field__WEBPACK_IMPORTED_MODULE_0__["AutofillMonitor"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MatFormField"], 8)); };
+MatInput.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineDirective"]({ type: MatInput, selectors: [["input", "matInput", ""], ["textarea", "matInput", ""], ["select", "matNativeControl", ""], ["input", "matNativeControl", ""], ["textarea", "matNativeControl", ""]], hostAttrs: [1, "mat-input-element", "mat-form-field-autofill-control"], hostVars: 10, hostBindings: function MatInput_HostBindings(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵlistener"]("focus", function MatInput_focus_HostBindingHandler() { return ctx._focusChanged(true); })("blur", function MatInput_blur_HostBindingHandler() { return ctx._focusChanged(false); })("input", function MatInput_input_HostBindingHandler() { return ctx._onInput(); });
     } if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵhostProperty"]("disabled", ctx.disabled)("required", ctx.required);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵattribute"]("id", ctx.id)("data-placeholder", ctx.placeholder)("readonly", ctx.readonly && !ctx._isNativeSelect || null)("aria-invalid", ctx.errorState)("aria-required", ctx.required.toString());
+        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵattribute"]("id", ctx.id)("data-placeholder", ctx.placeholder)("readonly", ctx.readonly && !ctx._isNativeSelect || null)("aria-describedby", ctx._ariaDescribedby || null)("aria-invalid", ctx.errorState)("aria-required", ctx.required.toString());
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵclassProp"]("mat-input-server", ctx._isServer);
-    } }, inputs: { id: "id", disabled: "disabled", required: "required", type: "type", value: "value", readonly: "readonly", placeholder: "placeholder", errorStateMatcher: "errorStateMatcher", userAriaDescribedBy: ["aria-describedby", "userAriaDescribedBy"] }, exportAs: ["matInput"], features: [_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵProvidersFeature"]([{ provide: _angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MatFormFieldControl"], useExisting: MatInput }]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵInheritDefinitionFeature"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵNgOnChangesFeature"]] });
+    } }, inputs: { id: "id", disabled: "disabled", required: "required", type: "type", value: "value", readonly: "readonly", placeholder: "placeholder", errorStateMatcher: "errorStateMatcher" }, exportAs: ["matInput"], features: [_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵProvidersFeature"]([{ provide: _angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MatFormFieldControl"], useExisting: MatInput }]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵInheritDefinitionFeature"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵNgOnChangesFeature"]] });
 MatInput.ctorParameters = () => [
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"] },
     { type: _angular_cdk_platform__WEBPACK_IMPORTED_MODULE_3__["Platform"] },
@@ -68151,7 +67634,7 @@ MatInput.ctorParameters = () => [
     { type: undefined, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Self"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"], args: [MAT_INPUT_VALUE_ACCESSOR,] }] },
     { type: _angular_cdk_text_field__WEBPACK_IMPORTED_MODULE_0__["AutofillMonitor"] },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] },
-    { type: _angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MatFormField"], decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"], args: [_angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MAT_FORM_FIELD"],] }] }
+    { type: _angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MatFormField"], decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }] }
 ];
 MatInput.propDecorators = {
     disabled: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }],
@@ -68160,7 +67643,6 @@ MatInput.propDecorators = {
     required: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }],
     type: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }],
     errorStateMatcher: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }],
-    userAriaDescribedBy: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"], args: ['aria-describedby',] }],
     value: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }],
     readonly: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"] }],
     _focusChanged: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"], args: ['focus', ['true'],] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"], args: ['blur', ['false'],] }],
@@ -68188,6 +67670,7 @@ MatInput.propDecorators = {
                     '[disabled]': 'disabled',
                     '[required]': 'required',
                     '[attr.readonly]': 'readonly && !_isNativeSelect || null',
+                    '[attr.aria-describedby]': '_ariaDescribedby || null',
                     '[attr.aria-invalid]': 'errorState',
                     '[attr.aria-required]': 'required.toString()'
                 },
@@ -68210,9 +67693,6 @@ MatInput.propDecorators = {
                 args: [MAT_INPUT_VALUE_ACCESSOR]
             }] }, { type: _angular_cdk_text_field__WEBPACK_IMPORTED_MODULE_0__["AutofillMonitor"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"] }, { type: _angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MatFormField"], decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]
-            }, {
-                type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"],
-                args: [_angular_material_form_field__WEBPACK_IMPORTED_MODULE_6__["MAT_FORM_FIELD"]]
             }] }]; }, { id: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }], disabled: [{
@@ -68225,36 +67705,19 @@ MatInput.propDecorators = {
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }], readonly: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
-        }], 
-    // We have to use a `HostListener` here in order to support both Ivy and ViewEngine.
-    // In Ivy the `host` bindings will be merged when this class is extended, whereas in
-    // ViewEngine they're overwritten.
-    // TODO(crisbeto): we move this back into `host` once Ivy is turned on by default.
-    /** Callback for the cases where the focused state of the input changes. */
-    // tslint:disable:no-host-decorator-in-concrete
-    // tslint:enable:no-host-decorator-in-concrete
-    _focusChanged: [{
+        }], _focusChanged: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"],
             args: ['focus', ['true']]
         }, {
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"],
             args: ['blur', ['false']]
-        }], 
-    // We have to use a `HostListener` here in order to support both Ivy and ViewEngine.
-    // In Ivy the `host` bindings will be merged when this class is extended, whereas in
-    // ViewEngine they're overwritten.
-    // TODO(crisbeto): we move this back into `host` once Ivy is turned on by default.
-    // tslint:disable-next-line:no-host-decorator-in-concrete
-    _onInput: [{
+        }], _onInput: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"],
             args: ['input']
         }], placeholder: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }], errorStateMatcher: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
-        }], userAriaDescribedBy: [{
-            type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"],
-            args: ['aria-describedby']
         }] }); })();
 
 /**
@@ -68489,7 +67952,7 @@ class MatSnackBarRef {
     }
     /** Gets an observable that is notified when the snack bar is finished closing. */
     afterDismissed() {
-        return this._afterDismissed;
+        return this._afterDismissed.asObservable();
     }
     /** Gets an observable that is notified when the snack bar has opened and appeared. */
     afterOpened() {
@@ -68497,7 +67960,7 @@ class MatSnackBarRef {
     }
     /** Gets an observable that is notified when the snack bar action is called. */
     onAction() {
-        return this._onAction;
+        return this._onAction.asObservable();
     }
 }
 
@@ -68695,7 +68158,7 @@ class MatSnackBarContainer extends _angular_cdk_portal__WEBPACK_IMPORTED_MODULE_
      * errors where we end up removing an element which is in the middle of an animation.
      */
     _completeExit() {
-        this._ngZone.onMicrotaskEmpty.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_7__["take"])(1)).subscribe(() => {
+        this._ngZone.onMicrotaskEmpty.asObservable().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_7__["take"])(1)).subscribe(() => {
             this._onExit.next();
             this._onExit.complete();
         });
@@ -68722,7 +68185,7 @@ class MatSnackBarContainer extends _angular_cdk_portal__WEBPACK_IMPORTED_MODULE_
     }
     /** Asserts that no content is already attached to the container. */
     _assertNotAttached() {
-        if (this._portalOutlet.hasAttached() && (typeof ngDevMode === 'undefined' || ngDevMode)) {
+        if (this._portalOutlet.hasAttached()) {
             throw Error('Attempting to attach snack bar content after content is already attached');
         }
     }
@@ -68734,10 +68197,10 @@ MatSnackBarContainer.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdef
         var _t;
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵqueryRefresh"](_t = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵloadQuery"]()) && (ctx._portalOutlet = _t.first);
     } }, hostAttrs: [1, "mat-snack-bar-container"], hostVars: 2, hostBindings: function MatSnackBarContainer_HostBindings(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵsyntheticHostListener"]("@state.done", function MatSnackBarContainer_animation_state_done_HostBindingHandler($event) { return ctx.onAnimationEnd($event); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵcomponentHostSyntheticListener"]("@state.done", function MatSnackBarContainer_animation_state_done_HostBindingHandler($event) { return ctx.onAnimationEnd($event); });
     } if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵattribute"]("role", ctx._role);
-        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵsyntheticHostProperty"]("@state", ctx._animationState);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵupdateSyntheticHostBinding"]("@state", ctx._animationState);
     } }, features: [_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵInheritDefinitionFeature"]], decls: 1, vars: 0, consts: [["cdkPortalOutlet", ""]], template: function MatSnackBarContainer_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](0, MatSnackBarContainer_ng_template_0_Template, 0, 0, "ng-template", 0);
     } }, directives: [_angular_cdk_portal__WEBPACK_IMPORTED_MODULE_1__["CdkPortalOutlet"]], styles: [".mat-snack-bar-container{border-radius:4px;box-sizing:border-box;display:block;margin:24px;max-width:33vw;min-width:344px;padding:14px 16px;min-height:48px;transform-origin:center}.cdk-high-contrast-active .mat-snack-bar-container{border:solid 1px}.mat-snack-bar-handset{width:100%}.mat-snack-bar-handset .mat-snack-bar-container{margin:8px;max-width:100%;min-width:0;width:100%}\n"], encapsulation: 2, data: { animation: [matSnackBarAnimations.snackBarState] } });
@@ -68923,10 +68386,9 @@ class MatSnackBar {
      */
     _attachSnackBarContainer(overlayRef, config) {
         const userInjector = config && config.viewContainerRef && config.viewContainerRef.injector;
-        const injector = _angular_core__WEBPACK_IMPORTED_MODULE_3__["Injector"].create({
-            parent: userInjector || this._injector,
-            providers: [{ provide: MatSnackBarConfig, useValue: config }]
-        });
+        const injector = new _angular_cdk_portal__WEBPACK_IMPORTED_MODULE_1__["PortalInjector"](userInjector || this._injector, new WeakMap([
+            [MatSnackBarConfig, config]
+        ]));
         const containerPortal = new _angular_cdk_portal__WEBPACK_IMPORTED_MODULE_1__["ComponentPortal"](this.snackBarContainerComponent, config.viewContainerRef, injector);
         const containerRef = overlayRef.attach(containerPortal);
         containerRef.instance.snackBarConfig = config;
@@ -69037,13 +68499,10 @@ class MatSnackBar {
      */
     _createInjector(config, snackBarRef) {
         const userInjector = config && config.viewContainerRef && config.viewContainerRef.injector;
-        return _angular_core__WEBPACK_IMPORTED_MODULE_3__["Injector"].create({
-            parent: userInjector || this._injector,
-            providers: [
-                { provide: MatSnackBarRef, useValue: snackBarRef },
-                { provide: MAT_SNACK_BAR_DATA, useValue: config.data }
-            ]
-        });
+        return new _angular_cdk_portal__WEBPACK_IMPORTED_MODULE_1__["PortalInjector"](userInjector || this._injector, new WeakMap([
+            [MatSnackBarRef, snackBarRef],
+            [MAT_SNACK_BAR_DATA, config.data]
+        ]));
     }
 }
 MatSnackBar.ɵfac = function MatSnackBar_Factory(t) { return new (t || MatSnackBar)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵinject"](_angular_cdk_overlay__WEBPACK_IMPORTED_MODULE_0__["Overlay"]), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵinject"](_angular_cdk_a11y__WEBPACK_IMPORTED_MODULE_9__["LiveAnnouncer"]), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵinject"](_angular_core__WEBPACK_IMPORTED_MODULE_3__["Injector"]), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵinject"](_angular_cdk_layout__WEBPACK_IMPORTED_MODULE_10__["BreakpointObserver"]), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵinject"](MatSnackBar, 12), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵinject"](MAT_SNACK_BAR_DEFAULT_OPTIONS)); };
@@ -69148,25 +68607,27 @@ class MatToolbar extends _MatToolbarMixinBase {
         this._document = document;
     }
     ngAfterViewInit() {
-        if (this._platform.isBrowser) {
-            this._checkToolbarMixedModes();
-            this._toolbarRows.changes.subscribe(() => this._checkToolbarMixedModes());
+        if (!Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["isDevMode"])() || !this._platform.isBrowser) {
+            return;
         }
+        this._checkToolbarMixedModes();
+        this._toolbarRows.changes.subscribe(() => this._checkToolbarMixedModes());
     }
     /**
      * Throws an exception when developers are attempting to combine the different toolbar row modes.
      */
     _checkToolbarMixedModes() {
-        if (this._toolbarRows.length && (typeof ngDevMode === 'undefined' || ngDevMode)) {
-            // Check if there are any other DOM nodes that can display content but aren't inside of
-            // a <mat-toolbar-row> element.
-            const isCombinedUsage = Array.from(this._elementRef.nativeElement.childNodes)
-                .filter(node => !(node.classList && node.classList.contains('mat-toolbar-row')))
-                .filter(node => node.nodeType !== (this._document ? this._document.COMMENT_NODE : 8))
-                .some(node => !!(node.textContent && node.textContent.trim()));
-            if (isCombinedUsage) {
-                throwToolbarMixedModesError();
-            }
+        if (!this._toolbarRows.length) {
+            return;
+        }
+        // Check if there are any other DOM nodes that can display content but aren't inside of
+        // a <mat-toolbar-row> element.
+        const isCombinedUsage = Array.from(this._elementRef.nativeElement.childNodes)
+            .filter(node => !(node.classList && node.classList.contains('mat-toolbar-row')))
+            .filter(node => node.nodeType !== (this._document ? this._document.COMMENT_NODE : 8))
+            .some(node => !!(node.textContent && node.textContent.trim()));
+        if (isCombinedUsage) {
+            throwToolbarMixedModesError();
         }
     }
 }
@@ -69292,7 +68753,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_animations_browser__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/animations/browser */ "./node_modules/@angular/animations/__ivy_ngcc__/fesm2015/browser.js");
 /* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm2015/common.js");
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -69874,7 +69335,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ɵgetDOM", function() { return _angular_common__WEBPACK_IMPORTED_MODULE_0__["ɵgetDOM"]; });
 
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -71114,9 +70575,6 @@ class KeyEventsPlugin extends EventManagerPlugin {
             // returning null instead of throwing to let another plugin process the event
             return null;
         }
-        // NOTE: Please don't rewrite this as so, as it will break JSCompiler property renaming.
-        //       The code must remain in the `result['domEventName']` form.
-        // return {domEventName, fullKey};
         const result = {};
         result['domEventName'] = domEventName;
         result['fullKey'] = fullKey;
@@ -72005,7 +71463,7 @@ function elementMatches(n, selector) {
 /**
  * @publicApi
  */
-const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Version"]('10.0.14');
+const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Version"]('10.0.0');
 
 /**
  * @license
@@ -72121,7 +71579,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm2015/index.js");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm2015/operators/index.js");
 /**
- * @license Angular v10.0.14
+ * @license Angular v10.0.0
  * (c) 2010-2020 Google LLC. https://angular.io/
  * License: MIT
  */
@@ -72142,7 +71600,7 @@ __webpack_require__.r(__webpack_exports__);
  * Base for events the router goes through, as opposed to events tied to a specific
  * route. Fired one time for any given navigation.
  *
- * The following code shows how a class subscribes to router events.
+ * @usageNotes
  *
  * ```ts
  * class MyService {
@@ -72157,7 +71615,6 @@ __webpack_require__.r(__webpack_exports__);
  * ```
  *
  * @see `Event`
- * @see [Router events summary](guide/router#router-events)
  * @publicApi
  */
 
@@ -72199,10 +71656,6 @@ class NavigationStart extends RouterEvent {
 /**
  * An event triggered when a navigation ends successfully.
  *
- * @see `NavigationStart`
- * @see `NavigationCancel`
- * @see `NavigationError`
- *
  * @publicApi
  */
 class NavigationEnd extends RouterEvent {
@@ -72223,12 +71676,9 @@ class NavigationEnd extends RouterEvent {
 }
 /**
  * An event triggered when a navigation is canceled, directly or indirectly.
- * This can happen when a route guard
- * returns `false` or initiates a redirect by returning a `UrlTree`.
  *
- * @see `NavigationStart`
- * @see `NavigationEnd`
- * @see `NavigationError`
+ * This can happen when a [route guard](guide/router#milestone-5-route-guards)
+ * returns `false` or initiates a redirect by returning a `UrlTree`.
  *
  * @publicApi
  */
@@ -72251,10 +71701,6 @@ class NavigationCancel extends RouterEvent {
 /**
  * An event triggered when a navigation fails due to an unexpected error.
  *
- * @see `NavigationStart`
- * @see `NavigationEnd`
- * @see `NavigationCancel`
- *
  * @publicApi
  */
 class NavigationError extends RouterEvent {
@@ -72274,7 +71720,7 @@ class NavigationError extends RouterEvent {
     }
 }
 /**
- * An event triggered when routes are recognized.
+ *An event triggered when routes are recognized.
  *
  * @publicApi
  */
@@ -72300,8 +71746,6 @@ class RoutesRecognized extends RouterEvent {
 /**
  * An event triggered at the start of the Guard phase of routing.
  *
- * @see `GuardsCheckEnd`
- *
  * @publicApi
  */
 class GuardsCheckStart extends RouterEvent {
@@ -72324,8 +71768,6 @@ class GuardsCheckStart extends RouterEvent {
 }
 /**
  * An event triggered at the end of the Guard phase of routing.
- *
- * @see `GuardsCheckStart`
  *
  * @publicApi
  */
@@ -72355,8 +71797,6 @@ class GuardsCheckEnd extends RouterEvent {
  *
  * Runs in the "resolve" phase whether or not there is anything to resolve.
  * In future, may change to only run when there are things to be resolved.
- *
- * @see `ResolveEnd`
  *
  * @publicApi
  */
@@ -72405,8 +71845,6 @@ class ResolveEnd extends RouterEvent {
 /**
  * An event triggered before lazy loading a route configuration.
  *
- * @see `RouteConfigLoadEnd`
- *
  * @publicApi
  */
 class RouteConfigLoadStart {
@@ -72421,8 +71859,6 @@ class RouteConfigLoadStart {
 }
 /**
  * An event triggered when a route has been lazy loaded.
- *
- * @see `RouteConfigLoadStart`
  *
  * @publicApi
  */
@@ -72459,7 +71895,7 @@ class ChildActivationStart {
  * An event triggered at the end of the child-activation part
  * of the Resolve phase of routing.
  * @see `ChildActivationStart`
- * @see `ResolveStart`
+ * @see `ResolveStart` *
  * @publicApi
  */
 class ChildActivationEnd {
@@ -72476,7 +71912,7 @@ class ChildActivationEnd {
 /**
  * An event triggered at the start of the activation part
  * of the Resolve phase of routing.
- * @see `ActivationEnd`
+ * @see ActivationEnd`
  * @see `ResolveStart`
  *
  * @publicApi
@@ -72542,6 +71978,33 @@ class Scroll {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
+ * This component is used internally within the router to be a placeholder when an empty
+ * router-outlet is needed. For example, with a config such as:
+ *
+ * `{path: 'parent', outlet: 'nav', children: [...]}`
+ *
+ * In order to render, there needs to be a component on this config, which will default
+ * to this `EmptyOutletComponent`.
+ */
+class ɵEmptyOutletComponent {
+}
+ɵEmptyOutletComponent.ɵfac = function ɵEmptyOutletComponent_Factory(t) { return new (t || ɵEmptyOutletComponent)(); };
+ɵEmptyOutletComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineComponent"]({ type: ɵEmptyOutletComponent, selectors: [["ng-component"]], decls: 1, vars: 0, template: function ɵEmptyOutletComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](0, "router-outlet");
+    } }, directives: function () { return [RouterOutlet]; }, encapsulation: 2 });
+/*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵsetClassMetadata"](ɵEmptyOutletComponent, [{
+        type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"],
+        args: [{ template: `<router-outlet></router-outlet>` }]
+    }], null, null); })();
+
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
  * The primary routing outlet.
  *
  * @publicApi
@@ -72552,7 +72015,7 @@ class ParamsAsMap {
         this.params = params || {};
     }
     has(name) {
-        return Object.prototype.hasOwnProperty.call(this.params, name);
+        return this.params.hasOwnProperty(name);
     }
     get(name) {
         if (this.has(name)) {
@@ -72618,6 +72081,112 @@ function defaultUrlMatcher(segments, segmentGroup, route) {
         }
     }
     return { consumed: segments.slice(0, parts.length), posParams };
+}
+
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+class LoadedRouterConfig {
+    constructor(routes, module) {
+        this.routes = routes;
+        this.module = module;
+    }
+}
+function validateConfig(config, parentPath = '') {
+    // forEach doesn't iterate undefined values
+    for (let i = 0; i < config.length; i++) {
+        const route = config[i];
+        const fullPath = getFullPath(parentPath, route);
+        validateNode(route, fullPath);
+    }
+}
+function validateNode(route, fullPath) {
+    if (!route) {
+        throw new Error(`
+      Invalid configuration of route '${fullPath}': Encountered undefined route.
+      The reason might be an extra comma.
+
+      Example:
+      const routes: Routes = [
+        { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+        { path: 'dashboard',  component: DashboardComponent },, << two commas
+        { path: 'detail/:id', component: HeroDetailComponent }
+      ];
+    `);
+    }
+    if (Array.isArray(route)) {
+        throw new Error(`Invalid configuration of route '${fullPath}': Array cannot be specified`);
+    }
+    if (!route.component && !route.children && !route.loadChildren &&
+        (route.outlet && route.outlet !== PRIMARY_OUTLET)) {
+        throw new Error(`Invalid configuration of route '${fullPath}': a componentless route without children or loadChildren cannot have a named outlet set`);
+    }
+    if (route.redirectTo && route.children) {
+        throw new Error(`Invalid configuration of route '${fullPath}': redirectTo and children cannot be used together`);
+    }
+    if (route.redirectTo && route.loadChildren) {
+        throw new Error(`Invalid configuration of route '${fullPath}': redirectTo and loadChildren cannot be used together`);
+    }
+    if (route.children && route.loadChildren) {
+        throw new Error(`Invalid configuration of route '${fullPath}': children and loadChildren cannot be used together`);
+    }
+    if (route.redirectTo && route.component) {
+        throw new Error(`Invalid configuration of route '${fullPath}': redirectTo and component cannot be used together`);
+    }
+    if (route.path && route.matcher) {
+        throw new Error(`Invalid configuration of route '${fullPath}': path and matcher cannot be used together`);
+    }
+    if (route.redirectTo === void 0 && !route.component && !route.children && !route.loadChildren) {
+        throw new Error(`Invalid configuration of route '${fullPath}'. One of the following must be provided: component, redirectTo, children or loadChildren`);
+    }
+    if (route.path === void 0 && route.matcher === void 0) {
+        throw new Error(`Invalid configuration of route '${fullPath}': routes must have either a path or a matcher specified`);
+    }
+    if (typeof route.path === 'string' && route.path.charAt(0) === '/') {
+        throw new Error(`Invalid configuration of route '${fullPath}': path cannot start with a slash`);
+    }
+    if (route.path === '' && route.redirectTo !== void 0 && route.pathMatch === void 0) {
+        const exp = `The default value of 'pathMatch' is 'prefix', but often the intent is to use 'full'.`;
+        throw new Error(`Invalid configuration of route '{path: "${fullPath}", redirectTo: "${route.redirectTo}"}': please provide 'pathMatch'. ${exp}`);
+    }
+    if (route.pathMatch !== void 0 && route.pathMatch !== 'full' && route.pathMatch !== 'prefix') {
+        throw new Error(`Invalid configuration of route '${fullPath}': pathMatch can only be set to 'prefix' or 'full'`);
+    }
+    if (route.children) {
+        validateConfig(route.children, fullPath);
+    }
+}
+function getFullPath(parentPath, currentRoute) {
+    if (!currentRoute) {
+        return parentPath;
+    }
+    if (!parentPath && !currentRoute.path) {
+        return '';
+    }
+    else if (parentPath && !currentRoute.path) {
+        return `${parentPath}/`;
+    }
+    else if (!parentPath && currentRoute.path) {
+        return currentRoute.path;
+    }
+    else {
+        return `${parentPath}/${currentRoute.path}`;
+    }
+}
+/**
+ * Makes a copy of the config and adds any default required properties.
+ */
+function standardizeConfig(r) {
+    const children = r.children && r.children.map(standardizeConfig);
+    const c = children ? Object.assign(Object.assign({}, r), { children }) : Object.assign({}, r);
+    if (!c.component && (children || c.loadChildren) && (c.outlet && c.outlet !== PRIMARY_OUTLET)) {
+        c.component = ɵEmptyOutletComponent;
+    }
+    return c;
 }
 
 /**
@@ -73389,8 +72958,7 @@ function nodeChildrenAsMap(node) {
  * and the resolved data.
  * Use the `ActivatedRoute` properties to traverse the tree from any node.
  *
- * The following fragment shows how a component gets the root node
- * of the current state to establish its own route tree:
+ * ### Example
  *
  * ```
  * @Component({templateUrl:'template.html'})
@@ -73406,7 +72974,6 @@ function nodeChildrenAsMap(node) {
  * ```
  *
  * @see `ActivatedRoute`
- * @see [Getting route information](guide/router#getting-route-information)
  *
  * @publicApi
  */
@@ -73447,13 +73014,8 @@ function createEmptyStateSnapshot(urlTree, rootComponent) {
  * that is loaded in an outlet.
  * Use to traverse the `RouterState` tree and extract information from nodes.
  *
- * The following example shows how to construct a component using information from a
- * currently activated route.
- *
  * {@example router/activated-route/module.ts region="activated-route"
  *     header="activated-route.component.ts"}
- *
- * @see [Getting route information](guide/router#getting-route-information)
  *
  * @publicApi
  */
@@ -73578,9 +73140,6 @@ function flattenInherited(pathFromRoot) {
  * outlet at a particular moment in time. ActivatedRouteSnapshot can also be used to
  * traverse the router state tree.
  *
- * The following example initializes a component with route information extracted
- * from the snapshot of the root node at the time of creation.
- *
  * ```
  * @Component({templateUrl:'./my-component.html'})
  * class MyComponent {
@@ -73669,8 +73228,8 @@ class ActivatedRouteSnapshot {
  * This is a tree of activated route snapshots. Every node in this tree knows about
  * the "consumed" URL segments, the extracted parameters, and the resolved data.
  *
- * The following example shows how a component is initialized with information
- * from the snapshot of the root node's state at the time of creation.
+ * @usageNotes
+ * ### Example
  *
  * ```
  * @Component({templateUrl:'template.html'})
@@ -73961,10 +73520,11 @@ function getPath(command) {
     return `${command}`;
 }
 function getOutlets(commands) {
-    if (typeof commands[0] === 'object' && commands[0] !== null && commands[0].outlets) {
-        return commands[0].outlets;
-    }
-    return { [PRIMARY_OUTLET]: commands };
+    if (!(typeof commands[0] === 'object'))
+        return { [PRIMARY_OUTLET]: commands };
+    if (commands[0].outlets === undefined)
+        return { [PRIMARY_OUTLET]: commands };
+    return commands[0].outlets;
 }
 function updateSegmentGroup(segmentGroup, startIndex, commands) {
     if (!segmentGroup) {
@@ -74044,8 +73604,7 @@ function createNewSegmentGroup(segmentGroup, startIndex, commands) {
     const paths = segmentGroup.segments.slice(0, startIndex);
     let i = 0;
     while (i < commands.length) {
-        if (typeof commands[i] === 'object' && commands[i] !== null &&
-            commands[i].outlets !== undefined) {
+        if (typeof commands[i] === 'object' && commands[i].outlets !== undefined) {
             const children = createNewSegmentChildren(commands[i].outlets);
             return new UrlSegmentGroup(paths, children);
         }
@@ -74258,20 +73817,6 @@ function parentLoadedConfig(snapshot) {
             return null;
     }
     return null;
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-class LoadedRouterConfig {
-    constructor(routes, module) {
-        this.routes = routes;
-        this.module = module;
-    }
 }
 
 /**
@@ -75420,133 +74965,6 @@ class DefaultRouteReuseStrategy {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
- * This component is used internally within the router to be a placeholder when an empty
- * router-outlet is needed. For example, with a config such as:
- *
- * `{path: 'parent', outlet: 'nav', children: [...]}`
- *
- * In order to render, there needs to be a component on this config, which will default
- * to this `EmptyOutletComponent`.
- */
-class ɵEmptyOutletComponent {
-}
-ɵEmptyOutletComponent.ɵfac = function ɵEmptyOutletComponent_Factory(t) { return new (t || ɵEmptyOutletComponent)(); };
-ɵEmptyOutletComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineComponent"]({ type: ɵEmptyOutletComponent, selectors: [["ng-component"]], decls: 1, vars: 0, template: function ɵEmptyOutletComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](0, "router-outlet");
-    } }, directives: function () { return [RouterOutlet]; }, encapsulation: 2 });
-/*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵsetClassMetadata"](ɵEmptyOutletComponent, [{
-        type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"],
-        args: [{ template: `<router-outlet></router-outlet>` }]
-    }], null, null); })();
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-function validateConfig(config, parentPath = '') {
-    // forEach doesn't iterate undefined values
-    for (let i = 0; i < config.length; i++) {
-        const route = config[i];
-        const fullPath = getFullPath(parentPath, route);
-        validateNode(route, fullPath);
-    }
-}
-function validateNode(route, fullPath) {
-    if (!route) {
-        throw new Error(`
-      Invalid configuration of route '${fullPath}': Encountered undefined route.
-      The reason might be an extra comma.
-
-      Example:
-      const routes: Routes = [
-        { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-        { path: 'dashboard',  component: DashboardComponent },, << two commas
-        { path: 'detail/:id', component: HeroDetailComponent }
-      ];
-    `);
-    }
-    if (Array.isArray(route)) {
-        throw new Error(`Invalid configuration of route '${fullPath}': Array cannot be specified`);
-    }
-    if (!route.component && !route.children && !route.loadChildren &&
-        (route.outlet && route.outlet !== PRIMARY_OUTLET)) {
-        throw new Error(`Invalid configuration of route '${fullPath}': a componentless route without children or loadChildren cannot have a named outlet set`);
-    }
-    if (route.redirectTo && route.children) {
-        throw new Error(`Invalid configuration of route '${fullPath}': redirectTo and children cannot be used together`);
-    }
-    if (route.redirectTo && route.loadChildren) {
-        throw new Error(`Invalid configuration of route '${fullPath}': redirectTo and loadChildren cannot be used together`);
-    }
-    if (route.children && route.loadChildren) {
-        throw new Error(`Invalid configuration of route '${fullPath}': children and loadChildren cannot be used together`);
-    }
-    if (route.redirectTo && route.component) {
-        throw new Error(`Invalid configuration of route '${fullPath}': redirectTo and component cannot be used together`);
-    }
-    if (route.path && route.matcher) {
-        throw new Error(`Invalid configuration of route '${fullPath}': path and matcher cannot be used together`);
-    }
-    if (route.redirectTo === void 0 && !route.component && !route.children && !route.loadChildren) {
-        throw new Error(`Invalid configuration of route '${fullPath}'. One of the following must be provided: component, redirectTo, children or loadChildren`);
-    }
-    if (route.path === void 0 && route.matcher === void 0) {
-        throw new Error(`Invalid configuration of route '${fullPath}': routes must have either a path or a matcher specified`);
-    }
-    if (typeof route.path === 'string' && route.path.charAt(0) === '/') {
-        throw new Error(`Invalid configuration of route '${fullPath}': path cannot start with a slash`);
-    }
-    if (route.path === '' && route.redirectTo !== void 0 && route.pathMatch === void 0) {
-        const exp = `The default value of 'pathMatch' is 'prefix', but often the intent is to use 'full'.`;
-        throw new Error(`Invalid configuration of route '{path: "${fullPath}", redirectTo: "${route.redirectTo}"}': please provide 'pathMatch'. ${exp}`);
-    }
-    if (route.pathMatch !== void 0 && route.pathMatch !== 'full' && route.pathMatch !== 'prefix') {
-        throw new Error(`Invalid configuration of route '${fullPath}': pathMatch can only be set to 'prefix' or 'full'`);
-    }
-    if (route.children) {
-        validateConfig(route.children, fullPath);
-    }
-}
-function getFullPath(parentPath, currentRoute) {
-    if (!currentRoute) {
-        return parentPath;
-    }
-    if (!parentPath && !currentRoute.path) {
-        return '';
-    }
-    else if (parentPath && !currentRoute.path) {
-        return `${parentPath}/`;
-    }
-    else if (!parentPath && currentRoute.path) {
-        return currentRoute.path;
-    }
-    else {
-        return `${parentPath}/${currentRoute.path}`;
-    }
-}
-/**
- * Makes a copy of the config and adds any default required properties.
- */
-function standardizeConfig(r) {
-    const children = r.children && r.children.map(standardizeConfig);
-    const c = children ? Object.assign(Object.assign({}, r), { children }) : Object.assign({}, r);
-    if (!c.component && (children || c.loadChildren) && (c.outlet && c.outlet !== PRIMARY_OUTLET)) {
-        c.component = ɵEmptyOutletComponent;
-    }
-    return c;
-}
-
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-/**
  * The [DI token](guide/glossary/#di-token) for a router configuration.
  * @see `ROUTES`
  * @publicApi
@@ -75715,7 +75133,7 @@ function defaultRouterHook(snapshot, runExtras) {
 /**
  * @description
  *
- * A service that provides navigation among views and URL manipulation capabilities.
+ * A service that provides navigation and URL manipulation capabilities.
  *
  * @see `Route`.
  * @see [Routing and Navigation Guide](guide/router).
@@ -76169,7 +75587,7 @@ class Router {
         this.events.next(event);
     }
     /**
-     * Resets the route configuration used for navigation and generating links.
+     * Resets the configuration used for navigation and generating links.
      *
      * @param config The route array for the new configuration.
      *
@@ -76190,7 +75608,7 @@ class Router {
         this.navigated = false;
         this.lastSuccessfulId = -1;
     }
-    /** @nodoc */
+    /** @docsNotRequired */
     ngOnDestroy() {
         this.dispose();
     }
@@ -76202,15 +75620,14 @@ class Router {
         }
     }
     /**
-     * Appends URL segments to the current URL tree to create a new URL tree.
+     * Applies an array of commands to the current URL tree and creates a new URL tree.
      *
-     * @param commands An array of URL fragments with which to construct the new URL tree.
-     * If the path is static, can be the literal URL string. For a dynamic path, pass an array of path
-     * segments, followed by the parameters for each segment.
-     * The fragments are applied to the current URL tree or the one provided  in the `relativeTo`
-     * property of the options object, if supplied.
+     * When given an activated route, applies the given commands starting from the route.
+     * Otherwise, applies the given command starting from the root.
+     *
+     * @param commands An array of commands to apply.
      * @param navigationExtras Options that control the navigation strategy. This function
-     * only uses properties in `NavigationExtras` that would change the provided URL.
+     * only utilizes properties in `NavigationExtras` that would change the provided URL.
      * @returns The new URL tree.
      *
      * @usageNotes
@@ -76276,10 +75693,9 @@ class Router {
         return createUrlTree(a, this.currentUrlTree, commands, q, f);
     }
     /**
-     * Navigates to a view using an absolute route path.
+     * Navigate based on the provided URL, which must be absolute.
      *
-     * @param url An absolute path for a defined route. The function does not apply any delta to the
-     *     current URL.
+     * @param url An absolute URL. The function does not apply any delta to the current URL.
      * @param extras An object containing properties that modify the navigation strategy.
      * The function ignores any properties in the `NavigationExtras` that would change the
      * provided URL.
@@ -76289,16 +75705,12 @@ class Router {
      *
      * @usageNotes
      *
-     * The following calls request navigation to an absolute path.
-     *
      * ```
      * router.navigateByUrl("/team/33/user/11");
      *
      * // Navigate without updating the URL
      * router.navigateByUrl("/team/33/user/11", { skipLocationChange: true });
      * ```
-     *
-     * @see [Routing and Navigation guide](guide/router)
      *
      */
     navigateByUrl(url, extras = { skipLocationChange: false }) {
@@ -76313,31 +75725,28 @@ class Router {
      * Navigate based on the provided array of commands and a starting point.
      * If no starting route is provided, the navigation is absolute.
      *
-     * @param commands An array of URL fragments with which to construct the target URL.
-     * If the path is static, can be the literal URL string. For a dynamic path, pass an array of path
-     * segments, followed by the parameters for each segment.
-     * The fragments are applied to the current URL or the one provided  in the `relativeTo` property
-     * of the options object, if supplied.
-     * @param extras An options object that determines how the URL should be constructed or
-     *     interpreted.
-     *
-     * @returns A Promise that resolves to `true` when navigation succeeds, to `false` when navigation
-     *     fails,
-     * or is rejected on error.
+     * Returns a promise that:
+     * - resolves to 'true' when navigation succeeds,
+     * - resolves to 'false' when navigation fails,
+     * - is rejected when an error happens.
      *
      * @usageNotes
-     *
-     * The following calls request navigation to a dynamic route path relative to the current URL.
      *
      * ```
      * router.navigate(['team', 33, 'user', 11], {relativeTo: route});
      *
-     * // Navigate without updating the URL, overriding the default behavior
+     * // Navigate without updating the URL
      * router.navigate(['team', 33, 'user', 11], {relativeTo: route, skipLocationChange: true});
      * ```
      *
-     * @see [Routing and Navigation guide](guide/router)
+     * The first parameter of `navigate()` is a delta to be applied to the current URL
+     * or the one provided in the `relativeTo` property of the second parameter (the
+     * `NavigationExtras`).
      *
+     * In order to affect this browser's `history.state` entry, the `state`
+     * parameter can be passed. This must be an object because the router
+     * will add the `navigationId` property to this object before creating
+     * the new history item.
      */
     navigate(commands, extras = { skipLocationChange: false }) {
         validateCommands(commands);
@@ -76501,63 +75910,56 @@ function validateCommands(commands) {
 /**
  * @description
  *
- * When applied to an element in a template, makes that element a link
- * that initiates navigation to a route. Navigation opens one or more routed components
- * in one or more `<router-outlet>` locations on the page.
+ * Lets you link to specific routes in your app.
  *
- * Given a route configuration `[{ path: 'user/:name', component: UserCmp }]`,
- * the following creates a static link to the route:
+ * Consider the following route configuration:
+ * `[{ path: 'user/:name', component: UserCmp }]`.
+ * When linking to this `user/:name` route, you use the `RouterLink` directive.
+ *
+ * If the link is static, you can use the directive as follows:
  * `<a routerLink="/user/bob">link to user component</a>`
  *
- * You can use dynamic values to generate the link.
- * For a dynamic link, pass an array of path segments,
- * followed by the params for each segment.
- * For example, `['/team', teamId, 'user', userName, {details: true}]`
- * generates a link to `/team/11/user/bob;details=true`.
+ * If you use dynamic values to generate the link, you can pass an array of path
+ * segments, followed by the params for each segment.
  *
- * Multiple static segments can be merged into one term and combined with dynamic segements.
- * For example, `['/team/11/user', userName, {details: true}]`
+ * For instance `['/team', teamId, 'user', userName, {details: true}]`
+ * means that we want to generate a link to `/team/11/user/bob;details=true`.
  *
- * The input that you provide to the link is treated as a delta to the current URL.
- * For instance, suppose the current URL is `/user/(box//aux:team)`.
- * The link `<a [routerLink]="['/user/jim']">Jim</a>` creates the URL
- * `/user/(jim//aux:team)`.
- * See {@link Router#createUrlTree createUrlTree} for more information.
+ * Multiple static segments can be merged into one
+ * (e.g., `['/team/11/user', userName, {details: true}]`).
  *
- * @usageNotes
- *
- * You can use absolute or relative paths in a link, set query parameters,
- * control how parameters are handled, and keep a history of navigation states.
- *
- * ### Relative link paths
- *
- * The first segment name can be prepended with `/`, `./`, or `../`.
- * * If the first segment begins with `/`, the router looks up the route from the root of the
+ * The first segment name can be prepended with `/`, `./`, or `../`:
+ * * If the first segment begins with `/`, the router will look up the route from the root of the
  *   app.
- * * If the first segment begins with `./`, or doesn't begin with a slash, the router
- *   looks in the children of the current activated route.
- * * If the first segment begins with `../`, the router goes up one level in the route tree.
+ * * If the first segment begins with `./`, or doesn't begin with a slash, the router will
+ *   instead look in the children of the current activated route.
+ * * And if the first segment begins with `../`, the router will go up one level.
  *
- * ### Setting and handling query params and fragments
- *
- * The following link adds a query parameter and a fragment to the generated URL:
+ * You can set query params and fragment as follows:
  *
  * ```
  * <a [routerLink]="['/user/bob']" [queryParams]="{debug: true}" fragment="education">
  *   link to user component
  * </a>
  * ```
- * By default, the directive constructs the new URL using the given query parameters.
- * The example generates the link: `/user/bob?debug=true#education`.
+ * RouterLink will use these to generate this link: `/user/bob?debug=true#education`.
  *
- * You can instruct the directive to handle query parameters differently
- * by specifying the `queryParamsHandling` option in the link.
- * Allowed values are:
+ * (Deprecated in v4.0.0 use `queryParamsHandling` instead) You can also tell the
+ * directive to preserve the current query params and fragment:
  *
- *  - `'merge'`: Merge the given `queryParams` into the current query params.
- *  - `'preserve'`: Preserve the current query params.
+ * ```
+ * <a [routerLink]="['/user/bob']" preserveQueryParams preserveFragment>
+ *   link to user component
+ * </a>
+ * ```
  *
- * For example:
+ * You can tell the directive how to handle queryParams. Available options are:
+ *  - `'merge'`: merge the queryParams into the current queryParams
+ *  - `'preserve'`: preserve the current queryParams
+ *  - default/`''`: use the queryParams only
+ *
+ * Same options for {@link NavigationExtras#queryParamsHandling
+ * NavigationExtras#queryParamsHandling}.
  *
  * ```
  * <a [routerLink]="['/user/bob']" [queryParams]="{debug: true}" queryParamsHandling="merge">
@@ -76565,13 +75967,9 @@ function validateCommands(commands) {
  * </a>
  * ```
  *
- * See {@link NavigationExtras.queryParamsHandling NavigationExtras#queryParamsHandling}.
- *
- * ### Preserving navigation history
- *
- * You can provide a `state` value to be persisted to the browser's
- * [`History.state` property](https://developer.mozilla.org/en-US/docs/Web/API/History#Properties).
- * For example:
+ * You can provide a `state` value to be persisted to the browser's History.state
+ * property (See https://developer.mozilla.org/en-US/docs/Web/API/History#Properties). It's
+ * used as follows:
  *
  * ```
  * <a [routerLink]="['/user/bob']" [state]="{tracingId: 123}">
@@ -76579,9 +75977,8 @@ function validateCommands(commands) {
  * </a>
  * ```
  *
- * Use {@link Router.getCurrentNavigation() Router#getCurrentNavigation} to retrieve a saved
- * navigation-state value. For example, to capture the `tracingId` during the `NavigationStart`
- * event:
+ * And later the value can be read from the router through `router.getCurrentNavigation`.
+ * For example, to capture the `tracingId` above during the `NavigationStart` event:
  *
  * ```
  * // Get NavigationStart events
@@ -76590,6 +75987,15 @@ function validateCommands(commands) {
  *   tracingService.trace({id: navigation.extras.state.tracingId});
  * });
  * ```
+ *
+ * The router link directive always treats the provided input as a delta to the current url.
+ *
+ * For instance, if the current url is `/user/(box//aux:team)`.
+ *
+ * Then the following link `<a [routerLink]="['/user/jim']">Jim</a>` will generate the link
+ * `/user/(jim//aux:team)`.
+ *
+ * See {@link Router#createUrlTree createUrlTree} for more information.
  *
  * @ngModule RouterModule
  *
@@ -76600,20 +76006,13 @@ class RouterLink {
         this.router = router;
         this.route = route;
         this.commands = [];
-        /** @internal */
-        this.onChanges = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
         if (tabIndex == null) {
             renderer.setAttribute(el.nativeElement, 'tabindex', '0');
         }
     }
-    /** @nodoc */
-    ngOnChanges(changes) {
-        // This is subscribed to by `RouterLinkActive` so that it knows to update when there are changes
-        // to the RouterLinks it's tracking.
-        this.onChanges.next(this);
-    }
     /**
-     * Commands to pass to {@link Router#createUrlTree Router#createUrlTree}.
+     * @param commands An array of commands to pass to {@link Router#createUrlTree
+     *     Router#createUrlTree}.
      *   - **array**: commands to pass to {@link Router#createUrlTree Router#createUrlTree}.
      *   - **string**: shorthand for array of commands with just the string, i.e. `['/route']`
      *   - **null|undefined**: shorthand for an empty array of commands, i.e. `[]`
@@ -76636,7 +76035,6 @@ class RouterLink {
         }
         this.preserve = value;
     }
-    /** @nodoc */
     onClick() {
         const extras = {
             skipLocationChange: attrBoolValue(this.skipLocationChange),
@@ -76660,7 +76058,7 @@ class RouterLink {
 RouterLink.ɵfac = function RouterLink_Factory(t) { return new (t || RouterLink)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](Router), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](ActivatedRoute), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinjectAttribute"]('tabindex'), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"])); };
 RouterLink.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineDirective"]({ type: RouterLink, selectors: [["", "routerLink", "", 5, "a", 5, "area"]], hostBindings: function RouterLink_HostBindings(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵlistener"]("click", function RouterLink_click_HostBindingHandler() { return ctx.onClick(); });
-    } }, inputs: { routerLink: "routerLink", preserveQueryParams: "preserveQueryParams", queryParams: "queryParams", fragment: "fragment", queryParamsHandling: "queryParamsHandling", preserveFragment: "preserveFragment", skipLocationChange: "skipLocationChange", replaceUrl: "replaceUrl", state: "state" }, features: [_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵNgOnChangesFeature"]] });
+    } }, inputs: { routerLink: "routerLink", preserveQueryParams: "preserveQueryParams", queryParams: "queryParams", fragment: "fragment", queryParamsHandling: "queryParamsHandling", preserveFragment: "preserveFragment", skipLocationChange: "skipLocationChange", replaceUrl: "replaceUrl", state: "state" } });
 RouterLink.ctorParameters = () => [
     { type: Router },
     { type: ActivatedRoute },
@@ -76690,9 +76088,7 @@ RouterLink.propDecorators = {
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }], preserveQueryParams: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
-        }], 
-    /** @nodoc */
-    onClick: [{
+        }], onClick: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"],
             args: ['click']
         }], queryParams: [{
@@ -76727,8 +76123,6 @@ class RouterLinkWithHref {
         this.route = route;
         this.locationStrategy = locationStrategy;
         this.commands = [];
-        /** @internal */
-        this.onChanges = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
         this.subscription = router.events.subscribe((s) => {
             if (s instanceof NavigationEnd) {
                 this.updateTargetUrlAndHref();
@@ -76736,7 +76130,8 @@ class RouterLinkWithHref {
         });
     }
     /**
-     * Commands to pass to {@link Router#createUrlTree Router#createUrlTree}.
+     * @param commands An array of commands to pass to {@link Router#createUrlTree
+     *     Router#createUrlTree}.
      *   - **array**: commands to pass to {@link Router#createUrlTree Router#createUrlTree}.
      *   - **string**: shorthand for array of commands with just the string, i.e. `['/route']`
      *   - **null|undefined**: shorthand for an empty array of commands, i.e. `[]`
@@ -76759,16 +76154,12 @@ class RouterLinkWithHref {
         }
         this.preserve = value;
     }
-    /** @nodoc */
     ngOnChanges(changes) {
         this.updateTargetUrlAndHref();
-        this.onChanges.next(this);
     }
-    /** @nodoc */
     ngOnDestroy() {
         this.subscription.unsubscribe();
     }
-    /** @nodoc */
     onClick(button, ctrlKey, metaKey, shiftKey) {
         if (button !== 0 || ctrlKey || metaKey || shiftKey) {
             return true;
@@ -76831,9 +76222,7 @@ RouterLinkWithHref.propDecorators = {
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
         }], preserveQueryParams: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"]
-        }], 
-    /** @nodoc */
-    onClick: [{
+        }], onClick: [{
             type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"],
             args: ['click', ['$event.button', '$event.ctrlKey', '$event.metaKey', '$event.shiftKey']]
         }], href: [{
@@ -76873,49 +76262,44 @@ function attrBoolValue(s) {
  *
  * @description
  *
- * Tracks whether the linked route of an element is currently active, and allows you
- * to specify one or more CSS classes to add to the element when the linked route
- * is active.
+ * Lets you add a CSS class to an element when the link's route becomes active.
  *
- * Use this directive to create a visual distinction for elements associated with an active route.
- * For example, the following code highlights the word "Bob" when the the router
- * activates the associated route:
+ * This directive lets you add a CSS class to an element when the link's route
+ * becomes active.
+ *
+ * Consider the following example:
  *
  * ```
  * <a routerLink="/user/bob" routerLinkActive="active-link">Bob</a>
  * ```
  *
- * Whenever the URL is either '/user' or '/user/bob', the "active-link" class is
- * added to the anchor tag. If the URL changes, the class is removed.
+ * When the url is either '/user' or '/user/bob', the active-link class will
+ * be added to the `a` tag. If the url changes, the class will be removed.
  *
- * You can set more than one class using a space-separated string or an array.
- * For example:
+ * You can set more than one class, as follows:
  *
  * ```
  * <a routerLink="/user/bob" routerLinkActive="class1 class2">Bob</a>
  * <a routerLink="/user/bob" [routerLinkActive]="['class1', 'class2']">Bob</a>
  * ```
  *
- * To add the classes only when the URL matches the link exactly, add the option `exact: true`:
+ * You can configure RouterLinkActive by passing `exact: true`. This will add the classes
+ * only when the url matches the link exactly.
  *
  * ```
  * <a routerLink="/user/bob" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:
  * true}">Bob</a>
  * ```
  *
- * To directly check the `isActive` status of the link, assign the `RouterLinkActive`
- * instance to a template variable.
- * For example, the following checks the status without assigning any CSS classes:
- *
+ * You can assign the RouterLinkActive instance to a template variable and directly check
+ * the `isActive` status.
  * ```
  * <a routerLink="/user/bob" routerLinkActive #rla="routerLinkActive">
  *   Bob {{ rla.isActive ? '(already open)' : ''}}
  * </a>
  * ```
  *
- * You can apply the `RouterLinkActive` directive to an ancestor of linked elements.
- * For example, the following sets the active-link class on the `<div>`  parent tag
- * when the URL is either '/user/jim' or '/user/bob'.
+ * Finally, you can apply the RouterLinkActive directive to an ancestor of a RouterLink.
  *
  * ```
  * <div routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
@@ -76924,62 +76308,43 @@ function attrBoolValue(s) {
  * </div>
  * ```
  *
+ * This will set the active-link class on the div tag if the url is either '/user/jim' or
+ * '/user/bob'.
+ *
  * @ngModule RouterModule
  *
  * @publicApi
  */
 class RouterLinkActive {
-    constructor(router, element, renderer, cdr, link, linkWithHref) {
+    constructor(router, element, renderer, link, linkWithHref) {
         this.router = router;
         this.element = element;
         this.renderer = renderer;
-        this.cdr = cdr;
         this.link = link;
         this.linkWithHref = linkWithHref;
         this.classes = [];
         this.isActive = false;
         this.routerLinkActiveOptions = { exact: false };
-        this.routerEventsSubscription = router.events.subscribe((s) => {
+        this.subscription = router.events.subscribe((s) => {
             if (s instanceof NavigationEnd) {
                 this.update();
             }
         });
     }
-    /** @nodoc */
     ngAfterContentInit() {
-        // `of(null)` is used to force subscribe body to execute once immediately (like `startWith`).
-        Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])([this.links.changes, this.linksWithHrefs.changes, Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(null)])
-            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeAll"])())
-            .subscribe(_ => {
-            this.update();
-            this.subscribeToEachLinkOnChanges();
-        });
-    }
-    subscribeToEachLinkOnChanges() {
-        var _a;
-        (_a = this.linkInputChangesSubscription) === null || _a === void 0 ? void 0 : _a.unsubscribe();
-        const allLinkChanges = [...this.links.toArray(), ...this.linksWithHrefs.toArray(), this.link, this.linkWithHref]
-            .filter((link) => !!link)
-            .map(link => link.onChanges);
-        this.linkInputChangesSubscription = Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(allLinkChanges).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeAll"])()).subscribe(link => {
-            if (this.isActive !== this.isLinkActive(this.router)(link)) {
-                this.update();
-            }
-        });
+        this.links.changes.subscribe(_ => this.update());
+        this.linksWithHrefs.changes.subscribe(_ => this.update());
+        this.update();
     }
     set routerLinkActive(data) {
         const classes = Array.isArray(data) ? data : data.split(' ');
         this.classes = classes.filter(c => !!c);
     }
-    /** @nodoc */
     ngOnChanges(changes) {
         this.update();
     }
-    /** @nodoc */
     ngOnDestroy() {
-        var _a;
-        this.routerEventsSubscription.unsubscribe();
-        (_a = this.linkInputChangesSubscription) === null || _a === void 0 ? void 0 : _a.unsubscribe();
+        this.subscription.unsubscribe();
     }
     update() {
         if (!this.links || !this.linksWithHrefs || !this.router.navigated)
@@ -76988,7 +76353,6 @@ class RouterLinkActive {
             const hasActiveLinks = this.hasActiveLinks();
             if (this.isActive !== hasActiveLinks) {
                 this.isActive = hasActiveLinks;
-                this.cdr.markForCheck();
                 this.classes.forEach((c) => {
                     if (hasActiveLinks) {
                         this.renderer.addClass(this.element.nativeElement, c);
@@ -77010,7 +76374,7 @@ class RouterLinkActive {
             this.links.some(isActiveCheckFn) || this.linksWithHrefs.some(isActiveCheckFn);
     }
 }
-RouterLinkActive.ɵfac = function RouterLinkActive_Factory(t) { return new (t || RouterLinkActive)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](Router), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](RouterLink, 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](RouterLinkWithHref, 8)); };
+RouterLinkActive.ɵfac = function RouterLinkActive_Factory(t) { return new (t || RouterLinkActive)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](Router), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](RouterLink, 8), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](RouterLinkWithHref, 8)); };
 RouterLinkActive.ɵdir = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineDirective"]({ type: RouterLinkActive, selectors: [["", "routerLinkActive", ""]], contentQueries: function RouterLinkActive_ContentQueries(rf, ctx, dirIndex) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵcontentQuery"](dirIndex, RouterLink, true);
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵcontentQuery"](dirIndex, RouterLinkWithHref, true);
@@ -77023,7 +76387,6 @@ RouterLinkActive.ctorParameters = () => [
     { type: Router },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"] },
     { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"] },
-    { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"] },
     { type: RouterLink, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }] },
     { type: RouterLinkWithHref, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"] }] }
 ];
@@ -77039,7 +76402,7 @@ RouterLinkActive.propDecorators = {
                 selector: '[routerLinkActive]',
                 exportAs: 'routerLinkActive'
             }]
-    }], function () { return [{ type: Router }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"] }, { type: RouterLink, decorators: [{
+    }], function () { return [{ type: Router }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"] }, { type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"] }, { type: RouterLink, decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]
             }] }, { type: RouterLinkWithHref, decorators: [{
                 type: _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]
@@ -77076,21 +76439,6 @@ RouterLinkActive.propDecorators = {
  * <router-outlet name='right'></router-outlet>
  * ```
  *
- * Named outlets can be the targets of secondary routes.
- * The `Route` object for a secondary route has an `outlet` property to identify the target outlet:
- *
- * `{path: <base-path>, component: <component>, outlet: <target_outlet_name>}`
- *
- * Using named outlets and secondary routes, you can target multiple outlets in
- * the same `RouterLink` directive.
- *
- * The router keeps track of separate branches in a navigation tree for each named outlet and
- * generates a representation of that tree in the URL.
- * The URL for a secondary route uses the following syntax to specify both the primary and secondary
- * routes at the same time:
- *
- * `http://base-path/primary-route-path(outlet-name:route-path)`
- *
  * A router outlet emits an activate event when a new component is instantiated,
  * and a deactivate event when a component is destroyed.
  *
@@ -77099,11 +76447,6 @@ RouterLinkActive.propDecorators = {
  *   (activate)='onActivate($event)'
  *   (deactivate)='onDeactivate($event)'></router-outlet>
  * ```
- *
- * @see [Routing tutorial](guide/router-tutorial-toh#named-outlets "Example of a named
- * outlet and secondary route configuration").
- * @see `RouterLink`
- * @see `Route`
  * @ngModule RouterModule
  *
  * @publicApi
@@ -77121,11 +76464,9 @@ class RouterOutlet {
         this.name = name || PRIMARY_OUTLET;
         parentContexts.onChildOutletCreated(this.name, this);
     }
-    /** @nodoc */
     ngOnDestroy() {
         this.parentContexts.onChildOutletDestroyed(this.name);
     }
-    /** @nodoc */
     ngOnInit() {
         if (!this.activated) {
             // If the outlet was not instantiated at the time the route got activated we need to populate
@@ -77329,11 +76670,11 @@ class RouterPreloader {
         const ngModule = this.injector.get(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleRef"]);
         return this.processRoutes(ngModule, this.router.config);
     }
-    /** @nodoc */
+    // TODO(jasonaden): This class relies on code external to the class to call setUpPreloading. If
+    // this hasn't been done, ngOnDestroy will fail as this.subscription will be undefined. This
+    // should be refactored.
     ngOnDestroy() {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-        }
+        this.subscription.unsubscribe();
     }
     processRoutes(ngModule, routes) {
         const res = [];
@@ -77449,7 +76790,6 @@ class RouterScroller {
     scheduleScrollEvent(routerEvent, anchor) {
         this.router.triggerEvent(new Scroll(routerEvent, this.lastSource === 'popstate' ? this.store[this.restoredId] : null, anchor));
     }
-    /** @nodoc */
     ngOnDestroy() {
         if (this.routerEventsSubscription) {
             this.routerEventsSubscription.unsubscribe();
@@ -77516,23 +76856,53 @@ function routerNgProbeToken() {
     return new _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgProbeToken"]('Router', Router);
 }
 /**
+ * @usageNotes
+ *
+ * RouterModule can be imported multiple times: once per lazily-loaded bundle.
+ * Since the router deals with a global shared resource--location, we cannot have
+ * more than one router service active.
+ *
+ * That is why there are two ways to create the module: `RouterModule.forRoot` and
+ * `RouterModule.forChild`.
+ *
+ * * `forRoot` creates a module that contains all the directives, the given routes, and the router
+ *   service itself.
+ * * `forChild` creates a module that contains all the directives and the given routes, but does not
+ *   include the router service.
+ *
+ * When registered at the root, the module should be used as follows
+ *
+ * ```
+ * @NgModule({
+ *   imports: [RouterModule.forRoot(ROUTES)]
+ * })
+ * class MyNgModule {}
+ * ```
+ *
+ * For submodules and lazy loaded submodules the module should be used as follows:
+ *
+ * ```
+ * @NgModule({
+ *   imports: [RouterModule.forChild(ROUTES)]
+ * })
+ * class MyNgModule {}
+ * ```
+ *
  * @description
  *
- * Adds directives and providers for in-app navigation among views defined in an application.
- * Use the Angular `Router` service to declaratively specify application states and manage state
- * transitions.
+ * Adds router directives and providers.
  *
- * You can import this NgModule multiple times, once for each lazy-loaded bundle.
- * However, only one `Router` service can be active.
- * To ensure this, there are two ways to register routes when importing this module:
+ * Managing state transitions is one of the hardest parts of building applications. This is
+ * especially true on the web, where you also need to ensure that the state is reflected in the URL.
+ * In addition, we often want to split applications into multiple bundles and load them on demand.
+ * Doing this transparently is not trivial.
  *
- * * The `forRoot()` method creates an `NgModule` that contains all the directives, the given
- * routes, and the `Router` service itself.
- * * The `forChild()` method creates an `NgModule` that contains all the directives and the given
- * routes, but does not include the `Router` service.
+ * The Angular router service solves these problems. Using the router, you can declaratively specify
+ * application states, manage state transitions while taking care of the URL, and load bundles on
+ * demand.
  *
- * @see [Routing and Navigation guide](guide/router) for an
- * overview of how the `Router` service should be used.
+ * @see [Routing and Navigation](guide/router.html) for an
+ * overview of how the router service should be used.
  *
  * @publicApi
  */
@@ -77543,19 +76913,9 @@ class RouterModule {
      * Creates and configures a module with all the router providers and directives.
      * Optionally sets up an application listener to perform an initial navigation.
      *
-     * When registering the NgModule at the root, import as follows:
-     *
-     * ```
-     * @NgModule({
-     *   imports: [RouterModule.forRoot(ROUTES)]
-     * })
-     * class MyNgModule {}
-     * ```
-     *
      * @param routes An array of `Route` objects that define the navigation paths for the application.
      * @param config An `ExtraOptions` configuration object that controls how navigation is performed.
-     * @return The new `NgModule`.
-     *
+     * @return The new router module.
      */
     static forRoot(routes, config) {
         return {
@@ -77590,20 +76950,7 @@ class RouterModule {
         };
     }
     /**
-     * Creates a module with all the router directives and a provider registering routes,
-     * without creating a new Router service.
-     * When registering for submodules and lazy-loaded submodules, create the NgModule as follows:
-     *
-     * ```
-     * @NgModule({
-     *   imports: [RouterModule.forChild(ROUTES)]
-     * })
-     * class MyNgModule {}
-     * ```
-     *
-     * @param routes An array of `Route` objects that define the navigation paths for the submodule.
-     * @return The new NgModule.
-     *
+     * Creates a module with all the router directives and a provider registering routes.
      */
     static forChild(routes) {
         return { ngModule: RouterModule, providers: [provideRoutes(routes)] };
@@ -77835,7 +77182,7 @@ function provideRouterInitializer() {
 /**
  * @publicApi
  */
-const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Version"]('10.0.14');
+const VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Version"]('10.0.0');
 
 /**
  * @license
